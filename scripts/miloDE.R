@@ -162,7 +162,7 @@ milo_DE <- qs::qread(file.path("objects", "milo_DE.qs"), nthread = 4)
 de_stat <- qs::qread(file.path("objects", "milo_de_stat_pnp_ctrl.qs"), nthread = 6)
 
 stat_de_magnitude <- rank_neighbourhoods_by_DE_magnitude(de_stat)
-stat_de_magnitude <- rank_neighbourhoods_by_DE_magnitude(de_stat, z.thresh = -6)
+# stat_de_magnitude <- rank_neighbourhoods_by_DE_magnitude(de_stat, z.thresh = -6)
 
 p1 <- plot_milo_by_single_metric(
   milo_DE,
@@ -170,11 +170,10 @@ p1 <- plot_milo_by_single_metric(
   colour_by = "n_DE_genes",
   layout = "UMAP.SCVI.FULL",
   size_range = c(0.2, 3),
-  ## edge_width = c(0.5, 1.0), # does not work
+  edge_width = c(0.1, 1.0), 
   edge_weight.thres = 10
 ) +
-  viridis::scale_fill_viridis(name = "# DE genes")
-  ## ggraph::scale_edge_width(range = c(0.001, 0.01))
+  viridis::scale_fill_viridis(name = "# DE genes", option = "inferno")
 
 p2 <- plot_milo_by_single_metric(
   milo_DE,
@@ -199,17 +198,12 @@ p_gene <- plot_DE_single_gene(
   viridis::scale_fill_viridis(name = "# specific\nDE genes", option = "inferno")
 
 p1_p2 <- patchwork::wrap_plots(p1, p2)
-ggsave(file.path("results", "miloDE", "milo_DE_VN_CTRL.pdf"), width = 12, height = 6, device = cairo_pdf)
-ggsave(file.path("results", "miloDE", "milo_DE_PNP_CTRL.pdf"), width = 12, height = 6, device = cairo_pdf)
 
-ggsave(plot = p1_p2, file.path("results", "miloDE", "milo_DE_PNP_CTRL_z6.pdf"), width = 12, height = 6, device = cairo_pdf)
-ggsave(plot = p1_p2, file.path("results", "miloDE", "milo_DE_PNP_CTRL_z9.pdf"), width = 12, height = 6, device = cairo_pdf)
-ggsave(plot = p1_p2, file.path("results", "miloDE", "milo_DE_PNP_CTRL_z20.pdf"), width = 12, height = 6, device = cairo_pdf)
+ggsave(file.path("results", "miloDE", "milo_DE_VN_CTRL.pdf"), width = 12, height = 6, device = cairo_pdf)
+ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_PNP_CTRL.pdf"), width = 6, height = 6, device = cairo_pdf)
 
 ggsave(plot = p3, file.path("results", "miloDE", "milo_DE_PNP_CTRL_IFI44L.pdf"), width = 6, height = 6, device = cairo_pdf)
 
-ggsave(file.path("results", "miloDE", "milo_DE_VN_CTRL_downsampled.pdf"), width = 12, height = 6, device = cairo_pdf)
-ggsave(file.path("results", "miloDE", "milo_DE_PNP_CTRL_downsampled.pdf"), width = 12, height = 6, device = cairo_pdf)
 
 ggsave(
   plot = p_gene,
@@ -219,13 +213,6 @@ ggsave(
 )
 
 
-
-str(milo_DE, max.level = 2)
-str(de_stat, max.level = 2)
-assay(de_stat, "data")
-str(de_stat@assays)
-
-str(de_stat@assays@data@listData$logFC)
 
 stat_de_magnitude |>
   # dplyr::arrange(desc(n_specific_DE_genes)) |>
