@@ -1,0 +1,350 @@
+#libraries ---
+library(Seurat)
+library(tidyverse)
+library(scMisc)
+library(qs)
+
+remotes::install_github("mihem/scMisc")
+detach(package:scMisc, unload = TRUE)
+
+# load preprocessed data ----
+sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
+ic <- qs::qread(file.path("objects", "ic.qs"), nthread = 4)
+
+sample_lookup <- 
+  readr::read_csv(file.path("lookup", "sample_lookup.csv")) |>
+  janitor::clean_names() |>
+  mutate(age_calc = lubridate::time_length(difftime(nerve_date, birth_date), "years")) |>
+  mutate(age_calc = floor(age_calc)) |>
+  mutate(age = coalesce(age_calc, age)) |>
+  dplyr::select(-age_calc) |>
+  mutate(level0 = if_else(level1 == "CTRL", "CTRL", "PNP"))
+
+  # abundance table
+scMisc::abundanceTbl(sc_merge, "cluster", "sample")
+scMisc::abundanceTbl(ic, "ic_cluster", "sample")
+scMisc::abundanceTbl(ic, "ic_cluster", "level2")
+
+# stacked plots --
+scMisc::stackedPlot(
+  object = sc_merge,
+  x_axis = "sample",
+  y_axis = "cluster",
+  x_order = unique(sc_merge$sample),
+  y_order = sc_merge@misc$cluster_order,
+  color = sc_merge@misc$cluster_col,
+  width = 10
+)
+
+scMisc::stackedPlot(
+  object = sc_merge,
+  x_axis = "level1",
+  y_axis = "cluster",
+  x_order = unique(sc_merge$level1),
+  y_order = sc_merge@misc$cluster_order,
+  color = sc_merge@misc$cluster_col,
+  width = 4
+)
+
+scMisc::stackedPlot(
+  object = sc_merge,
+  x_axis = "level2",
+  y_axis = "cluster",
+  x_order = unique(sc_merge$level2),
+  y_order = sc_merge@misc$cluster_order,
+  color = sc_merge@misc$cluster_col,
+  width = 5
+)
+
+scMisc::stackedPlot(
+  object = sc_merge,
+  x_axis = "incat",
+  y_axis = "cluster",
+  x_order = as.character(1:6),
+  y_order = sc_merge@misc$cluster_order,
+  color = sc_merge@misc$cluster_col,
+  width = 5
+)
+
+# immune cells ---
+scMisc::stackedPlot(
+  object = ic,
+  x_axis = "level2",
+  y_axis = "ic_cluster",
+  x_order = unique(ic$level2),
+  y_order = ic@misc$ic_cluster_order,
+  color = ic@misc$ic_cluster_col,
+  width = 5
+)
+
+
+str(sc_merge@meta.data)
+
+# propeller abundance analysis ---
+
+# PNP vs CTRL
+propeller_PNP_CTRL <-
+  scMisc::propellerCalc(
+    seu_obj1 = sc_merge,
+    condition1 = "PNP",
+    condition2 = "CTRL",
+    cluster_col = "cluster",
+    meta_col = "level0",
+    lookup = sample_lookup,
+    sample_col = "sample",
+    formula = "~0 + level0",
+    min_cells = 30
+  )
+
+scMisc::plotPropeller(
+  data = propeller_PNP_CTRL,
+  color = sc_merge@misc$cluster_col,
+  filename = "PNP_CTRL",
+  FDR = 0.1
+)
+
+scMisc::dotplotPropeller(
+    data = propeller_PNP_CTRL,
+    color = sc_merge@misc$cluster_col,
+    filename = "PNP_CTRL",
+)
+
+# immune cells
+propeller_PNP_CTRL_ic <-
+  scMisc::propellerCalc(
+    seu_obj1 = ic,
+    condition1 = "PNP",
+    condition2 = "CTRL",
+    cluster_col = "ic_cluster",
+    meta_col = "level0",
+    lookup = sample_lookup,
+    sample_col = "sample",
+    formula = "~0 + level0",
+    min_cells = 30
+  )
+
+scMisc::plotPropeller(
+  data = propeller_PNP_CTRL_ic,
+  color = ic@misc$ic_cluster_col,
+  filename = "PNP_CTRL_ic",
+  FDR = 0.1
+)
+
+scMisc::dotplotPropeller(
+    data = propeller_PNP_CTRL_ic,
+    color = ic@misc$ic_cluster_col,
+    filename = "PNP_CTRL_ic",
+    height = 6
+)
+
+# CIDP vs CTRL
+propeller_CIDP_CTRL <-
+  scMisc::propellerCalc(
+    seu_obj1 = sc_merge,
+    condition1 = "CIDP",
+    condition2 = "CTRL",
+    cluster_col = "cluster",
+    meta_col = "level2",
+    lookup = sample_lookup,
+    sample_col = "sample",
+    formula = "~0 + level2",
+    # formula = "~0 + level2 + sex + age + center",
+    min_cells = 30
+  )
+
+scMisc::plotPropeller(
+  data = propeller_CIDP_CTRL,
+  color = sc_merge@misc$cluster_col,
+#   filename = "CIDP_CTRL_sex_age_center",
+  filename = "CIDP_CTRL",
+  FDR = 0.1
+)
+
+scMisc::dotplotPropeller(
+    data = propeller_CIDP_CTRL,
+    color = sc_merge@misc$cluster_col,
+    filename = "CIDP_CTRL",
+)
+
+# immune cells ----
+propeller_CIDP_CTRL_ic <-
+  scMisc::propellerCalc(
+    seu_obj1 = ic,
+    condition1 = "CIDP",
+    condition2 = "CTRL",
+    cluster_col = "ic_cluster",
+    meta_col = "level2",
+    lookup = sample_lookup,
+    sample_col = "sample",
+    formula = "~0 + level2",
+    # formula = "~0 + level2 + sex + age + center",
+    min_cells = 30
+  )
+
+scMisc::plotPropeller(
+  data = propeller_CIDP_CTRL_ic,
+  color = ic@misc$ic_cluster_col,
+  filename = "CIDP_CTRL_ic",
+  FDR = 0.1
+)
+
+scMisc::dotplotPropeller(
+    data = propeller_CIDP_CTRL_ic,
+    color = ic@misc$ic_cluster_col,
+    filename = "CIDP_CTRL_ic",
+    height = 6
+)
+
+#  VN vs CTRL
+propeller_VN_CTRL <-
+    scMisc::propellerCalc(
+        seu_obj1 = sc_merge,
+        condition1 = "VN",
+        condition2 = "CTRL",
+        cluster_col = "cluster",
+        meta_col = "level2",
+        lookup = sample_lookup,
+        sample_col = "sample",
+        formula = "~0 + level2",
+        # formula = "~0 + level2 + sex + age + center",
+        min_cells = 30
+    )
+
+scMisc::plotPropeller(
+  data = propeller_VN_CTRL,
+  color = sc_merge@misc$cluster_col,
+#   filename = "VN_CTRL",
+  filename = "VN_CTRL_sex_age_center",
+  FDR = 0.1
+)
+
+scMisc::dotplotPropeller(
+  data = propeller_VN_CTRL,
+  color = sc_merge@misc$cluster_col,
+  filename = "VN_CTRL"
+)
+
+# immune cells
+propeller_VN_CTRL_ic <-
+    scMisc::propellerCalc(
+        seu_obj1 = ic,
+        condition1 = "VN",
+        condition2 = "CTRL",
+        cluster_col = "ic_cluster",
+        meta_col = "level2",
+        lookup = sample_lookup,
+        sample_col = "sample",
+        formula = "~0 + level2",
+        # formula = "~0 + level2 + sex + age ",
+        min_cells = 30
+    )
+
+scMisc::plotPropeller(
+  data = propeller_VN_CTRL_ic,
+  color = ic@misc$ic_cluster_col,
+  filename = "VN_CTRL_ic",
+  FDR = 0.1
+)
+
+scMisc::dotplotPropeller(
+  data = propeller_VN_CTRL_ic,
+  color = ic@misc$ic_cluster_col,
+  filename = "VN_CTRL_ic",
+  height = 6
+)
+
+#  VN vs CIAP
+propeller_VN_CIAP <-
+  scMisc::propellerCalc(
+    seu_obj1 = sc_merge,
+    condition1 = "VN",
+    condition2 = "CIAP",
+    cluster_col = "cluster",
+    meta_col = "level2",
+    lookup = sample_lookup,
+    sample_col = "sample",
+    formula = "~0 + level2",
+    # formula = "~0 + level2 + sex + age + center",
+    min_cells = 30
+  )
+
+scMisc::plotPropeller(
+  data = propeller_VN_CIAP,
+  color = sc_merge@misc$cluster_col,
+  filename = "VN_CIAP",
+#   filename = "VN_CIAP_sex_age_center",
+  FDR = 0.1
+)
+
+scMisc::dotplotPropeller(
+  data = propeller_VN_CIAP,
+  color = sc_merge@misc$cluster_col,
+  filename = "VN_CIAP"
+)
+
+#  VN vs CIDP
+propeller_VN_CIDP <-
+  scMisc::propellerCalc(
+    seu_obj1 = sc_merge,
+    condition1 = "VN",
+    condition2 = "CIDP",
+    cluster_col = "cluster",
+    meta_col = "level2",
+    lookup = sample_lookup,
+    sample_col = "sample",
+    formula = "~0 + level2",
+    # formula = "~0 + level2 + sex + age + center",
+    min_cells = 30
+  )
+
+scMisc::plotPropeller(
+  data = propeller_VN_CIDP,
+  color = sc_merge@misc$cluster_col,
+  filename = "VN_CIDP",
+#   filename = "VN_CIDP_sex_age_center",
+  FDR = 0.1
+)
+
+scMisc::dotplotPropeller(
+  data = propeller_VN_CIDP,
+  color = sc_merge@misc$cluster_col,
+  filename = "VN_CIDP"
+)
+
+# CIDP vs CIAP
+propeller_CIDP_CIAP <-
+  scMisc::propellerCalc(
+    seu_obj1 = sc_merge,
+    condition1 = "CIDP",
+    condition2 = "CIAP",
+    cluster_col = "cluster",
+    meta_col = "level2",
+    lookup = sample_lookup,
+    sample_col = "sample",
+    # formula = "~0 + level2",
+    formula = "~0 + level2 + sex + age + center",
+    min_cells = 30
+  )
+
+scMisc::plotPropeller(
+  data = propeller_CIDP_CIAP,
+  color = sc_merge@misc$cluster_col,
+  filename = "CIDP_CIAP_sex_age_center",
+#   filename = "CIDP_CIAP",
+  FDR = 0.1
+)
+
+scMisc::dotplotPropeller(
+  data = propeller_CIDP_CIAP,
+  color = sc_merge@misc$cluster_col,
+  filename = "CIDP_CIAP"
+)
+
+as.data.frame.matrix(table(sc_merge@meta.data[["cluster"]], sc_merge@meta.data[["sample"]])) |>
+  mutate(across(where(is.numeric), function(x) x / sum(x) * 100)) |>
+  rownames_to_column("cluster") |>
+  dplyr::filter(cluster == "repairSC") |>
+  pivot_longer(-cluster, names_to = "sample", values_to = "value") |>
+  arrange(desc(value))   |>
+  left_join(select(sample_lookup, sample, level2, internal_name)) |>
+  write_csv(file.path("results", "abundance", "repairSC.csv"))
