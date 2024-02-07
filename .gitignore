@@ -1,0 +1,12 @@
+*.pdf
+*.xlsx
+*.csv
+.Rproj.user
+scripts/old
+matrix/
+matrix_final/
+.vscode
+objects/
+raw/
+scripts/download.sh
+
