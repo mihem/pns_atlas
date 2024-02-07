@@ -15,6 +15,8 @@ library(DESeq2)
 library(viridis)
 library(Libra)
 library(readxl)
+library(EnhancedVolcano)
+
 
 # general settings  ----
 options(warn = 0)
@@ -27,7 +29,6 @@ conflicts_prefer(base::as.data.frame)
 
 # load preprocessed data ----
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
-
 
 #subset seurat object
 sc_merge_cidp_vn_ctrl_ciap <- subset(sc_merge, subset = level2 %in% c("CIDP", "VN", "CTRL", "CIAP"))
@@ -51,119 +52,6 @@ bulk_cidp_vn_ctrl_ciap <- AverageExpression(
     assays = "RNA",
     group.by = "sample"
 )
-
-
-# pseudobulk MDS with DESeq ---
-sc_merge$log_axon_normal <- log(sc_merge$axon_normal)
-
-# get sample metadata
-axon_count_lookup <-
-    tibble(sample = sc_merge$sample, axon_normal = sc_merge$axon_normal, log_axon_normal = sc_merge$log_axon_normal) |>
-    distinct() |>
-    mutate()
-
-coldata <- readr::read_csv(file.path("lookup", "sample_lookup.csv")) |>
-    left_join(axon_count_lookup, by = "sample")
-
-# create DESeq2 object
-dds <- DESeq2::DESeqDataSetFromMatrix(bulk$RNA,
-    colData = coldata,
-    design = ~sample
-)
-
-coldata_cidp_vn_ctrl_ciap <-
-    coldata |>
-    dplyr::filter(level2 %in% c("CIDP", "VN", "CTRL", "CIAP"))
-
-dds_cidp_vn_ctrl_ciap <- DESeq2::DESeqDataSetFromMatrix(bulk_cidp_vn_ctrl_ciap$RNA,
-    colData = coldata_cidp_vn_ctrl_ciap,
-    design = ~sample
-)
-
-# normalize
-rld <- DESeq2::vst(dds, blind = TRUE)
-rld_cidp_vn_ctrl_ciap <- DESeq2::vst(dds_cidp_vn_ctrl_ciap, blind = TRUE)
-
-# save object
-qs::qsave(rld, file.path("objects", "rld.qs"))
-
-rld <- qs::qread(file.path("objects", "rld.qs"))
-
-rld$level2 <- factor(rld$level2, sc_merge@misc$level2_order)
-
-
-# plot PCA using DESeq2
-DESeq2::plotPCA(rld, intgroup = "level2") +
-    scale_color_manual(values = sc_merge@misc$level2_cols) + 
-    theme_classic() +
-    theme(
-        panel.border = element_rect(color = "black", size = 1, fill = NA),
-        aspect.ratio = 1
-    ) +
-    geom_text(aes(label = coldata$sample), vjust = 2)
-
-ggsave(file = file.path("results", "pca", "deseq2_pca_level2.pdf"), width = 10, height = 8)
-
-
-pca_cidp_vn_ctrl_ciap <- DESeq2::plotPCA(rld_cidp_vn_ctrl_ciap, intgroup = "level2", ntop = 50, returnData = TRUE)
-
-pca_cidp_vn_ctrl_ciap |>
-    ggplot(aes(x = PC1, y = PC2, color = level2)) + 
-    geom_point(size = 2, alpha = .5, shape = 16) + 
-    scale_color_manual(values = sc_merge@misc$level2_cols) + 
-    theme_classic() +
-    theme(
-        panel.border = element_rect(color = "black", size = 1, fill = NA),
-        aspect.ratio = 1
-    ) +
-    geom_text(aes(label = coldata_cidp_vn_ctrl_ciap$sample), vjust = 2)
-
-ggsave(file = file.path("results", "pca", "deseq2_pca_level2.pdf"), width = 3, height = 4)
-ggsave(file = file.path("results", "pca", "deseq2_pca_level2.pdf"), width = 3, height = 4)
-
-
-library(factoextra)
-data(decathlon2)
-decathlon2_active <- decathlon2[1:12, 1:10]
-res_pca <- prcomp(decathlon2_active, scale = TRUE)
-
-# deseq2 pca manually ----
-rv <- MatrixGenerics::rowVars(assay(rld_cidp_vn_ctrl_ciap))
-select <- order(rv, decreasing = TRUE)[seq_len(50)]
-pca_cidp_vn_ctrl_ciap <- prcomp(t(assay(rld_cidp_vn_ctrl_ciap)[select,]))
-
-fviz_pca_var(pca_cidp_vn_ctrl_ciap, col.var = "contrib", select.var = list(contrib = 25), repel = TRUE)
-ggsave(file = file.path("results", "pca", "deseq2_pca_level2_contrib.pdf"), width = 5, height = 5)
-
-pca_cidp_vn_ctrl_ciap$x |>
-    as_tibble() |>
-    mutate(level2 = rld_cidp_vn_ctrl_ciap$level2) |>
-    ggplot(aes(x = PC1, y = PC2, color = level2)) +
-    geom_point(size = 2, alpha = .5, shape = 16) +
-    scale_color_manual(values = sc_merge@misc$level2_cols) +
-    theme_classic() +
-    theme(
-        panel.border = element_rect(color = "black", size = 1, fill = NA),
-        aspect.ratio = 1
-    ) +
-    geom_text(aes(label = coldata_cidp_vn_ctrl_ciap$sample), vjust = 2)
-
-ggsave(file = file.path("results", "pca", "deseq2_pca_level2.pdf"), width = 3, height = 4)
-ggsave(file = file.path("results", "pca", "deseq2_pca_level2_label.pdf"), width = 3, height = 4)
-
-# plot PCA using DESeq2 color by normal_axon
-DESeq2::plotPCA(rld, intgroup = "log_axon_normal") +
-    viridis::scale_color_viridis(option = "magma") +
-    theme_classic() +
-    theme(
-        panel.border = element_rect(color = "black", size = 1, fill = NA),
-        aspect.ratio = 1
-    ) +
-    geom_text(aes(label = coldata$sample), vjust = 2) + 
-    labs(color = "log normal axon")
-
-ggsave(file = file.path("results", "pca", "deseq2_pca_axon_normal.pdf"), width = 10, height = 8)
-
 
 # pseudobulk DGE but clusterwise approach ---
 bulk_sample <- AverageExpression(
@@ -228,66 +116,6 @@ dePseudo <- function(seu_obj, cell_type_col, label_col) {
 # PNP vs CTRL pseudobulk
 dePseudo(sc_merge, cell_type_col = "cluster", label_col = "level0")
 
-
-# function to calculate DEG for each cluster with Seurat wilcox
-findMarkersWilcox <- function(cluster, condition1, condition2) {
-    ident1 <- paste0(condition1, "_", cluster)
-    ident2 <- paste0(condition2, "_", cluster)
-    deg <-
-        FindMarkers(sc_merge, ident.1 = ident1, ident.2 = ident2, only.pos = TRUE, logfc.threshold = 0.5) |>
-        tibble::rownames_to_column("gene") |>
-        dplyr::filter(p_val_adj < 0.05) |>
-        dplyr::relocate(gene, avg_log2FC, p_val, p_val_adj) |>
-        dplyr::arrange(desc(avg_log2FC))
-    message("DEG found for ", condition1, " vs ", condition2, " in ", cluster)
-    return(deg)
-}
-
-dplyr::count(sc_merge@meta.data, level0_cluster, sort = TRUE) |>
-    write_xlsx(path = file.path("results", "de", "level0_cluster_count.xlsx"))
-
-# PNP vs CTRL wilcox ----
-level0_cluster_order <-
-    expand_grid(
-        level0 = c("CTRL", "PNP"),
-        cluster = sc_merge@misc$cluster_order
-    ) |>
-    mutate(
-        level0_cluster = paste0(level0, "_", cluster)
-    )
-
-sc_merge$level0_cluster <- 
-    factor(paste0(sc_merge$level0, "_", sc_merge$cluster),
-        levels = level0_cluster_order$level0_cluster
-    )
-
-Idents(sc_merge) <- sc_merge$level0_cluster
-
-pnp_ctrl_deg_wilcox <-
-    lapply(
-        sc_merge@misc$cluster_order,
-        function(cluster) {
-            findMarkersWilcox(cluster, "PNP", "CTRL")
-        }
-    ) |>
-    setNames(sc_merge@misc$cluster_order)
-
-write_xlsx(pnp_ctrl_deg_wilcox, path = file.path("results", "de", "pnp_ctrl_wilcox.xlsx"))
-
-sheets <- readxl::excel_sheets(path = file.path("results", "de", "pnp_ctrl_pseudobulk.xlsx"))
-
-    pseudobulk_de <-
-        lapply(
-            sheets,
-            function(sheet) {
-                read_xlsx(path = file.path("results", "de", "pnp_ctrl_pseudobulk.xlsx"), sheet = sheet) |>
-                    dplyr::filter(p_val_adj < 0.05)
-            }
-        ) |>
-        setNames(sheets)
-
-write_xlsx(pseudobulk_de, path = file.path("results", "de", "pnp_ctrl_pseudobulk_sig.xlsx"))
-
 # plot number of DEG per cluster ---
 plotDE <- function(name, title) {
     sheets <- readxl::excel_sheets(path = file.path("results", "de", paste0(name, ".xlsx")))
@@ -329,7 +157,6 @@ plotDE <- function(name, title) {
 plotDE("pnp_ctrl_wilcox", title = "PNP vs CTRL")
 plotDE("pnp_ctrl_pseudobulk", title = "PNP vs CTRL")
 
-
 # VN vs CTRL
 vn_ctrl <- subset(sc_merge, level2 %in% c("VN", "CTRL"))
 vn_ctrl$level2 <- factor(vn_ctrl$level2, levels = c("VN", "CTRL"))
@@ -349,6 +176,51 @@ table(sc_merge$level2)
 table(cidp_ctrl$level2)
 
 dePseudo(cidp_ctrl, cell_type_col = "cluster", label_col = "level2")
+
+#volcano plot
+volcanoPlot <- function(filename, sheet, FCcutoff = 0.5, selectLab = NULL, drawConnectors = TRUE) {
+    input <- readxl::read_excel(file.path("results", "de", paste0(filename, ".xlsx")), sheet = sheet)
+    if(nrow(input) != 0) { 
+      volcano <- EnhancedVolcano::EnhancedVolcano(
+        data.frame(input),
+        lab = input[["gene"]],
+        x = 'avg_logFC',
+        y = 'p_val_adj',
+        pCutoff = 0.05,
+        FCcutoff = FCcutoff,
+        axisLabSize = 25,
+        pointSize = 5,
+        labSize = 5,
+        subtitle = NULL,
+        caption = NULL,
+        drawConnectors = drawConnectors,
+        lengthConnectors = unit(0.0001, "npc"),
+        title = NULL,
+        #    title = paste(x, input),
+        boxedLabels = FALSE,
+        selectLab = selectLab[[x]],
+        #xlim=c(0, 2),
+        #  ylim =c(0,50),
+        xlab = "Log2 fold change",
+        ylab = "-Log10 adjusted pvalue",
+        legendLabels = c('NS', "avg logFC",
+                         'p-value', "p-value and avg logFC"))
+      #    legendPosition = "bottom")
+      pdf(file.path("results", "de", paste0(filename, "_", x, ".pdf")), width = 8, height = 12)
+      print(volcano)
+      dev.off()
+    }
+}
+
+lab_blood <- list("actCD4" = c("NKG7", "GNLY", "GZMB", "KLDR1", "CCL5", "HLA-DRB1", "HLA-DRB5", "HLA-DRA", "LTB", "CCR7"), "naiveBc" = c("FOS", "JUNB", "FCER1G", "IFITM3"))
+
+debugonce(volcanoPlot)
+
+volcanoPlot(
+    filename = "pnp_ctrl_pseudobulk",
+    sheet = "repairSC",
+    # selectLab = lab_blood
+)
 
 
 # # using a linear model to adjust for sex and age is probably too conservative

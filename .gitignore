@@ -1,6 +1,7 @@
 *.pdf
 *.xlsx
 *.csv
+*.png
 .Rproj.user
 scripts/old
 matrix/
