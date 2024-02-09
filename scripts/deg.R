@@ -116,6 +116,22 @@ dePseudo <- function(seu_obj, cell_type_col, label_col) {
 # PNP vs CTRL pseudobulk
 dePseudo(sc_merge, cell_type_col = "cluster", label_col = "level0")
 
+name <- "pnp_ctrl_pseudobulk"
+sheets <- readxl::excel_sheets(path = file.path("results", "de", paste0(name, ".xlsx")))
+
+de <-
+    lapply(
+        sheets,
+        function(sheet) {
+            read_xlsx(path = file.path("results", "de", paste0(name, ".xlsx")), sheet = sheet) |>
+                dplyr::filter(p_val_adj < 0.1) |>
+                dplyr::filter(abs(avg_logFC) > 2)
+        }
+    )
+
+de <- setNames(de, sheets)
+write_xlsx(de, path = file.path("results", "de", paste0(name, "_sig.xlsx")))
+
 # plot number of DEG per cluster ---
 plotDE <- function(name, title) {
     sheets <- readxl::excel_sheets(path = file.path("results", "de", paste0(name, ".xlsx")))
@@ -177,50 +193,62 @@ table(cidp_ctrl$level2)
 
 dePseudo(cidp_ctrl, cell_type_col = "cluster", label_col = "level2")
 
-#volcano plot
-volcanoPlot <- function(filename, sheet, FCcutoff = 0.5, selectLab = NULL, drawConnectors = TRUE) {
+
+# volcano plot
+volcanoPlot <- function(filename, sheet, FCcutoff = 2, selectLab = NULL, drawConnectors = TRUE, condition1, condition2) {
     input <- readxl::read_excel(file.path("results", "de", paste0(filename, ".xlsx")), sheet = sheet)
-    if(nrow(input) != 0) { 
-      volcano <- EnhancedVolcano::EnhancedVolcano(
-        data.frame(input),
-        lab = input[["gene"]],
-        x = 'avg_logFC',
-        y = 'p_val_adj',
-        pCutoff = 0.05,
-        FCcutoff = FCcutoff,
-        axisLabSize = 25,
-        pointSize = 5,
-        labSize = 5,
-        subtitle = NULL,
-        caption = NULL,
-        drawConnectors = drawConnectors,
-        lengthConnectors = unit(0.0001, "npc"),
-        title = NULL,
-        #    title = paste(x, input),
-        boxedLabels = FALSE,
-        selectLab = selectLab[[x]],
-        #xlim=c(0, 2),
-        #  ylim =c(0,50),
-        xlab = "Log2 fold change",
-        ylab = "-Log10 adjusted pvalue",
-        legendLabels = c('NS', "avg logFC",
-                         'p-value', "p-value and avg logFC"))
-      #    legendPosition = "bottom")
-      pdf(file.path("results", "de", paste0(filename, "_", x, ".pdf")), width = 8, height = 12)
-      print(volcano)
-      dev.off()
+    if (nrow(input) != 0) {
+        volcano <- EnhancedVolcano::EnhancedVolcano(
+            data.frame(input),
+            lab = input[["gene"]],
+            x = "avg_logFC",
+            y = "p_val_adj",
+            pCutoff = 0.1,
+            FCcutoff = FCcutoff,
+            axisLabSize = 15,
+            pointSize = 1,
+            labSize = 2,
+            subtitle = NULL,
+            caption = NULL,
+            border = "full",
+            gridlines.major = FALSE,
+            gridlines.minor = FALSE,
+            drawConnectors = drawConnectors,
+            lengthConnectors = unit(0.0001, "npc"),
+               title = paste(condition1, "vs", condition2, "in ", sheet),
+            boxedLabels = TRUE,
+            selectLab = selectLab,
+            xlab = "Log2 fold change",
+            ylab = "-Log10 adjusted pvalue",
+            legendLabels = c(
+                "NS", "logFC",
+                "p-val", "p-val + logFC"
+            ),
+            legendPosition = "right"
+        )
+        pdf(file.path("results", "de", paste0(filename, "_", sheet, ".pdf")), width = 8, height = 6)
+        print(volcano)
+        dev.off()
     }
 }
 
-lab_blood <- list("actCD4" = c("NKG7", "GNLY", "GZMB", "KLDR1", "CCL5", "HLA-DRB1", "HLA-DRB5", "HLA-DRA", "LTB", "CCR7"), "naiveBc" = c("FOS", "JUNB", "FCER1G", "IFITM3"))
+# lab_blood <- list("actCD4" = c("NKG7", "GNLY", "GZMB", "KLDR1", "CCL5", "HLA-DRB1", "HLA-DRB5", "HLA-DRA", "LTB", "CCR7"), "naiveBc" = c("FOS", "JUNB", "FCER1G", "IFITM3"))
 
-debugonce(volcanoPlot)
+cluster_de <- c("repairSC", "mySC", "nmSC", "PC2", "ven_capEC1", "artEC")
 
-volcanoPlot(
-    filename = "pnp_ctrl_pseudobulk",
-    sheet = "repairSC",
-    # selectLab = lab_blood
+lapply(
+    cluster_de,
+    function(cluster) {
+        volcanoPlot(
+            filename = "pnp_ctrl_pseudobulk",
+            sheet = cluster,
+            FCcutoff = 2,
+            condition1 = "PNP",
+            condition2 = "CTRL"
+        )
+    }
 )
+
 
 
 # # using a linear model to adjust for sex and age is probably too conservative
