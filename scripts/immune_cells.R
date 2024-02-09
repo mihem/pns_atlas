@@ -213,8 +213,8 @@ dotPlot(
   object = ic,
   par = "dotplot_ic_short",
   dot_min = 0.01,
-  height = 8,
-  width = 16
+  height = 7.5,
+  width = 12
 ) 
 
 lapply(
