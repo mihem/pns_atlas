@@ -88,6 +88,8 @@ dotPlot(
   width = 8
 )
 
+
+
 # dotplot for ec only
 ec <- subset(sc_merge, subset = RNA_snn_res.0.7 %in% c("7", "10", "11", "19"))
 

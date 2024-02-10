@@ -138,7 +138,8 @@ system.time(
     # design = ~ 0 + level0,
     covariates = c("level2"),
     # covariates = c("level0"),
-    contrasts = c("level2VN - level2CTRL"),
+    # contrasts = c("level2VN - level2CTRL"),
+    contrasts = c("level2CIDP - level2CTRL"),
     # contrasts = c("level0PNP - level0CTRL"),
     # contrasts = c("level2VN - level2CTRL"),
     ## subset_nhoods = stat_auc$Nhood[!is.na(stat_auc$auc)],
@@ -156,6 +157,7 @@ qs::qsave(de_stat, file.path("objects", "milo_de_stat_vn_ctrl.qs"))
 qs::qsave(de_stat, file.path("objects", "milo_de_stat_pnp_ctrl.qs"))
 qs::qsave(de_stat, file.path("objects", "milo_de_stat_vn_ctrl_downsampled.qs"))
 qs::qsave(de_stat, file.path("objects", "milo_de_stat_pnp_ctrl_downsampled.qs"))
+
 
 ## system("systemctl suspend")
 milo_DE <- qs::qread(file.path("objects", "milo_DE.qs"), nthread = 4)
