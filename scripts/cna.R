@@ -66,7 +66,52 @@ cor_pnp_plot <-
         title = "PNP", color = "Correlation"
     )
 
-ggsave(plot = cor_pnp_plot, file.path("results", "cna", "cna_pnp_sex_age.png"), width = 10, height = 10)
+ggsave(plot = cor_pnp_plot, file.path("results", "cna", "cna_pnp_sex_age1.png"), width = 10, height = 10)
+
+# immune cells
+ic$pnp <- as.numeric(ic$level2 != "CTRL")
+ic$sex_numeric <- as.numeric(ic$sex == "male")
+ic$center_numeric <- as.numeric(factor(ic$center))
+
+obj <- association.Seurat(
+    seurat_object = ic, 
+    test_var = 'pnp', 
+    samplem_key = 'sample', 
+    graph_use = 'RNA_nn', 
+    verbose = TRUE,
+    batches = NULL, ## no batch variables to include, only works with matched design https://github.com/immunogenomics/cna/issues/11
+    covs = NULL
+    # covs = c("sex_numeric", "age")
+)
+
+cor_pnp_plot <-
+    FeaturePlot(
+        obj,
+        reduction = "umap.rpca",
+        features = c("cna_ncorrs"),
+        pt.size = 0.1,
+        order = FALSE,
+        coord.fixed = TRUE,
+        raster = FALSE,
+        alpha = 1
+    ) +
+    scale_colour_gradient2(
+        low = "#2166AC",
+        mid = "white",
+        high = "#B2182B",
+        midpoint = 0,
+    ) +
+    theme(
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.border = element_rect(color = "black", size = 1, fill = NA)
+    ) +
+    labs(
+        title = "PNP", color = "Correlation"
+    )
+
+ggsave(plot = cor_pnp_plot, file.path("results", "cna", "cna_pnp_ic_sex_age.png"), width = 10, height = 10)
+ggsave(plot = cor_pnp_plot, file.path("results", "cna", "cna_pnp_ic.png"), width = 10, height = 10)
 
 # correlation with incat ----
 sc_merge$pnp <- as.numeric(sc_merge$level2 != "CTRL")
@@ -83,9 +128,7 @@ obj <- association.Seurat(
     graph_use = 'RNA_nn', 
     verbose = TRUE,
     batches = NULL , ## no batch variables to include
-    # covs = NULL ## no covariates to include 
     covs = c("sex_numeric", "age") ## no covariates to include 
-    # covs = c("sex_numeric", "age", "center_numeric") ## no covariates to include 
 )
 
 cor_incat_plot <-
@@ -114,7 +157,7 @@ cor_incat_plot <-
     )
 
 ggsave(plot = cor_incat_plot, file.path("results", "cna", "cna_incat.png"), width = 10, height = 10)
-ggsave(plot = cor_incat_plot, file.path("results", "cna", "cna_incat_sex_age.png"), width = 10, height = 10)
+ggsave(plot = cor_incat_plot, file.path("results", "cna", "cna_incat_sex_age1.png"), width = 10, height = 10)
 ggsave(plot = cor_incat_plot, file.path("results", "cna", "cna_incat_sex_age_center.png"), width = 10, height = 10)
 
 # correlation with axon count ----
