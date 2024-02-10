@@ -201,6 +201,24 @@ scMisc::fPlot(ic,
   reduction = "umap.rpca",
 )
 
+# features plot endoMacro epiMacro
+macro_names <- str_subset(ic@misc$ic_cluster_order, "Macro")
+macro <- subset(ic, subset = ic_cluster %in% macro_names)
+
+scMisc::fPlot(
+  macro,
+  path = file.path("lookup", "markers.csv"),
+  par = "EpiMac_Ydens",
+  reduction = "umap.rpca",
+)
+
+scMisc::fPlot(
+  macro,
+  path = file.path("lookup", "markers.csv"),
+  par = "EndoMac_Ydens",
+  reduction = "umap.rpca",
+)
+
 FeaturePlot(ic, features = markers$MAIT, reduction = "umap.rpca", order = TRUE)
 ggsave(file.path("results", "featureplot", "fp_ic_MAIT.pdf"), width = 10, height = 8)
 
@@ -216,6 +234,29 @@ dotPlot(
   height = 7.5,
   width = 12
 ) 
+
+# epiMacs endoMacs
+macro_names <- str_subset(ic@misc$ic_cluster_order, "Macro")
+macro <- subset(ic, subset = ic_cluster %in% macro_names)
+
+dotPlot(
+  path = file.path("lookup", "markers.csv"),
+  object = macro,
+  par = "EpiMac_Ydens",
+  dot_min = 0.01,
+  height = 6.5,
+  width = 5.5,
+) 
+
+dotPlot(
+  path = file.path("lookup", "markers.csv"),
+  object = macro,
+  par = "EndoMac_Ydens",
+  dot_min = 0.01,
+  height = 6.5,
+  width = 8,
+) 
+
 
 lapply(
   paste0("DC", 1:6, "_villani"),
