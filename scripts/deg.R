@@ -30,51 +30,6 @@ conflicts_prefer(base::as.data.frame)
 # load preprocessed data ----
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 
-#subset seurat object
-sc_merge_cidp_vn_ctrl_ciap <- subset(sc_merge, subset = level2 %in% c("CIDP", "VN", "CTRL", "CIAP"))
-
-
-# pseudobulk expression 
-bulk <- AverageExpression(
-    sc_merge,
-    method = "aggregate",
-    return.seurat = FALSE,
-    slot = "counts",
-    assays = "RNA",
-    group.by = "sample"
-)
-
-bulk_cidp_vn_ctrl_ciap <- AverageExpression(
-    sc_merge_cidp_vn_ctrl_ciap,
-    method = "aggregate",
-    return.seurat = FALSE,
-    slot = "counts",
-    assays = "RNA",
-    group.by = "sample"
-)
-
-# pseudobulk DGE but clusterwise approach ---
-bulk_sample <- AverageExpression(
-    sc_merge,
-    method = "aggregate",
-    return.seurat = FALSE,
-    slot = "counts",
-    assays = "RNA",
-    group.by = "sample"
-)
-
-# pseudobulk MDS with limma ---
-dge <- edgeR::DGEList(counts = bulk_sample$RNA, group = colnames(bulk_sample$RNA))
-count_check <- edgeR::cpm(dge) > 1
-keep <- which(rowSums(count_check) > 2)
-dge <- dge[keep,]
-
-str(bulk_sample)
-
-str(sc_merge@meta.data)
-
-# pseudobulk cells by stimulation condition AND cell type
-
 # function to calculate pseuodbulk using Libra
 dePseudo <- function(seu_obj, cell_type_col, label_col) {
     seu_obj_parse <- deparse(substitute(seu_obj))
@@ -105,32 +60,70 @@ dePseudo <- function(seu_obj, cell_type_col, label_col) {
 
     res <- arrange(res, cell_type, desc(avg_logFC))
     res_split <- split(res, res$cell_type)
-    # res_split_sig <- split(res_sig, res_sig$cell_type)
     write_xlsx(res_split, path = file.path("results", "de", paste0(seu_obj_parse, ".xlsx")))
-    # write_xlsx(res_split_sig, path = file.path("results", "de", paste0(seu_obj_parse, "_sig.xlsx")))
 }
 
 #needs to be dgCMatrix for Libra not BPCellsMatrix
 # sc_merge$RNA$counts <- as(object = sc_merge[["RNA"]]$counts, Class = "dgCMatrix")
 
-# PNP vs CTRL pseudobulk
+# PNP vs CTRL pseudobulk ----
 dePseudo(sc_merge, cell_type_col = "cluster", label_col = "level0")
 
-name <- "pnp_ctrl_pseudobulk"
-sheets <- readxl::excel_sheets(path = file.path("results", "de", paste0(name, ".xlsx")))
+# VN vs CTRL pseudobulk ---
+vn_ctrl <- subset(sc_merge, level2 %in% c("VN", "CTRL"))
+vn_ctrl$level2 <- factor(vn_ctrl$level2, levels = c("VN", "CTRL"))
 
-de <-
-    lapply(
-        sheets,
-        function(sheet) {
-            read_xlsx(path = file.path("results", "de", paste0(name, ".xlsx")), sheet = sheet) |>
-                dplyr::filter(p_val_adj < 0.1) |>
-                dplyr::filter(abs(avg_logFC) > 2)
-        }
-    )
 
-de <- setNames(de, sheets)
-write_xlsx(de, path = file.path("results", "de", paste0(name, "_sig.xlsx")))
+##sanity check
+table(sc_merge$level2)
+table(vn_ctrl$level2)
+AggregateExpression(vn_ctrl, assay = "RNA", group.by = "level2", features = c("F2RL3", "CXCL14", "XIST", "TSIX"))
+
+## perform DE
+dePseudo(vn_ctrl, cell_type_col = "cluster", label_col = "level2")
+
+# CIDP vs CTRL pseudoublk ----
+cidp_ctrl <- subset(sc_merge, level2 %in% c("CIDP", "CTRL"))
+cidp_ctrl$level2 <- factor(cidp_ctrl$level2, levels = c("CIDP", "CTRL"))
+
+# #sanity check
+table(sc_merge$level2)
+table(cidp_ctrl$level2)
+
+# perform DE
+dePseudo(cidp_ctrl, cell_type_col = "cluster", label_col = "level2")
+
+
+# CIAP vs CTRL pseudoublk ----
+ciap_ctrl <- subset(sc_merge, level2 %in% c("CIAP", "CTRL"))
+ciap_ctrl$level2 <- factor(ciap_ctrl$level2, levels = c("CIAP", "CTRL"))
+
+# #sanity check
+table(sc_merge$level2)
+table(ciap_ctrl$level2)
+
+# perform DE
+dePseudo(ciap_ctrl, cell_type_col = "cluster", label_col = "level2")
+
+deSig <- function(name) {
+    sheets <- readxl::excel_sheets(path = file.path("results", "de", paste0(name, ".xlsx")))
+    de <-
+        lapply(
+            sheets,
+            function(sheet) {
+                read_xlsx(path = file.path("results", "de", paste0(name, ".xlsx")), sheet = sheet) |>
+                    dplyr::filter(p_val_adj < 0.1) |>
+                    dplyr::filter(abs(avg_logFC) > 2)
+            }
+        )
+    de <- setNames(de, sheets)
+    write_xlsx(de, path = file.path("results", "de", paste0(name, "_sig.xlsx")))
+}
+
+deSig("pnp_ctrl_pseudobulk")
+deSig("vn_ctrl")
+deSig("cidp_ctrl")
+deSig("ciap_ctrl")
 
 # plot number of DEG per cluster ---
 plotDE <- function(name, title) {
@@ -170,29 +163,8 @@ plotDE <- function(name, title) {
     )
 }
 
-plotDE("pnp_ctrl_wilcox", title = "PNP vs CTRL")
+# plotDE("pnp_ctrl_wilcox", title = "PNP vs CTRL")
 plotDE("pnp_ctrl_pseudobulk", title = "PNP vs CTRL")
-
-# VN vs CTRL
-vn_ctrl <- subset(sc_merge, level2 %in% c("VN", "CTRL"))
-vn_ctrl$level2 <- factor(vn_ctrl$level2, levels = c("VN", "CTRL"))
-
-#sanity check
-table(sc_merge$level2)
-table(vn_ctrl$level2)
-
-dePseudo(vn_ctrl, cell_type_col = "cluster", label_col = "level2")
-
-# CIDP vs CTRL
-cidp_ctrl <- subset(sc_merge, level2 %in% c("CIDP", "CTRL"))
-cidp_ctrl$level2 <- factor(cidp_ctrl$level2, levels = c("CIDP", "CTRL"))
-
-#sanity check
-table(sc_merge$level2)
-table(cidp_ctrl$level2)
-
-dePseudo(cidp_ctrl, cell_type_col = "cluster", label_col = "level2")
-
 
 # volcano plot
 volcanoPlot <- function(filename, sheet, FCcutoff = 2, selectLab = NULL, drawConnectors = TRUE, condition1, condition2) {
@@ -236,6 +208,7 @@ volcanoPlot <- function(filename, sheet, FCcutoff = 2, selectLab = NULL, drawCon
 
 cluster_de <- c("repairSC", "mySC", "nmSC", "PC2", "ven_capEC1", "artEC")
 
+# PNP vs CTRL
 lapply(
     cluster_de,
     function(cluster) {
@@ -249,7 +222,46 @@ lapply(
     }
 )
 
+# VN vs CTRL
+lapply(
+    cluster_de,
+    function(cluster) {
+        volcanoPlot(
+            filename = "vn_ctrl",
+            sheet = cluster,
+            FCcutoff = 2,
+            condition1 = "VN",
+            condition2 = "CTRL"
+        )
+    }
+)
 
+# ciap vs CTRL
+lapply(
+    cluster_de,
+    function(cluster) {
+        volcanoPlot(
+            filename = "ciap_ctrl",
+            sheet = cluster,
+            FCcutoff = 2,
+            condition1 = "ciap",
+            condition2 = "CTRL"
+        )
+    }
+)
+# CIAP vs CTRL
+lapply(
+    cluster_de,
+    function(cluster) {
+        volcanoPlot(
+            filename = "ciap_ctrl",
+            sheet = cluster,
+            FCcutoff = 2,
+            condition1 = "CIAP",
+            condition2 = "CTRL"
+        )
+    }
+)
 
 # # using a linear model to adjust for sex and age is probably too conservative
 # sample_lookup <- 
