@@ -89,32 +89,9 @@ sc_merge_prev <- qs::qread("../sn_suralis_2023_02/sc_final.qs", nthreads = 4)
 sc_merge_prev_small <- subset(sc_merge_prev, downsample = 1000)
 ec_atlas <- qs::qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/ec_atlas/ec_atlas.qs")
 ts_ec_small <- qs::qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/tabula_sapiens/ts_ec_small.qs")
+bbb_vascular <- qs::qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/bbb/bbb_vascular.qs")
+rosmap <- qs::qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/bbb/rosmap.qs")
 
-dplyr::count(ec_atlas@meta.data, tissue)
-str(ec_atlas@meta.data)
-
-DimPlot(ec_atlas, group.by = "tissue")
-DimPlot(ec_atlas, group.by = "cluster")
-
-rosmap <- readRDS(file.path("objects", "ROSMAP.VascularCells.counts.rds"))
-rosmap_meta <- readRDS(file.path("objects", "ROSMAP.VascularCells.meta.rds"))
-
-str(rosmap)
-str(rosmap_meta)
-
-dplyr::count(rosmap_meta, celltype)
-dplyr::count(rosmap_meta, subtype)
-
-
-
-load(file.path("objects", "adDEGs.modules.allcelltype.RData"))
-
-scMisc::lss()
-
-names(modules)
-
-modules$capEndo.M3
- 
 # convert to rownames to orthologue
 convertRownames <- function(seu_object) {
   lookup <- homologene::mouse2human(rownames(seu_object), db = homologene::homologeneData2)
@@ -163,6 +140,9 @@ predictions_suter_p1 <- mapSeurat(ref = human_suter_p1, query = sc_merge)
 predictions_suter_p60 <- mapSeurat(ref = human_suter_p60, query = sc_merge)
 predictions_suter_merge <- mapSeurat(ref = human_suter_merge, query = sc_merge)
 
+predictions_bbb <- mapSeurat(ref = bbb_vascular, query = sc_merge)
+predictions_rosmap <- mapSeurat(ref = rosmap, query = sc_merge)
+
 #function to store predictions in seurat object
 storePred <- function(predictions, label_col, score_col, seu_obj) {
   predictions_prep <-
@@ -192,6 +172,8 @@ sc_merge <- storePred(predictions_ts_ec, label_col = "ts_ec_label", score_col = 
 sc_merge <- storePred(predictions_suter_p1, label_col = "suter_p1_label", score_col = "suter_p1_score", seu_obj = sc_merge)
 sc_merge <- storePred(predictions_suter_p60, label_col = "suter_p60_label", score_col = "suter_p60_score", seu_obj = sc_merge)
 sc_merge <- storePred(predictions_suter_merge, label_col = "suter_merge_label", score_col = "suter_merge_score", seu_obj = sc_merge)
+sc_merge <- storePred(predictions_bbb, label_col = "bbb_label", score_col = "bbb_score", seu_obj = sc_merge)
+sc_merge <- storePred(predictions_rosmap, label_col = "rosmap_label", score_col = "rosmap_score", seu_obj = sc_merge)
 
 #sanity check
 table(sc_merge@meta.data$heming_sural_label)
@@ -200,6 +182,7 @@ table(sc_merge@meta.data$ec_atlas_label)
 table(sc_merge@meta.data$ts_ec_label)
 table(sc_merge@meta.data$suter_p1_label)
 table(sc_merge@meta.data$suter_p60_label)
+table(sc_merge@meta.data$bbb_label)
 
 pred_plot_heming_sketch <-
   DimPlot(sc_merge, reduction = "umap.scvi.sketch", group.by = "heming_sural_label", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE) +
@@ -324,4 +307,21 @@ pred_plot_sc_suter_p1_full <-
  DimPlot(sc, reduction = "umap.scvi.full", group.by = "suter_p1_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = FALSE) +
   theme_rect()
 ggsave(plot = pred_plot_sc_suter_p1_full, file.path("results", "map", "map_sc_suter_p1_full.png"), width = 8, height = 8)
+
+pred_plot_bbb <-
+ DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "bbb_label", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = FALSE) +
+  theme_rect()
+ggsave(plot = pred_plot_bbb, file.path("results", "map", "map_bbb_full.png"), width = 8, height = 8)
+
+pred_plot_rosmap <-
+ DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "rosmap_label", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = FALSE) +
+  theme_rect()
+ggsave(plot = pred_plot_rosmap, file.path("results", "map", "map_rosmap_full.png"), width = 8, height = 8)
+
+dplyr::count(sc_merge@meta.data, rosmap_score)
+
+sc_merge@meta.data |>
+  ggplot(aes(x = cluster, y = rosmap_score)) +
+  geom_boxplot()
+
 
