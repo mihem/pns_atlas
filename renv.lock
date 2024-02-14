@@ -901,6 +901,40 @@
       ],
       "Hash": "466f3a16617d769c773ca1f1ea878055"
     },
+    "ProjecTILs": {
+      "Package": "ProjecTILs",
+      "Version": "3.3.0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "ProjecTILs",
+      "RemoteUsername": "carmonalab",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "cc73b97471b4b6eea11ce779b5c4a7dc5c3e1709",
+      "Requirements": [
+        "BiocNeighbors",
+        "BiocParallel",
+        "Matrix",
+        "R",
+        "RColorBrewer",
+        "STACAS",
+        "Seurat",
+        "SeuratObject",
+        "UCell",
+        "dplyr",
+        "ggplot2",
+        "patchwork",
+        "pheatmap",
+        "pracma",
+        "purrr",
+        "reshape2",
+        "scGate",
+        "scales",
+        "umap",
+        "uwot"
+      ],
+      "Hash": "a2286ebc3dc73e7032cdcaef8ad41b50"
+    },
     "ProtGenerics": {
       "Package": "ProtGenerics",
       "Version": "1.34.0",
@@ -1277,6 +1311,29 @@
         "R"
       ],
       "Hash": "0cf10dab0d023d5b46a5a14387556891"
+    },
+    "STACAS": {
+      "Package": "STACAS",
+      "Version": "2.2.2",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "STACAS",
+      "RemoteUsername": "carmonalab",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "0a88c5efca924e40c5f49d375e369b739f6eae5c",
+      "Requirements": [
+        "BiocNeighbors",
+        "BiocParallel",
+        "R",
+        "R.utils",
+        "Seurat",
+        "ggplot2",
+        "ggridges",
+        "pbapply",
+        "stats"
+      ],
+      "Hash": "183c797d44696d6a085e68622d23833d"
     },
     "ScaledMatrix": {
       "Package": "ScaledMatrix",
@@ -3982,13 +4039,13 @@
       "Package": "miloDE",
       "Version": "0.0.0.9000",
       "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteUsername": "MarioniLab",
-      "RemoteRepo": "miloDE",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "172a13a7ec1a2e0a96966e00948ee2b831e296b6",
-      "RemoteHost": "api.github.com",
       "Remotes": "github::neurorestore/Augur, github::Bioconductor/MatrixGenerics, github::const-ae/sparseMatrixStats",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "miloDE",
+      "RemoteUsername": "mihem",
+      "RemoteRef": "faster_plotting",
+      "RemoteSha": "846c1ed014b4e597a1b97e2aac57663f7345f70a",
       "Requirements": [
         "Augur",
         "BiocParallel",
@@ -4015,7 +4072,7 @@
         "stats",
         "tibble"
       ],
-      "Hash": "471199e389a8612571d32226fd157abe"
+      "Hash": "d58ae750dbfa59ae99e08fea0609aff5"
     },
     "miloR": {
       "Package": "miloR",
@@ -5197,6 +5254,27 @@
       ],
       "Hash": "3dc5166545e7caa130d362f5b809677b"
     },
+    "scGate": {
+      "Package": "scGate",
+      "Version": "1.6.0",
+      "Source": "Bioconductor",
+      "Repository": "RSPM",
+      "Requirements": [
+        "BiocParallel",
+        "R",
+        "Seurat",
+        "UCell",
+        "dplyr",
+        "ggplot2",
+        "ggridges",
+        "methods",
+        "patchwork",
+        "reshape2",
+        "stats",
+        "utils"
+      ],
+      "Hash": "e668c3316e68dc6d2ba0a7dc77b1f813"
+    },
     "scMisc": {
       "Package": "scMisc",
       "Version": "0.3.0",
@@ -6133,6 +6211,23 @@
         "cpp11"
       ],
       "Hash": "f561504ec2897f4d46f0c7657e488ae1"
+    },
+    "umap": {
+      "Package": "umap",
+      "Version": "0.2.10.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "Matrix",
+        "R",
+        "RSpectra",
+        "Rcpp",
+        "methods",
+        "openssl",
+        "reticulate",
+        "stats"
+      ],
+      "Hash": "249dae2d91909b98bc93086d82cd7c7f"
     },
     "utf8": {
       "Package": "utf8",
