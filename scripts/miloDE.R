@@ -8,12 +8,12 @@ library(tidyverse)
 library(BiocParallel)
 library(BPCells)
 
-conflicts_prefer(base::setdiff)
-my_cols_25 <- pals::cols25()
-
 # read preprocessed data ----
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 6)
 sc_merge$level0 <- ifelse(sc_merge$level2 == "CTRL", "CTRL", "PNP")
+
+remotes::install_github(("mihem/miloDE@faster_plotting"))
+detach(package:miloDE, unload = TRUE)
 
 # # convert to sparse matrix and scale data, necessary for miloDE
 # however this needs a lot of memory, so first use on disk matrix
@@ -162,9 +162,11 @@ qs::qsave(de_stat, file.path("objects", "milo_de_stat_pnp_ctrl_downsampled.qs"))
 ## system("systemctl suspend")
 milo_DE <- qs::qread(file.path("objects", "milo_DE.qs"), nthread = 4)
 de_stat <- qs::qread(file.path("objects", "milo_de_stat_pnp_ctrl.qs"), nthread = 6)
+de_stat <- qs::qread(file.path("objects", "milo_de_stat_vn_ctrl.qs"), nthread = 6)
+de_stat <- qs::qread(file.path("objects", "milo_de_stat_cidp_ctrl.qs"), nthread = 6)
+de_stat <- qs::qread(file.path("objects", "milo_de_stat_ciap_ctrl.qs"), nthread = 6)
 
 stat_de_magnitude <- rank_neighbourhoods_by_DE_magnitude(de_stat)
-# stat_de_magnitude <- rank_neighbourhoods_by_DE_magnitude(de_stat, z.thresh = -6)
 
 p1 <- plot_milo_by_single_metric(
   milo_DE,
@@ -177,82 +179,76 @@ p1 <- plot_milo_by_single_metric(
 ) +
   viridis::scale_fill_viridis(name = "# DE genes", option = "inferno")
 
-p2 <- plot_milo_by_single_metric(
-  milo_DE,
-  stat_de_magnitude,
-  colour_by = "n_specific_DE_genes",
-  layout = "UMAP.SCVI.FULL",
-  size_range = c(0.2, 3),
-  ## edge_width = c(0.01, 0.1)
-  edge_weight.thresh = 10
-) +
-  viridis::scale_fill_viridis(name = "# specific\nDE genes", option = "inferno")
-
-p_gene <- plot_DE_single_gene(
-  milo_DE,
-  de_stat = de_stat, 
-  gene = "PPIAL4G",
-  layout = "UMAP.SCVI.FULL",
-  set_na_to_0 = FALSE,
-  edge_weight.thresh = 10,
-  alpha = 1
-) +
-  viridis::scale_fill_viridis(name = "# specific\nDE genes", option = "inferno")
-
-p1_p2 <- patchwork::wrap_plots(p1, p2)
-
-ggsave(file.path("results", "miloDE", "milo_DE_VN_CTRL.pdf"), width = 12, height = 6, device = cairo_pdf)
 ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_PNP_CTRL.pdf"), width = 6, height = 6, device = cairo_pdf)
+ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_VN_CTRL.pdf"), width = 6, height = 6, device = cairo_pdf)
+ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_CIDP_CTRL.pdf"), width = 6, height = 6, device = cairo_pdf)
+ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_CIAP_CTRL.pdf"), width = 6, height = 6, device = cairo_pdf)
 
-ggsave(plot = p3, file.path("results", "miloDE", "milo_DE_PNP_CTRL_IFI44L.pdf"), width = 6, height = 6, device = cairo_pdf)
+# p2 <- plot_milo_by_single_metric(
+#   milo_DE,
+#   stat_de_magnitude,
+#   colour_by = "n_specific_DE_genes",
+#   layout = "UMAP.SCVI.FULL",
+#   size_range = c(0.2, 3),
+#   ## edge_width = c(0.01, 0.1)
+#   edge_weight.thresh = 10
+# ) +
+#   viridis::scale_fill_viridis(name = "# specific\nDE genes", option = "inferno")
 
+# p_gene <- plot_DE_single_gene(
+#   milo_DE,
+#   de_stat = de_stat, 
+#   gene = "PPIAL4G",
+#   layout = "UMAP.SCVI.FULL",
+#   set_na_to_0 = FALSE,
+#   edge_weight.thresh = 10,
+#   alpha = 1
+# ) +
+#   viridis::scale_fill_viridis(name = "# specific\nDE genes", option = "inferno")
 
-ggsave(
-  plot = p_gene,
-  filename = file.path("results", "miloDE", "PPIAL4G_PNP_CTRL.pdf"),
-  width = 8,
-  height = 5
-)
-
-
-
-stat_de_magnitude |>
-  # dplyr::arrange(desc(n_specific_DE_genes)) |>
-  dplyr::arrange(desc(n_DE_genes)) |>
-  head()
-
-p_genes_37 <-
-  de_stat@assays@data@listData$pval_corrected_across_genes |>
-  data.frame() |>
-  select(X37) |>
-  rownames_to_column(var = "gene") |>
-  tibble() |>
-  dplyr::filter(X37 < 0.1)
-
-assay_de_specific <- assay(de_stat, "pval_corrected_across_nhoods")
-idx_de_specific <- which(is.na(assay_de_specific))
-assay_de_specific[idx_de_specific] <- 1
-assay_de_specific_z <- t(apply(assay_de_specific, 1, function(x) {(x - mean(x, na.rm = TRUE))/sd(x, na.rm  = TRUE)}))
-head(sort(assay_de_specific_z[,37][assay_de_specific_z[,37] < -3]), 25)
-
-assay_de_specific["PPIAL4G",]
-assay_de_specific_z["HLA-DPB1",]
+# ggsave(plot = p3, file.path("results", "miloDE", "milo_DE_PNP_CTRL_IFI44L.pdf"), width = 6, height = 6, device = cairo_pdf)
+# p1_p2 <- patchwork::wrap_plots(p1, p2)
 
 
-assay_de_genes <- assay(de_stat, "pval_corrected_across_genes")
-
-idx_de_genes <- which(is.na(assay_de_genes))
-assay_de_genes[idx_de_genes] <- 1
-assay_de_genes_z <- t(apply(assay_de_genes, 1, function(x) {(x - mean(x, na.rm = TRUE))/sd(x, na.rm  = TRUE)}))
-
-head(sort(assay_de_genes_z[,425][assay_de_genes_z[,425] < -3]), 25)
 
 
-fp_1 <- FeaturePlot(sc_merge, reduction = "umap.scvi.full", features = c("PPIAL4G"), split.by = "level0", pt.size = .01, raster = FALSE, order = TRUE)
-ggsave(plot = fp_1, file.path("results", "miloDE", "milo_DE_PPIAL4G.png"), width = 12, height = 7)
+# stat_de_magnitude |>
+#   # dplyr::arrange(desc(n_specific_DE_genes)) |>
+#   dplyr::arrange(desc(n_DE_genes)) |>
+#   head()
 
-fp_2 <- FeaturePlot(sc_merge, reduction = "umap.scvi.full", features = c("HLA-DPB1"), split.by = "level0", pt.size = .01, raster = FALSE, order = TRUE)
-ggsave(plot = fp_2, file.path("results", "miloDE", "milo_DE_HLA-DPB1.png"), width = 12, height = 7)
+# p_genes_37 <-
+#   de_stat@assays@data@listData$pval_corrected_across_genes |>
+#   data.frame() |>
+#   select(X37) |>
+#   rownames_to_column(var = "gene") |>
+#   tibble() |>
+#   dplyr::filter(X37 < 0.1)
 
-fp_3 <- FeaturePlot(sc_merge, reduction = "umap.scvi.full", features = c("SERPINA1"), split.by = "level0", pt.size = .01, raster = FALSE, order = TRUE)
-ggsave(plot = fp_3, file.path("results", "miloDE", "milo_SERPINA1.png"), width = 12, height = 7)
+# assay_de_specific <- assay(de_stat, "pval_corrected_across_nhoods")
+# idx_de_specific <- which(is.na(assay_de_specific))
+# assay_de_specific[idx_de_specific] <- 1
+# assay_de_specific_z <- t(apply(assay_de_specific, 1, function(x) {(x - mean(x, na.rm = TRUE))/sd(x, na.rm  = TRUE)}))
+# head(sort(assay_de_specific_z[,37][assay_de_specific_z[,37] < -3]), 25)
+
+# assay_de_specific["PPIAL4G",]
+# assay_de_specific_z["HLA-DPB1",]
+
+
+# assay_de_genes <- assay(de_stat, "pval_corrected_across_genes")
+
+# idx_de_genes <- which(is.na(assay_de_genes))
+# assay_de_genes[idx_de_genes] <- 1
+# assay_de_genes_z <- t(apply(assay_de_genes, 1, function(x) {(x - mean(x, na.rm = TRUE))/sd(x, na.rm  = TRUE)}))
+
+# head(sort(assay_de_genes_z[,425][assay_de_genes_z[,425] < -3]), 25)
+
+
+# fp_1 <- FeaturePlot(sc_merge, reduction = "umap.scvi.full", features = c("PPIAL4G"), split.by = "level0", pt.size = .01, raster = FALSE, order = TRUE)
+# ggsave(plot = fp_1, file.path("results", "miloDE", "milo_DE_PPIAL4G.png"), width = 12, height = 7)
+
+# fp_2 <- FeaturePlot(sc_merge, reduction = "umap.scvi.full", features = c("HLA-DPB1"), split.by = "level0", pt.size = .01, raster = FALSE, order = TRUE)
+# ggsave(plot = fp_2, file.path("results", "miloDE", "milo_DE_HLA-DPB1.png"), width = 12, height = 7)
+
+# fp_3 <- FeaturePlot(sc_merge, reduction = "umap.scvi.full", features = c("SERPINA1"), split.by = "level0", pt.size = .01, raster = FALSE, order = TRUE)
+# ggsave(plot = fp_3, file.path("results", "miloDE", "milo_SERPINA1.png"), width = 12, height = 7)
