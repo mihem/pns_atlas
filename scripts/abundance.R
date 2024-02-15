@@ -4,9 +4,6 @@ library(tidyverse)
 library(scMisc)
 library(qs)
 
-remotes::install_github("mihem/scMisc")
-detach(package:scMisc, unload = TRUE)
-
 # load preprocessed data ----
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 ic <- qs::qread(file.path("objects", "ic.qs"), nthread = 4)
@@ -22,6 +19,7 @@ sample_lookup <-
 
   # abundance table
 scMisc::abundanceTbl(sc_merge, "cluster", "sample")
+scMisc::abundanceTbl(sc_merge, "cluster", "level2")
 scMisc::abundanceTbl(ic, "ic_cluster", "sample")
 scMisc::abundanceTbl(ic, "ic_cluster", "level2")
 
@@ -348,3 +346,4 @@ as.data.frame.matrix(table(sc_merge@meta.data[["cluster"]], sc_merge@meta.data[[
   arrange(desc(value))   |>
   left_join(select(sample_lookup, sample, level2, internal_name)) |>
   write_csv(file.path("results", "abundance", "repairSC.csv"))
+
