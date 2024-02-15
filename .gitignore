@@ -9,5 +9,6 @@ matrix_final/
 .vscode
 objects/
 raw/
+xenium/
 scripts/download.sh
 
