@@ -24,13 +24,14 @@ my_cols_50 <- unname(Polychrome::createPalette(50, pals::cols25()))
 # load preprocessed data ----
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 sc_merge_small <- qs::qread(file.path("objects", "sc_merge_small.qs"))
-sc_xenium <- subset(sc_merge, sample %in% c("S22", "S24", "S29", "S30"))
+sc_xenium <- subset(sc_merge, sample %in% c("S22", "S24", "S29", "S30", "S14", "S11", "S04", "S01"))
 
 dplyr::count(sc_xenium@meta.data, cluster) |>
   dplyr::arrange(n)
 
 
 markers_xenium <- read_csv(file.path("lookup", "xenium_list_jolien.csv"))
+xenium_list_final <- read_excel(file.path("lookup", "xenium_list_final.xlsx"), sheet = "final")
 
 # create h5 file as a reference dataset
 sc_merge_small$RNA$counts <- as(object = sc_merge_small[["RNA"]]$counts, Class = "dgCMatrix")
@@ -123,13 +124,15 @@ Idents(sc_xenium) <- factor(paste0(sc_xenium$cluster, "_", sc_xenium$level2),
   levels = cluster_order_de$cluster_level2
 )
                            
-
 dotPlot(
   path = file.path("lookup", "markers.csv"),
   object = sc_xenium,
   par = "xenium_de",
   dot_min = 0.01,
-  height = 10,
-  width = 12
+  height = 15,
+  width = 7
 )
+
+
+
 
