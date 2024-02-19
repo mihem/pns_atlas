@@ -66,28 +66,28 @@ lapply(
 
 
 #integration with seurat
-xenium_s11 <- LoadXenium(xenium_paths[4])
-xenium_s11 <- subset(xenium_s11, subset = nCount_Xenium > 0)
-xenium_s11 <- SCTransform(xenium_s11, assay = "Xenium")
-xenium_s11 <- RunPCA(xenium_s11)
+for (xenium_object in (xenium_objects)) {
+    xenium_object <- subset(xenium_object, subset = nCount_Xenium > 0)
+    xenium_object <- SCTransform(xenium_object, assay = "Xenium")
+    xenium_object <- RunPCA(xenium_object)
+}
 
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 sc_merge_small <- subset(sc_merge, downsample = 1000)
 
 sc_merge_small <- SCTransform(sc_merge_small, verbose = FALSE)
 
-anchors <- FindTransferAnchors(
-    reference = sc_merge_small,
-    query = xenium_s11,
-    normalization.method = "SCT"
-)
+predictions <- list()
 
-predictions_seurat <- TransferData(
-    anchorset = anchors,
-    refdata = sc_merge_small$cluster
-)
+for (i in names(xenium_objects)) {
+    anchor <- FindTransferAnchors(
+        reference = sc_merge_small,
+        query = xenium_objects[[i]],
+        normalization.method = "SCT"
+    )
+    predictions[[i]] <- TransferData(anchor, refdata = sc_merge_small$cluster)
+}
 
-tibble(predictions_seurat)
 
 #function to store predictions in seurat object
 storePred <- function(predictions, label_col, score_col, seu_obj) {
@@ -111,20 +111,57 @@ storePred <- function(predictions, label_col, score_col, seu_obj) {
   return(seu_obj)
 }
 
-xenium_s11 <- storePred(
-    predictions = predictions_seurat,
-    label_col = "sn_predictions",
-    score_col = "sn_predictions_score",
-    seu_obj = xenium_s11)
+for (i in names(xenium_objects)) {
+    xenium_objects[[i]] <- storePred(
+        predictions = predictions[[i]],
+        label_col = "sn_predictions",
+        score_col = "sn_predictions_score",
+        seu_obj = xenium_objects[[i]]
+    )
+}
 
-xenium_s11@misc$cluster_order <- sc_merge@misc$cluster_order
-xenium_s11@misc$cluster_col <- sc_merge@misc$cluster_col
-xenium_s11$sn_predictions <- factor(xenium_s11$sn_predictions, levels = xenium_s11@misc$cluster_order)
+for (i in names(xenium_objects)) {
+    xenium_objects[[i]]@misc$cluster_order <- sc_merge@misc$cluster_order
+    xenium_objects[[i]]@misc$cluster_col <- sc_merge@misc$cluster_col
+    xenium_objects[[i]]$sn_predictions <- factor(xenium_objects[[i]]$sn_predictions, levels = xenium_objects[[i]]@misc$cluster_order)
+}
 
-qs::qsave(xenium_s11, file.path("results", "xenium", "xenium_s11_seurat_sct.qs"))
 
-p1 <- ImageDimPlot(xenium_s11, group.by = "sn_predictions", cols = xenium_s11@misc$cluster_col)
-ggsave(plot = p1, filename = file.path("results", "xenium", "S11", "seurat_predict.png"), width = 8, height = 8)
+for (i in names(xenium_objects)) {
+    p1 <- ImageDimPlot(xenium_objects[[i]], group.by = "sn_predictions", cols = xenium_objects[[i]]@misc$cluster_col)
+    ggsave(plot = p1, filename = file.path("results", "xenium", paste0("seurat_predict_", i, ".png")), width = 15, height = 15)
+}
+
+
+# summarize predictions to larger groups
+predictions_lookup1 <-
+    tibble(
+        sn_predictions = xenium_objects[[1]]@misc$cluster_order,
+        sn_predictions_group = c(rep("SC", 4), NA, "endoC", rep("periC", 3), "epiC", "VSMC", rep("PC", 2), rep("EC", 5), rep("IC", 6))
+    )
+
+for (i in names(xenium_objects)) {
+    xenium_objects[[i]]@meta.data <-
+        xenium_objects[[i]]@meta.data |>
+        tibble::rownames_to_column("barcode") |>
+        dplyr::left_join(predictions_lookup, by = "sn_predictions") |>
+        tibble::column_to_rownames(var = "barcode")
+}
+
+
+prediction_group_level <- c("SC", "endoC", "periC", "epiC", "VSMC", "PC", "EC", "IC")
+prediction_group_col <- setNames(pals::cols25(length(prediction_group_level)), prediction_group_level)
+
+for (i in names(xenium_objects)) {
+    xenium_objects[[i]]$sn_predictions_group <- factor(xenium_objects[[i]]$sn_predictions_group, levels = prediction_group_level)
+}
+
+for (i in names(xenium_objects)) {
+    p1 <- ImageDimPlot(xenium_objects[[i]], group.by = "sn_predictions_group", cols = prediction_group_col)
+    ggsave(plot = p1, filename = file.path("results", "xenium", paste0("seurat_predict_group_", i, ".png")), width = 15, height = 15)
+}
+
+qs::qsave(xenium_objects, file.path("objects", "xenium_objects.qs"))
 
 # # deconvolution using spacexr
 ## comment: did not work as well as Integration with seurat, only few cells mapped
