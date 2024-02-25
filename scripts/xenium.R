@@ -227,8 +227,6 @@ for (i in names(xenium_objects)) {
     ggsave(plot = p1, filename = file.path("results", "xenium", "periC_epiC_endoC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
 }
 
-
-
 qs::qsave(xenium_objects, file.path("objects", "xenium_objects.qs"))
 xenium_objects <- qs::qread(file.path("objects", "xenium_objects.qs"))
 
