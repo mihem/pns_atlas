@@ -3,11 +3,10 @@
 # load libraries
 library(Seurat)
 library(tidyverse)
-
+library(scMisc)
 future::plan("multicore", workers = 6)
 
 # load Xenium data
-
 xenium_paths <- list.dirs(file.path("xenium", "raw"), full.names = TRUE, recursive = FALSE)
 
 # Get the center position of each centroid. There is one row per cell in this dataframe.
@@ -17,11 +16,23 @@ xenium_meta <-
     readxl::read_excel(file.path("lookup", "xenium_meta.xlsx"))  |>
     mutate(File = gsub(x = File, pattern = "(.+).tar", replacement = "\\1")) 
 
+sample_lookup <- 
+  readr::read_csv(file.path("lookup", "sample_lookup.csv")) |>
+  janitor::clean_names() |>
+  mutate(age_calc = lubridate::time_length(difftime(nerve_date, birth_date), "years")) |>
+  mutate(age_calc = floor(age_calc)) |>
+  mutate(age = coalesce(age_calc, age)) |>
+  dplyr::select(-age_calc) |>
+  mutate(level0 = if_else(level1 == "CTRL", "CTRL", "PNP"))
+
 xenium_names <-
     tibble(File = basename(xenium_paths)) |>
-    left_join(xenium_meta) |>
-    mutate(Name = str_extract(Name, "S\\d{2}")) |>
-    pull(Name)
+    left_join(xenium_meta, join_by(File)) |>
+    mutate(sample = str_extract(Name, "S\\d{2}")) |>
+    select(sample) |>
+    left_join(sample_lookup, join_by(sample))  |>
+    mutate(name = paste0(sample, "_", level2)) |>
+    pull(name)
 
 xenium_objects <- lapply(
     xenium_paths,
@@ -63,6 +74,14 @@ lapply(
     function(x) {
         XeniumImagePlot(xenium_objects = xenium_objects, markers_xenium = markers_xenium, sel_cluster = x)
     })
+
+
+peric_mol <- c("SLC2A1", "KRT19", "FOXD1", "CLDN1", "CXCL14", "AQP1")
+
+for (i in names(xenium_objects)) {
+    p1 <- ImageDimPlot(xenium_objects[[i]], molecules = peric_mol, group.by = "orig.ident", cols = "white")
+    ggsave(file.path("results", "xenium", "periC", paste0(i, ".png")), plot = p1, width = 15, height = 15)
+}
 
 
 #integration with seurat
@@ -132,6 +151,37 @@ for (i in names(xenium_objects)) {
     ggsave(plot = p1, filename = file.path("results", "xenium", paste0("seurat_predict_", i, ".png")), width = 15, height = 15)
 }
 
+for (i in names(xenium_objects)) {
+    Idents(xenium_objects[[i]]) <- xenium_objects[[i]]$sn_predictions
+}
+
+# predictions, sc only
+for (i in names(xenium_objects)) {
+    p1 <- ImageDimPlot(
+        xenium_objects[[i]],
+        cells = WhichCells(xenium_objects[[i]], idents = c("repairSC", "nmSC", "mySC")),
+        group.by = "sn_predictions",
+        cols = xenium_objects[[i]]@misc$cluster_col
+    )
+    ggsave(plot = p1, filename = file.path("results", "xenium", "SC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
+}
+
+# predictions, periC only
+for (i in names(xenium_objects)) {
+    p1 <- ImageDimPlot(
+        xenium_objects[[i]],
+        cells = WhichCells(xenium_objects[[i]], idents = c("periC1", "periC2", "periC3")),
+        group.by = "sn_predictions",
+        cols = xenium_objects[[i]]@misc$cluster_col
+    )
+    ggsave(plot = p1, filename = file.path("results", "xenium", "periC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
+}
+
+for (i in names(xenium_objects)) {
+    p1 <- ImageDimPlot(xenium_objects[[i]], molecules = "TIMP1", group.by = "orig.ident", cols = "white")
+    ggsave(plot = p1, filename = file.path("results", "xenium", "TIMP1", paste0(i, ".png")), width = 8, height = 8)
+}
+
 
 # summarize predictions to larger groups
 predictions_lookup1 <-
@@ -156,12 +206,132 @@ for (i in names(xenium_objects)) {
     xenium_objects[[i]]$sn_predictions_group <- factor(xenium_objects[[i]]$sn_predictions_group, levels = prediction_group_level)
 }
 
+
 for (i in names(xenium_objects)) {
     p1 <- ImageDimPlot(xenium_objects[[i]], group.by = "sn_predictions_group", cols = prediction_group_col)
     ggsave(plot = p1, filename = file.path("results", "xenium", paste0("seurat_predict_group_", i, ".png")), width = 15, height = 15)
 }
 
+for (i in names(xenium_objects)) {
+    Idents(xenium_objects[[i]]) <- xenium_objects[[i]]$sn_predictions_group
+}
+
+# predictions, peri/epi/endoC only
+for (i in names(xenium_objects)) {
+    p1 <- ImageDimPlot(
+        xenium_objects[[i]],
+        cells = WhichCells(xenium_objects[[i]], idents = c("periC", "epiC", "endoC")),
+        group.by = "sn_predictions_group",
+        cols = prediction_group_col
+    )
+    ggsave(plot = p1, filename = file.path("results", "xenium", "periC_epiC_endoC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
+}
+
+
+
 qs::qsave(xenium_objects, file.path("objects", "xenium_objects.qs"))
+xenium_objects <- qs::qread(file.path("objects", "xenium_objects.qs"))
+
+# abundance of xenium cell predictions ----
+cells_list <-
+    lapply(xenium_objects, function(x) (x$sn_predictions)) |>
+    unlist()
+
+cells_predicted <-
+    tibble(cluster =  unname(cells_list), sample = names(cells_list)) |>
+    mutate(condition = str_replace(sample, "(S\\d+)_(\\w+).*", "\\2")) |>
+    mutate(sample = str_replace(sample, "(S\\d+)_.*", "\\1"))  |>
+    dplyr::filter(!is.na(cluster))
+
+# all
+stacked_xenium <-
+    cells_predicted |>
+    dplyr::count(cluster, condition) |>
+    ggplot(aes(x = condition, y = n, fill = cluster)) +
+    geom_col(position = "fill", color = "black") +
+    theme_classic() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.3)) +
+    xlab("") +
+    ylab("") +
+    scale_fill_manual(values = xenium_objects[[1]]@misc$cluster_col)
+
+ggsave(file.path("results", "xenium", "abundance_xenium.pdf"),
+    plot = stacked_xenium,
+    width = 5,
+    height = 8
+)
+
+# only SC
+stacked_xenium_sc <-
+    cells_predicted |>
+    dplyr::filter(cluster %in% c("mySC", "nmSC", "repairSC")) |>
+    dplyr::count(cluster, condition) |>
+    ggplot(aes(x = condition, y = n, fill = cluster)) +
+    geom_col(position = "fill", color = "black") +
+    theme_classic() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.3)) +
+    xlab("") +
+    ylab("") +
+    scale_fill_manual(values = xenium_objects[[1]]@misc$cluster_col)
+
+ggsave(file.path("results", "xenium", "abundance_xenium_sc.pdf"),
+    plot = stacked_xenium_sc,
+    width = 3,
+    height = 3
+)
+
+
+# my_props <- speckle::getTransformedProps(
+#     clusters = cells_predicted$cluster,
+#     sample = cells_predicted$sample,
+#     transform = "logit"
+# )
+
+# meta_lookup <- 
+#     cells_predicted |>
+#     select(sample, condition) |>
+#     distinct()
+
+# propellerCalcXenium <- function(condition1, condition2, min_cells, formula, cl_interest = NULL) {
+#     if(is.null(cl_interest)) {
+#     cl_interest <-
+#         cells_predicted |>
+#         dplyr::count(cluster, condition) |>
+#         pivot_wider(names_from = condition, values_from = n) |>
+#         mutate(group_sum = .data[[condition1]] + .data[[condition2]]) |>
+#         dplyr::filter(group_sum > min_cells) |>
+#         pull(cluster)
+#     }
+#     my_design <- model.matrix(as.formula(formula), data = meta_lookup)
+#     my_contrasts <- glue::glue("condition{condition1}-condition{condition2}")
+#     my_args <- list(my_contrasts, levels = my_design)
+#     my_contr <- do.call(limma::makeContrasts, my_args)
+#     propeller_result <-
+#         speckle::propeller.ttest(prop.list = my_props, design = my_design, contrast = my_contr, robust = TRUE, trend = FALSE, sort = TRUE) |>
+#         tibble::rownames_to_column("cluster") |>
+#         dplyr::filter(cluster %in% cl_interest) |>
+#         dplyr::mutate(log2ratio = log2(PropRatio)) |>
+#         dplyr::mutate(FDR_log = -log10(FDR)) |>
+#         tibble::tibble()
+#     return(propeller_result)
+# }
+
+# propeller_VN_CTRL <- propellerCalcXenium(
+#     condition1 = "VN",
+#     condition2 = "CTRL",
+#     min_cells = 30,
+#     formula = "~0 + condition",
+#     cl_interest = c("mySC", "nmSC", "repairSC")
+# )
+
+# scMisc::dotplotPropeller(
+#     data = propeller_VN_CTRL,
+#     color = sc_merge@misc$cluster_col,
+#     filename = "Xenium_SC_VN_CTRL",
+#     width = 5,
+#     height = 2.5
+# )
+
 
 # # deconvolution using spacexr
 ## comment: did not work as well as Integration with seurat, only few cells mapped
@@ -239,7 +409,3 @@ qs::qsave(xenium_objects, file.path("objects", "xenium_objects.qs"))
 # # niche.plot <- ImageDimPlot(xenium.obj, group.by = "niches", size = 1.5, dark.background = F) + ggtitle("Niches") +
 # #     scale_fill_manual(values = c("#442288", "#6CA2EA", "#B5D33D", "#FED23F", "#EB7D5B"))
 # # celltype.plot | niche.plot
-
-
-# # find transfer anchors
-
