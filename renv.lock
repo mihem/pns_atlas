@@ -1302,6 +1302,39 @@
       ],
       "Hash": "1716e201f81ced0f456dd5ec85fe20f8"
     },
+    "SPIAT": {
+      "Package": "SPIAT",
+      "Version": "1.4.1",
+      "Source": "Bioconductor",
+      "Requirements": [
+        "R",
+        "RANN",
+        "SpatialExperiment",
+        "SummarizedExperiment",
+        "apcluster",
+        "dbscan",
+        "dittoSeq",
+        "dplyr",
+        "ggplot2",
+        "grDevices",
+        "gridExtra",
+        "gtools",
+        "methods",
+        "mmand",
+        "pracma",
+        "raster",
+        "reshape2",
+        "rlang",
+        "sp",
+        "spatstat.explore",
+        "spatstat.geom",
+        "stats",
+        "tibble",
+        "utils",
+        "vroom"
+      ],
+      "Hash": "a77e24a177f2d58249de3ef6daf4d10d"
+    },
     "SQUAREM": {
       "Package": "SQUAREM",
       "Version": "2021.1",
@@ -1615,6 +1648,24 @@
       ],
       "Hash": "2042cd9759cc89a453c4aefef0ce9aae"
     },
+    "SpatialExperiment": {
+      "Package": "SpatialExperiment",
+      "Version": "1.12.0",
+      "Source": "Bioconductor",
+      "Requirements": [
+        "BiocFileCache",
+        "BiocGenerics",
+        "S4Vectors",
+        "SingleCellExperiment",
+        "SummarizedExperiment",
+        "grDevices",
+        "magick",
+        "methods",
+        "rjson",
+        "utils"
+      ],
+      "Hash": "df55f81c526995211170f86c5d35a19d"
+    },
     "SummarizedExperiment": {
       "Package": "SummarizedExperiment",
       "Version": "1.32.0",
@@ -1783,6 +1834,22 @@
         "xtable"
       ],
       "Hash": "08359e5ce909c14a936ec1f9712ca830"
+    },
+    "apcluster": {
+      "Package": "apcluster",
+      "Version": "1.4.11",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "Matrix",
+        "R",
+        "Rcpp",
+        "grDevices",
+        "graphics",
+        "methods",
+        "stats"
+      ],
+      "Hash": "fafe8a992eab30cdac7c88d0c25aa1e7"
     },
     "askpass": {
       "Package": "askpass",
@@ -2371,6 +2438,18 @@
       ],
       "Hash": "59351f28a81f0742720b85363c4fdd61"
     },
+    "dbscan": {
+      "Package": "dbscan",
+      "Version": "1.1-12",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "Rcpp",
+        "graphics",
+        "stats"
+      ],
+      "Hash": "7f069f590906941ff4bb801ecedabff0"
+    },
     "deldir": {
       "Package": "deldir",
       "Version": "2.0-2",
@@ -2461,6 +2540,30 @@
         "utils"
       ],
       "Hash": "7ede2ee9ea8d3edbf1ca84c1e333ad1a"
+    },
+    "dittoSeq": {
+      "Package": "dittoSeq",
+      "Version": "1.14.2",
+      "Source": "Bioconductor",
+      "Repository": "Bioconductor 3.18",
+      "Requirements": [
+        "S4Vectors",
+        "SingleCellExperiment",
+        "SummarizedExperiment",
+        "colorspace",
+        "cowplot",
+        "ggplot2",
+        "ggrepel",
+        "ggridges",
+        "grDevices",
+        "gridExtra",
+        "methods",
+        "pheatmap",
+        "reshape2",
+        "stats",
+        "utils"
+      ],
+      "Hash": "1fc325dfc4c4b803f1dfc6ee23f8f5d8"
     },
     "dotCall64": {
       "Package": "dotCall64",
@@ -3952,6 +4055,18 @@
       ],
       "Hash": "680ad542fbcf801442c83a6ac5a2126c"
     },
+    "magick": {
+      "Package": "magick",
+      "Version": "2.8.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "Rcpp",
+        "curl",
+        "magrittr"
+      ],
+      "Hash": "3f6bcbb8a0c1c9365b2f02d5d04ad7bc"
+    },
     "magrittr": {
       "Package": "magrittr",
       "Version": "2.0.3",
@@ -4142,6 +4257,17 @@
         "Rcpp"
       ],
       "Hash": "f48238f8d4740426ca12f53f27d004dd"
+    },
+    "mmand": {
+      "Package": "mmand",
+      "Version": "1.6.3",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "Rcpp",
+        "methods"
+      ],
+      "Hash": "a664382008e4bfd701e7dc8816a6b660"
     },
     "modelr": {
       "Package": "modelr",
@@ -4781,6 +4907,20 @@
         "R"
       ],
       "Hash": "5e3c5dc0b071b21fa128676560dbe94d"
+    },
+    "raster": {
+      "Package": "raster",
+      "Version": "3.6-26",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "methods",
+        "sp",
+        "terra"
+      ],
+      "Hash": "7d6eda494f34a644420ac1bfd2a8023a"
     },
     "rbibutils": {
       "Package": "rbibutils",
@@ -5978,6 +6118,18 @@
       "Source": "Repository",
       "Repository": "RSPM",
       "Hash": "25cfab6cf405c15bccf7e69ec39df090"
+    },
+    "terra": {
+      "Package": "terra",
+      "Version": "1.7-71",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "methods"
+      ],
+      "Hash": "e8611881ab70a4fb7a1f629b31e6fcff"
     },
     "tester": {
       "Package": "tester",
