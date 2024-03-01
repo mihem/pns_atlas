@@ -278,6 +278,10 @@ ggsave(file.path("results", "xenium", "abundance_xenium_sc.pdf"),
     height = 3
 )
 
+# export prediction annotation for python analysis
+for (i in names(xenium_objects)) {
+    arrow::write_parquet(xenium_objects[[i]]@meta.data, sink = file.path("results", "xenium", paste0("xenium_predictions_", i, ".parquet")))
+}
 
 # my_props <- speckle::getTransformedProps(
 #     clusters = cells_predicted$cluster,
@@ -330,7 +334,7 @@ ggsave(file.path("results", "xenium", "abundance_xenium_sc.pdf"),
 #     height = 2.5
 # )
 
-
+dplyr::count(xenium_objects[["S04_CIAP"]]@meta.data, sn_predictions_group)
 # # deconvolution using spacexr
 ## comment: did not work as well as Integration with seurat, only few cells mapped
 # xenium_s11 <- LoadXenium(xenium_paths[4])
