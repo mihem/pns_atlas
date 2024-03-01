@@ -67,7 +67,12 @@ dePseudo <- function(seu_obj, cell_type_col, label_col) {
 # sc_merge$RNA$counts <- as(object = sc_merge[["RNA"]]$counts, Class = "dgCMatrix")
 
 # PNP vs CTRL pseudobulk ----
+sc_merge$level0 <- factor(sc_merge$level0, levels = c("PNP", "CTRL"))
 dePseudo(sc_merge, cell_type_col = "cluster", label_col = "level0")
+
+# sanity check
+nmSC <- subset(sc_merge, cluster %in% c("nmSC"))
+AggregateExpression(nmSC, assay = "RNA", group.by = "level0", features = c("IFI44L"))
 
 # VN vs CTRL pseudobulk ---
 vn_ctrl <- subset(sc_merge, level2 %in% c("VN", "CTRL"))
