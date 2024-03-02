@@ -8,6 +8,7 @@ library(tidyverse)
 library(conflicted)
 library(qs)
 library(scMisc)
+library(writexl)
 library(readxl)
 library(RColorBrewer)
 library(homologene)
@@ -44,7 +45,7 @@ topmarkers <-
     }
   )
 
-# read in previously calculated markers for our dataset
+# or read in previously calculated markers for our dataset
 topmarkers <-
     lapply(
         sc_merge@misc$cluster_order,
@@ -69,6 +70,8 @@ topmarkers_milbrandt <-
     ) |>
     setNames(unique(pns_sn_sciatic_milbrandt$cluster))
 
+write_xlsx(topmarkers_milbrandt, file.path("results", "de", "topmarkers_milbrandt.xlsx"))
+
 # make names consistent
 names(topmarkers_milbrandt)[names(topmarkers_milbrandt) == "EnFibro"] <- "endoC"
 names(topmarkers_milbrandt)[names(topmarkers_milbrandt) == "EpC"] <- "epiC"
@@ -85,14 +88,14 @@ topmarkers[["periC"]] <- findMarkers(
 )
 
 
-install.packages("ggvenn")
-
 vennPlot <- function(cluster) {
     top_rodent <- topmarkers_milbrandt[[cluster]]$gene |>
         homologene::mouse2human(db = homologene::homologeneData2) |>
-        dplyr::slice(1:25) |>
+        # dplyr::slice(1:25) |>
         pull(humanGene)
     top_human <- topmarkers[[cluster]]$gene[1:25]
+    # top_human <- topmarkers[[cluster]]$gene
+    # top_human <- markers_xenium$transcript[markers_xenium$cluster == cluster]
     plot <- ggvenn(
         list(
             rodent = top_rodent,
@@ -100,10 +103,11 @@ vennPlot <- function(cluster) {
         ),
         fill_color = brewer.pal(name = "Set2", n = 3),
         show_elements = TRUE,
+        # show_elements = FALSE,
         label_sep = "\n",
-        text_size = 2,
+        text_size = 1,
     )
-    ggsave(file.path("results", "venn", paste0(cluster, "_milbrandt.pdf")),
+    ggsave(file.path("results", "venn", paste0(cluster, "_milbrandt_top25.pdf")),
         width = 5, height = 5,
         plot = plot
     )
@@ -113,3 +117,18 @@ lapply(
     c("mySC", "nmSC", "endoC", "epiC", "periC"),
     FUN = vennPlot
 )
+
+vennPlot("mySC")
+vennPlot("nmSC")
+
+
+markers_xenium <- read_xlsx(file.path("lookup", "xenium_list_final.xlsx"))
+
+test1 <- 
+markers_xenium |>
+    dplyr::filter(cluster == "mySC") |>
+    pull(transcript)
+
+test2 <- topmarkers$mySC$gene[1:25]
+
+union(test1, test2)
