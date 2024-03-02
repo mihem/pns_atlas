@@ -40,7 +40,8 @@ folders <- c(
   "histo",
   "module",
   "projectil",
-  "venn"
+  "venn",
+  "gratio"
 )
 lapply(file.path("results", folders), dir.create, recursive = TRUE)
 

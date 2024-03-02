@@ -230,6 +230,70 @@ for (i in names(xenium_objects)) {
 qs::qsave(xenium_objects, file.path("objects", "xenium_objects.qs"))
 xenium_objects <- qs::qread(file.path("objects", "xenium_objects.qs"))
 
+# abundance of xenium ptprc based on manual quantification ----
+ptprc_quanti <-
+    read_csv(file.path("lookup", "xenium_manual_ptprc_quantification.csv"))|>
+    pivot_longer(!sample, names_to = "name", values_to = "value") |>
+    separate_wider_delim(name, delim = "_", names = c("variable", "area"))
+
+ptprc_stats <-
+    ptprc_quanti |>
+    dplyr::filter(area != "all") |>
+    group_by(sample, variable) |>
+    summarize(
+        mean = mean(value, na.rm = TRUE),
+        sum = sum(value, na.rm = TRUE)
+    ) |>
+    pivot_longer(c(mean, sum), names_to = "name", values_to = "value") |>
+    unite("variable", variable, name)
+
+
+ptprc_result <-
+    ptprc_quanti |>
+    dplyr::filter(area == "all") |>
+    select(sample, variable, value) |>
+    bind_rows(ptprc_stats) |>
+    arrange(sample) |>
+    pivot_wider(names_from = variable, values_from = value) |>
+    left_join(select(sample_lookup, sample, level2), join_by(sample)) |>
+    mutate(level2 = factor(level2, levels = sc_merge@misc$level2_order)) |>
+    mutate(epiPTPRC = nervePTPRC - endoPTPRC_sum) |>
+    mutate(epiarea = nervearea - endoarea_sum) |>
+    mutate(epiPTPRC_density = epiPTPRC / epiarea) |>
+    mutate(endoPTPRC_density_sum = endoPTPRC_sum / endoarea_sum) |>
+    mutate(endoPTPRC_density_mean = endoPTPRC_mean / endoarea_mean) 
+    # mutate(PTPRC_ratio = endoPTPRC/nervePTPRC) |>
+    # mutate(nervePTPRC_density = nervePTPRC/nervearea) |>
+    # mutate(PTPRC_density_ratio = endoPTPRC_density/nervePTPRC_density)
+
+plotQuanti <- function(y_value, name) {
+    ptprc_result |>
+        ggplot(aes(x = level2, y = .data[[y_value]], fill = level2)) +
+        geom_boxplot() +
+        geom_jitter(height = 0, width = 0.1) +
+        scale_fill_manual(values = sc_merge@misc$level2_cols) +
+        guides(fill = guide_legend(title = NULL)) +
+        theme_classic() +
+        ylab("") +
+        xlab("") +
+        ggtitle(name) +
+        theme(
+            legend.position = "none",
+            axis.text.x = element_text(
+                angle = 90,
+                hjust = 1,
+                vjust = 0.3,
+            )
+        )
+    ggsave(file.path("results", "xenium", "quantification", paste0(name, ".pdf")), width = 3, height = 3)
+}
+
+plotQuanti(y_value = "endoPTPRC_mean", name = "PTPRC_endo_mean")
+plotQuanti(y_value = "epiPTPRC", name = "PTPRC_epi")
+plotQuanti(y_value = "endoPTPRC_density_mean", name = "PTPRC_endo_density_mean")
+plotQuanti(y_value = "endoPTPRC_density_sum", name = "PTPRC_endo_density_sum")
+plotQuanti(y_value = "epiPTPRC_density", name = "PTPRC_epi_density")
+
 # abundance of xenium cell predictions ----
 cells_list <-
     lapply(xenium_objects, function(x) (x$sn_predictions)) |>
