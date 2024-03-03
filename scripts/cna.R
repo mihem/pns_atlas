@@ -188,7 +188,7 @@ axon_count_table <-
     dplyr::filter(sample != "NA") |>
     mutate(across(c(fascicle, normal_myelin:total_myelinated_axons, area_micrometer), parse_number)) |>
     mutate(fascicle = str_extract(fascicle, "[0-9]+")) 
-    
+
 axon_count_fascicle <- 
     axon_count_table |>
     group_by(sample, fascicle) |>
@@ -360,20 +360,18 @@ axon_plots_sum_ncv <- lapply(
 axon_plots_sum_ncv_patch <- patchwork::wrap_plots(axon_plots_sum_ncv, ncol = 2)
 ggsave(plot = axon_plots_sum_ncv_patch, file.path("results", "histo", "axon_ncv_sum.pdf"), width = 15, height = 15)
 
-axon_count_median <-
+axon_count_mean <-
     axon_count_fascicle |>
     group_by(sample) |>
     dplyr::summarize(
-        axon_normal = median(normal_myelin),
-    )
-
-axon_count_median |>
-dplyr::arrange(desc(axon_normal))
+        axon_normal = mean(normal_myelin),
+    ) |>
+    mutate(log_axon_normal = log(axon_normal))
 
 sc_merge@meta.data <-
     sc_merge@meta.data |>
     tibble::rownames_to_column("barcode") |>
-    dplyr::left_join(axon_count_median, by = "sample") |>
+    dplyr::left_join(axon_count_mean, by = "sample") |>
     tibble::column_to_rownames(var = "barcode")
 
 str(sc_merge@meta.data)
