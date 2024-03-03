@@ -23,6 +23,7 @@ sc_merge$pnp <- as.numeric(sc_merge$level2 != "CTRL")
 sc_merge$sex_numeric <- as.numeric(sc_merge$sex == "male")
 sc_merge$center_numeric <- as.numeric(factor(sc_merge$center))
 
+
 obj <- association.Seurat(
     seurat_object = sc_merge, 
     test_var = 'pnp', 
@@ -162,12 +163,24 @@ ggsave(plot = cor_incat_plot, file.path("results", "cna", "cna_incat_sex_age_cen
 
 # correlation with axon count ----
 # ratio to small problematic because of zeros
-sample_lookup <- 
+sample_lookup <-
     read_csv(file.path("lookup", "sample_lookup.csv")) |>
     janitor::clean_names() |>
-    select(sample, level2, incat, center, ncv_tibial_motoric_in_m_s) |>
-    dplyr::rename(ncv_tibial_motoric = ncv_tibial_motoric_in_m_s) |>
-    mutate(ncv_tibial_motoric = as.numeric(ncv_tibial_motoric))
+    dplyr::rename(
+        ncv_tibial_motoric = ncv_tibial_motoric_in_m_s,
+        cmap_tibial_motoric = cmap_tibial_in_m_v,
+        f_latency_tibial = min_f_latency_tibial_in_ms,
+        ncv_peroneal_motoric = ncv_peroneal_motoric_in_m_s,
+        cmap_peroneal_motoric = cmap_peroneal_in_m_v,
+        ncv_ulnar_motoric = ncv_ulnar_motoric_in_m_s,
+        cmap_ulnar = cmap_ulnar_in_m_v,
+        f_latency_ulnar = min_f_latency_ulnar_in_ms,
+        snap_sural = snap_sural_in_m_v,
+        ncv_sural = ncv_sural_in_m_s
+    ) |>
+    mutate(level0 = if_else(level1 == "CTRL", "CTRL", "PNP")) |>
+    select(sample, level0, level2, incat, center, cmap_ulnar:ncv_sural) |>
+    mutate(across(cmap_ulnar:ncv_sural, as.numeric))
 
 axon_count_table <-
     readxl::read_xlsx(file.path("lookup", "axon_count_v2.xlsx")) |>
@@ -194,7 +207,7 @@ axon_count_sum <-
 
     # mutate(sick = very_small_axons + thin_myelin) |>
     # mutate(ratio_normal_thin = normal_myelin / thin_myelin) |>
-    # mutate(ratio_normal_sick = normal_myelin / (very_small_axons + thin_myelin)) |>
+   # mutate(ratio_normal_sick = normal_myelin / (very_small_axons + thin_myelin)) |>
 
 axonPlot <- function(df, y_value) {
     df |>
@@ -254,22 +267,59 @@ axon_plots_sum <- lapply(
 axon_plots_sum_patch <- patchwork::wrap_plots(axon_plots_sum, ncol = 2)
 ggsave(plot = axon_plots_sum_patch, file.path("results", "histo", "axon_count_sum.pdf"), width = 15, height = 15)
 
-axonPlotNCV <- function(df, var) {
-    df |>
+axonEphysioPlot <- function(x_axis, y_axis) {
+    axon_count_fascicle |>
         group_by(sample) |>
         summarize(
-            normal = median(.data[[var]]),
-            ncv_tibial_motoric = median(ncv_tibial_motoric)
+            x_axis = median(.data[[x_axis]]),
+            y_axis = median(.data[[y_axis]])
         ) |>
-        ggplot(aes(x = ncv_tibial_motoric, y = normal)) +
+        ggplot(aes(x = x_axis, y = y_axis)) +
         geom_smooth(method = "lm") +
         geom_jitter(height = 0, width = 0.1) +
         guides(fill = guide_legend(title = NULL)) +
         theme_bw() +
-        ylab("") +
-        xlab("") +
-        ggtitle(var)
+        xlab(x_axis) +
+        ylab(y_axis) 
 }
+
+x_axis_var <- axon_count_fascicle |>
+    select(cmap_ulnar:ncv_sural) |>
+    names()
+
+# normal axons
+normal_axon_ephysio_plots <- lapply(
+    x_axis_var,
+    function(x) {
+        axonEphysioPlot(y_axis = "normal_myelin", x_axis = x)
+    }
+)
+
+normal_axon_ephysio_plots_patch <- patchwork::wrap_plots(normal_axon_ephysio_plots, ncol = 3)
+ggsave(plot = normal_axon_ephysio_plots_patch, file.path("results", "histo", "normal_axon_ephysio.pdf"), width = 15, height = 15)
+
+# thinly myelinated axons
+thin_axon_ephysio_plots <- lapply(
+    x_axis_var,
+    function(x) {
+        axonEphysioPlot(y_axis = "thin_myelin", x_axis = x)
+    }
+)
+
+thin_axon_ephysio_plots_patch <- patchwork::wrap_plots(thin_axon_ephysio_plots, ncol = 3)
+ggsave(plot = thin_axon_ephysio_plots_patch, file.path("results", "histo", "thin_axon_ephysio.pdf"), width = 15, height = 15)
+
+
+# normal myelin density
+normal_density_axon_ephysio_plots <- lapply(
+    x_axis_var,
+    function(x) {
+        axonEphysioPlot(y_axis = "normal_myelin_density", x_axis = x)
+    }
+)
+
+normal_density_axon_ephysio_plots_patch <- patchwork::wrap_plots(normal_density_axon_ephysio_plots, ncol = 3)
+ggsave(plot = normal_density_axon_ephysio_plots_patch, file.path("results", "histo", "normal_density_axon_ephysio.pdf"), width = 15, height = 15)
 
 axon_plots_fascicle_ncv <- lapply(
     c(
@@ -431,3 +481,93 @@ cor_ncv_plot <-
     )
 
 ggsave(plot = cor_ncv_plot, file.path("results", "cna", "cna_ncv_tibial_motoric_cov.png"), width = 10, height = 10)
+
+# correlation with g ratio ----
+sc_merge@meta.data <-
+    sc_merge@meta.data |>
+    tibble::rownames_to_column("barcode") |>
+    dplyr::left_join(select(g_ratio, sample, g_ratio, axon_diameter, slope), by = "sample") |>
+    rename(g_ratio_slope = slope) |>
+    tibble::column_to_rownames(var = "barcode")
+
+obj <- association.Seurat(
+    seurat_object = sc_merge, 
+    test_var = "g_ratio", 
+    samplem_key = 'sample', 
+    graph_use = 'RNA_nn', 
+    verbose = TRUE,
+    batches = NULL, ## no batch variables to include
+    covs = c("sex_numeric", "age") ## no covariates to include 
+)
+
+cor_gratio_plot <-
+    FeaturePlot(
+        obj,
+        reduction = "umap.scvi.full",
+        features = c("cna_ncorrs"),
+        # features = c("cna_ncorrs_fdr10"),
+        pt.size = 0.1,
+        order = FALSE,
+        coord.fixed = TRUE,
+        raster = FALSE,
+        alpha = 0.2
+    ) +
+    scale_colour_gradient2(
+        low = "#2166AC",
+        mid = "white",
+        high = "#B2182B",
+        midpoint = 0,
+    ) +
+    theme(
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.border = element_rect(color = "black", size = 1, fill = NA)
+    ) +
+    labs(
+        title = "g ratio", color = "Correlation"
+    )
+
+ggsave(plot = cor_gratio_plot, file.path("results", "cna", "cna_gratio_sex_age.png"), width = 10, height = 10)
+
+# correlation with axon diameter ----
+obj <- association.Seurat(
+    seurat_object = sc_merge, 
+    test_var = "axon_diameter", 
+    samplem_key = 'sample', 
+    graph_use = 'RNA_nn', 
+    verbose = TRUE,
+    batches = NULL, ## no batch variables to include
+    # covs = NULL
+    covs = c("sex_numeric", "age") ## no covariates to include 
+)
+
+cor_axon_diameter_plot <-
+    FeaturePlot(
+        obj,
+        reduction = "umap.scvi.full",
+        features = c("cna_ncorrs"),
+        # features = c("cna_ncorrs_fdr10"),
+        pt.size = 0.1,
+        order = FALSE,
+        coord.fixed = TRUE,
+        raster = FALSE,
+        alpha = 0.2
+    ) +
+    scale_colour_gradient2(
+        low = "#2166AC",
+        mid = "white",
+        high = "#B2182B",
+        midpoint = 0,
+    ) +
+    theme(
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.border = element_rect(color = "black", size = 1, fill = NA)
+    ) +
+    labs(
+        title = "axon diameter", color = "Correlation"
+    )
+
+ggsave(plot = cor_axon_diameter_plot, file.path("results", "cna", "cna_axon_diameter_sex_age.png"), width = 10, height = 10)
+# ggsave(plot = cor_axon_diameter_plot, file.path("results", "cna", "cna_axon_diameter.png"), width = 10, height = 10)
+
