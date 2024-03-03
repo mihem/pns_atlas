@@ -53,8 +53,9 @@ adata_list = [create_adata(i) for i in range(len(xenium_names))]
 
 # plot predictions
 sq.pl.spatial_scatter(
-    adata4,
-    library_id="spatial",
+    adata,
+    library_key = "sample",
+    library_id="S01",
     shape=None,
     color=[
         "sn_predictions_group",
@@ -119,6 +120,11 @@ gc.tl.wlkernel.compare_conditions(
 adata.write("objects/graphcompass_adata.h5ad")
 adata = ad.read_h5ad("objects/graphcompass_adata.h5ad")
 
+adata1 = ad.read_h5ad("objects/graphcompass_adata.h5ad")
+
+adata1.write("objects/graphcompass_adata1.h5ad")
+adata.uns["filtration_curves"]
+adata1.obs[["cell_id"]]
 
 adata.uns["wl_kernel"]
 adata.uns
@@ -153,11 +159,8 @@ gc.tl.filtration_curves.compare_conditions(
 # Error in igraph._igraph.InternalError: Error at src/graph/type_indexededgelist.c:1414: Cannot get edge ID, no such edge. -- Invalid value
     
 # define necessary params
-node_labels=["SC", "endoC", "periC", "epiC"] # node labels (e.g. cell types) we are intrested in visualising
+node_labels=["EC", "IC", "PC", "SC", "VSMC", "endoC", "periC", "epiC"] # node labels (e.g. cell types) we are intrested in visualising
 metric_key="filtration_curves"
-
-adata.obs
-adata.obs["sn_predictions_group"].value_counts()
 
 gc.pl.filtration_curves.compare_conditions(
     adata=adata,
@@ -165,10 +168,9 @@ gc.pl.filtration_curves.compare_conditions(
     metric_key=metric_key,
     palette="Set2",
     dpi=100,
-    figsize=(20,6),
-    save = "filtration_curves.pdf"
+    figsize=(30,5),
+    save="results/xenium/graphcompass/filtration_curves.pdf"
 )
-
 
 # specifc cell type subgraph comparisons
 gc.tl.distance.compare_conditions(
@@ -252,3 +254,15 @@ print(has_nans)
 # check if there are any 0
 has_zeros = np.isclose(weights.data, 0).any()
 print(has_zeros)
+
+## testing
+breast = ad.read_h5ad("objects/mibitof_breast_cancer.h5ad")
+
+sq.pl.spatial_scatter(breast, color = "phenotype", library_key = "Point_Num", library_id = "2203", shape = None)
+sq.pl.spatial_scatter(breast, color = "phenotype", library_id = "Point_Num", shape = None)
+sq.pl.spatial_scatter(breast, color = "phenotype", library_id = "sample", shape = None)
+
+plt.show()
+
+breast.obs
+# sq.pl.spatial_scatter(breast, color = "cell_type_original", library_id = "sample", shape = None)
