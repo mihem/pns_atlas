@@ -120,12 +120,6 @@ gc.tl.wlkernel.compare_conditions(
 adata.write("objects/graphcompass_adata.h5ad")
 adata = ad.read_h5ad("objects/graphcompass_adata.h5ad")
 
-adata1 = ad.read_h5ad("objects/graphcompass_adata.h5ad")
-
-adata1.write("objects/graphcompass_adata1.h5ad")
-adata.uns["filtration_curves"]
-adata1.obs[["cell_id"]]
-
 adata.uns["wl_kernel"]
 adata.uns
 
@@ -168,7 +162,8 @@ gc.pl.filtration_curves.compare_conditions(
     metric_key=metric_key,
     palette="Set2",
     dpi=100,
-    figsize=(30,5),
+    figsize=(50,6),
+    right = 30,
     save="results/xenium/graphcompass/filtration_curves.pdf"
 )
 
@@ -266,3 +261,5 @@ plt.show()
 
 breast.obs
 # sq.pl.spatial_scatter(breast, color = "cell_type_original", library_id = "sample", shape = None)
+
+help(gc.pl.filtration_curves)
