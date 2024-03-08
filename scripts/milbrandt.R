@@ -107,7 +107,7 @@ vennPlot <- function(cluster) {
         label_sep = "\n",
         text_size = 1,
     )
-    ggsave(file.path("results", "venn", paste0(cluster, "_milbrandt_top25.pdf")),
+    ggsave(file.path("results", "venn", paste0(cluster, "_milbrandt_long.pdf")),
         width = 5, height = 5,
         plot = plot
     )
@@ -120,6 +120,7 @@ lapply(
 
 vennPlot("mySC")
 vennPlot("nmSC")
+vennPlot("periC")
 
 
 markers_xenium <- read_xlsx(file.path("lookup", "xenium_list_final.xlsx"))
