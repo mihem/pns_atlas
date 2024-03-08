@@ -374,6 +374,12 @@ sc_merge@meta.data <-
     dplyr::left_join(axon_count_mean, by = "sample") |>
     tibble::column_to_rownames(var = "barcode")
 
+ic@meta.data <-
+    ic@meta.data |>
+    tibble::rownames_to_column("barcode") |>
+    dplyr::left_join(axon_count_mean, by = "sample") |>
+    tibble::column_to_rownames(var = "barcode")
+
 str(sc_merge@meta.data)
 
 # correlation with axon counting ---
@@ -483,6 +489,13 @@ ggsave(plot = cor_ncv_plot, file.path("results", "cna", "cna_ncv_tibial_motoric_
 # correlation with g ratio ----
 sc_merge@meta.data <-
     sc_merge@meta.data |>
+    tibble::rownames_to_column("barcode") |>
+    dplyr::left_join(select(g_ratio, sample, g_ratio, axon_diameter, slope), by = "sample") |>
+    rename(g_ratio_slope = slope) |>
+    tibble::column_to_rownames(var = "barcode")
+
+ic@meta.data <-
+    ic@meta.data |>
     tibble::rownames_to_column("barcode") |>
     dplyr::left_join(select(g_ratio, sample, g_ratio, axon_diameter, slope), by = "sample") |>
     rename(g_ratio_slope = slope) |>
