@@ -7,6 +7,7 @@ library(qs)
 library(sceasy)
 library(pheatmap)
 library(pals)
+library(viridis)
 
 # read preprocessed data ----
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
@@ -45,10 +46,19 @@ mrvi_all_average <-
     tibble::column_to_rownames("X")
 
 # get metadata
-axon_count_lookup <-
-    tibble(sample = sc_merge$sample, axon_normal = sc_merge$axon_normal, log_axon_normal = sc_merge$log_axon_normal) |>
-    distinct() |>
-    mutate()
+histo_lookup <-
+    tibble(
+        sample = sc_merge$sample,
+        axon_normal = sc_merge$axon_normal,
+        log_axon_normal = sc_merge$log_axon_normal,
+        g_ratio = sc_merge$g_ratio,
+        axon_diameter = sc_merge$axon_diameter
+    ) |>
+    distinct() 
+
+histo_lookup |>
+    ggplot(aes(x = axon_normal)) +
+    geom_histogram(bins = 100))
 
 metadata <- 
     read_csv(file.path("lookup", "sample_lookup.csv")) |>
@@ -115,11 +125,11 @@ dev.off()
 # only for CIDP, CIAP, CTRL and VN ----
 metadata <- 
     read_csv(file.path("lookup", "sample_lookup.csv")) |>
-    left_join(axon_count_lookup, join_by(sample == sample)) |>
+    left_join(histo_lookup, join_by(sample == sample)) |>
     dplyr::filter(level2 %in% c("CIDP", "CIAP", "CTRL", "VN")) |>
-    select(sample, level2, INCAT, center, log_axon_normal) |>
+    select(sample, level2, INCAT, log_axon_normal, axon_diameter, g_ratio) |>
     mutate(level0 = if_else(level2 == "CTRL", "CTRL", "PNP")) |>
-    relocate(log_axon_normal, INCAT, center, level2, level0) |>
+    relocate(level0, level2, INCAT, log_axon_normal, axon_diameter, g_ratio) |>
     data.frame()
 
 mrvi_data <- 
@@ -129,7 +139,6 @@ mrvi_data <-
     dplyr::filter(level2 %in% c("CIDP", "CIAP", "CTRL", "VN")) |>
     column_to_rownames("sample") |>
     select(metadata$sample)
-
 
 # make sure that rownames and columnnames of data and metadata are the same
 rownames(metadata) <- colnames(mrvi_data)
@@ -148,16 +157,26 @@ names(phmap_cols_INCAT) <- c("-", "1", "2", "3", "4", "5", "6")
 phmap_cols_center <- RColorBrewer::brewer.pal(length(unique(metadata$center)), "Set2")
 names(phmap_cols_center) <- unique(metadata[["center"]])
 
-phmap_cols_axon_normal <- viridis::viridis(length(unique(metadata$log_axon_normal)))
+# phmap_cols_axon_normal <- viridis::viridis(length(unique(metadata$log_axon_normal)))
+phmap_cols_axon_normal <- viridis::magma(length(unique(metadata$log_axon_normal)))
 names(phmap_cols_axon_normal) <- unique(metadata[["log_axon_normal"]])
+
+phmap_cols_axon_diameter <- viridis::magma(length(unique(metadata$axon_diameter)))
+# phmap_cols_axon_diameter <- viridis::viridis(length(unique(metadata$axon_diameter)))
+names(phmap_cols_axon_diameter) <- unique(metadata$axon_diameter)
+
+phmap_cols_gratio <- viridis::magma(length(unique(metadata$g_ratio)))
+# phmap_cols_gratio <- viridis::viridis(length(unique(metadata$g_ratio)))
+names(phmap_cols_gratio) <- unique(metadata$g_ratio)
 
 phmap_list <-
     list(
         level0 = phmap_cols_level0,
         level2 = phmap_cols_level2,
         INCAT = phmap_cols_INCAT,
-        center = phmap_cols_center,
-        log_axon_normal = phmap_cols_axon_normal
+        log_axon_normal = phmap_cols_axon_normal,
+        axon_diameter = phmap_cols_axon_diameter,
+        g_ratio = phmap_cols_gratio
     )
 
 phmap_mrvi <-
