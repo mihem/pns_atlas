@@ -3,6 +3,7 @@ library(Seurat)
 library(tidyverse)
 library(scMisc)
 library(qs)
+library(pheatmap)
 
 # load preprocessed data ----
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
@@ -347,3 +348,79 @@ as.data.frame.matrix(table(sc_merge@meta.data[["cluster"]], sc_merge@meta.data[[
   left_join(select(sample_lookup, sample, level2, internal_name)) |>
   write_csv(file.path("results", "abundance", "repairSC.csv"))
 
+
+# abundance of mrVI groups ----
+mrvi_lookup <- read_csv(file.path("lookup", "mrvi_lookup.csv"))
+
+sc_merge@meta.data <-
+    sc_merge@meta.data |>
+    tibble::rownames_to_column("barcode") |>
+    dplyr::left_join(mrvi_lookup, by = "sample") |>
+    tibble::column_to_rownames(var = "barcode")
+
+vn_cidp_ciap_ctrl <- subset(sc_merge, level2 %in% c("VN", "CIDP", "CIAP", "CTRL"))
+
+scMisc::abBoxPlot(
+  object = vn_cidp_ciap_ctrl,
+  cluster_idents = "cluster",
+  sample = "sample",
+  cluster_order = vn_cidp_ciap_ctrl@misc$cluster_order,
+  group_by =  "mrvi_cluster",
+  group_order = paste0("cl", 1:5),
+  color = pals::cols25()
+)
+
+# g ratio and axon diameter boxplots ----
+g_ratio_axon_diameter_mrvi <-
+  g_ratio |>
+  group_by(sample) |>
+  mutate(
+    g_ratio = mean(g_ratio),
+    axon_diameter = mean(axon_diameter),
+  ) |>
+  ungroup() |>
+  distinct() |>
+  left_join(mrvi_lookup, join_by(sample)) |>
+  dplyr::filter(!is.na(mrvi_cluster))  
+
+# axon diameter
+axon_diameter_mrvi_stats <- scMisc:::compStat(x_var = "axon_diameter", group = "mrvi_cluster", data = g_ratio_axon_diameter_mrvi, paired = FALSE)
+
+axon_diameter_mrvi_plot <-
+  g_ratio_axon_diameter_mrvi |>
+  ggplot(aes(x = mrvi_cluster, y = axon_diameter)) +
+  ggsignif::geom_signif(comparisons = axon_diameter_mrvi_stats$comparisons, annotation = axon_diameter_mrvi_stats$annotation, textsize = 5, step_increase = 0.05, vjust = 0.7)  +
+  geom_boxplot(aes(fill = mrvi_cluster)) +
+  geom_point() +
+  theme_bw() +
+  xlab("") +
+  ylab("") +
+  ggtitle("axon diameter") +
+  scale_fill_manual(values = pals::cols25()) +
+  theme(legend.position = "none")
+  
+ggsave(file.path("results", "abundance", "boxplot_axon_diameter_mrvi.pdf"), plot = axon_diameter_mrvi_plot, width = 5, height = 5)
+
+
+phmap_mrvi_cluster <-
+  table(vn_cidp_ciap_ctrl$cluster, vn_cidp_ciap_ctrl$mrvi_cluster) |>
+  pheatmap(
+    scale = "column",
+    cluster_rows = TRUE,
+    cluster_cols = FALSE,
+    color = viridis::magma(100),
+    cellwidth = 10,
+    cellheight = 10,
+    treeheight_row = 15,
+    treeheight_col = 15,
+    clustering_distance_rows = "euclidean",
+    clustering_distance_cols = "euclidean",
+    clustering_method = "ward.D2",
+    border_color = NA,
+    cutree_rows = 5,
+    main = "mrVI cluster"
+  )
+
+pdf(file.path("results", "abundance", "mrvi_heatmap_abundance_cluster.pdf"), width = 5, height = 7)
+print(phmap_mrvi_cluster)
+dev.off()
