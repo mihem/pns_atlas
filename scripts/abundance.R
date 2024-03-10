@@ -135,6 +135,33 @@ scMisc::dotplotPropeller(
     filename = "PNP_CTRL_ic",
     height = 6
 )
+# CIAP vs CTRL
+propeller_CIAP_CTRL <-
+  scMisc::propellerCalc(
+    seu_obj1 = sc_merge,
+    condition1 = "CIAP",
+    condition2 = "CTRL",
+    cluster_col = "cluster",
+    meta_col = "level2",
+    lookup = sample_lookup,
+    sample_col = "sample",
+    formula = "~0 + level2",
+    min_cells = 30
+  )
+
+scMisc::plotPropeller(
+  data = propeller_CIAP_CTRL,
+  color = sc_merge@misc$cluster_col,
+  filename = "CIAP_CTRL",
+  FDR = 0.1
+)
+
+scMisc::dotplotPropeller(
+    data = propeller_CIAP_CTRL,
+    color = sc_merge@misc$cluster_col,
+    filename = "CIAP_CTRL",
+)
+
 
 # CIDP vs CTRL
 propeller_CIDP_CTRL <-
@@ -370,6 +397,30 @@ scMisc::abBoxPlot(
   color = pals::cols25()
 )
 
+phmap_mrvi_cluster <-
+  table(vn_cidp_ciap_ctrl$cluster, vn_cidp_ciap_ctrl$mrvi_cluster) |>
+  pheatmap(
+    scale = "column",
+    cluster_rows = TRUE,
+    cluster_cols = FALSE,
+    color = viridis::magma(100),
+    cellwidth = 10,
+    cellheight = 10,
+    treeheight_row = 15,
+    treeheight_col = 15,
+    clustering_distance_rows = "euclidean",
+    clustering_distance_cols = "euclidean",
+    clustering_method = "ward.D2",
+    border_color = NA,
+    cutree_rows = 5,
+    main = "mrVI cluster"
+  )
+
+pdf(file.path("results", "abundance", "mrvi_heatmap_abundance_cluster.pdf"), width = 5, height = 7)
+print(phmap_mrvi_cluster)
+dev.off()
+
+
 # g ratio and axon diameter boxplots ----
 g_ratio_axon_diameter_mrvi <-
   g_ratio |>
@@ -401,26 +452,49 @@ axon_diameter_mrvi_plot <-
   
 ggsave(file.path("results", "abundance", "boxplot_axon_diameter_mrvi.pdf"), plot = axon_diameter_mrvi_plot, width = 5, height = 5)
 
+# axon counts
+axon_count_mrvi <-
+  axon_count_mean |>
+  left_join(mrvi_lookup, join_by(sample)) |>
+  dplyr::filter(!is.na(mrvi_cluster))
 
-phmap_mrvi_cluster <-
-  table(vn_cidp_ciap_ctrl$cluster, vn_cidp_ciap_ctrl$mrvi_cluster) |>
-  pheatmap(
-    scale = "column",
-    cluster_rows = TRUE,
-    cluster_cols = FALSE,
-    color = viridis::magma(100),
-    cellwidth = 10,
-    cellheight = 10,
-    treeheight_row = 15,
-    treeheight_col = 15,
-    clustering_distance_rows = "euclidean",
-    clustering_distance_cols = "euclidean",
-    clustering_method = "ward.D2",
-    border_color = NA,
-    cutree_rows = 5,
-    main = "mrVI cluster"
-  )
+axon_count_mrvi_stats <- scMisc:::compStat(x_var = "log_axon_normal", group = "mrvi_cluster", data = axon_count_mrvi, paired = FALSE)
 
-pdf(file.path("results", "abundance", "mrvi_heatmap_abundance_cluster.pdf"), width = 5, height = 7)
-print(phmap_mrvi_cluster)
-dev.off()
+axon_count_mrvi_plot <-
+  axon_count_mrvi |>
+  ggplot(aes(x = mrvi_cluster, y = axon_normal)) +
+  ggsignif::geom_signif(comparisons = axon_count_mrvi_stats$comparisons, annotation = axon_count_mrvi_stats$annotation, textsize = 5, step_increase = 0.05, vjust = 0.7)  +
+  geom_boxplot(aes(fill = mrvi_cluster)) +
+  geom_point() +
+  theme_bw() +
+  xlab("") +
+  ylab("") +
+  ggtitle("axon count") +
+  scale_fill_manual(values = pals::cols25()) +
+  theme(legend.position = "none")
+  
+ggsave(file.path("results", "abundance", "boxplot_axon_count_mrvi.pdf"), plot = axon_count_mrvi_plot, width = 5, height = 5)
+
+# incat -----
+incat_mrvi <-
+  sample_lookup |>
+  left_join(mrvi_lookup, join_by(sample)) |>
+  dplyr::filter(!is.na(mrvi_cluster)) |>
+  mutate(incat = as.numeric(incat))
+
+incat_mrvi_stats <- scMisc:::compStat(x_var = "incat", group = "mrvi_cluster", data = incat_mrvi, paired = FALSE)
+
+incat_mrvi_plot <-
+  incat_mrvi |>
+  ggplot(aes(x = mrvi_cluster, y = incat)) +
+  ggsignif::geom_signif(comparisons = incat_mrvi_stats$comparisons, annotation = incat_mrvi_stats$annotation, textsize = 5, step_increase = 0.05, vjust = 0.7)  +
+  geom_boxplot(aes(fill = mrvi_cluster)) +
+  geom_jitter(height = 0, width = 0.1) +
+  theme_bw() +
+  xlab("") +
+  ylab("") +
+  ggtitle("INCAT score") +
+  scale_fill_manual(values = pals::cols25()) +
+  theme(legend.position = "none")
+  
+ggsave(file.path("results", "abundance", "boxplot_incat_mrvi.pdf"), plot = incat_mrvi_plot, width = 5, height = 5)
