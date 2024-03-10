@@ -161,10 +161,31 @@ for (i in names(xenium_objects)) {
         xenium_objects[[i]],
         cells = WhichCells(xenium_objects[[i]], idents = c("repairSC", "nmSC", "mySC")),
         group.by = "sn_predictions",
-        cols = xenium_objects[[i]]@misc$cluster_col
+        cols = xenium_objects[[i]]@misc$cluster_col,
+        axes = TRUE
     )
     ggsave(plot = p1, filename = file.path("results", "xenium", "SC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
 }
+
+# crop S24_CTRL and S30_VN to representative areas
+cropped_coords_S24_CTRL <- Crop(xenium_objects[["S24_CTRL"]][["fov"]], x = c(1900, 2800), y = c(2000, 3200), coords = "plot")
+xenium_objects[["S24_CTRL"]][["zoom"]] <- cropped_coords_S24_CTRL
+
+cropped_coords_S30_VN <- Crop(xenium_objects[["S30_VN"]][["fov"]], x = c(500, 1800), y = c(2000, 3200), coords = "plot")
+xenium_objects[["S30_VN"]][["zoom"]] <- cropped_coords_S30_VN
+
+for (i in c("S24_CTRL", "S30_VN")) {
+    p1 <- ImageDimPlot(
+        xenium_objects[[i]],
+        cells = WhichCells(xenium_objects[[i]], idents = c("repairSC", "nmSC", "mySC")),
+        group.by = "sn_predictions",
+        cols = xenium_objects[[i]]@misc$cluster_col,
+        # axes = TRUE,
+        fov = "zoom",
+        size = 1)
+    ggsave(plot = p1, filename = file.path("results", "xenium", "SC", paste0("seurat_predict_zoom_", i, ".pdf")), width = 8, height = 8)
+}
+
 
 # predictions, periC only
 for (i in names(xenium_objects)) {
