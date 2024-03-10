@@ -128,8 +128,9 @@ metadata <-
     left_join(histo_lookup, join_by(sample == sample)) |>
     dplyr::filter(level2 %in% c("CIDP", "CIAP", "CTRL", "VN")) |>
     select(sample, level2, INCAT, log_axon_normal, axon_diameter, g_ratio) |>
+    rename(log_axon_count = log_axon_normal) |>
     mutate(level0 = if_else(level2 == "CTRL", "CTRL", "PNP")) |>
-    relocate(level0, level2, INCAT, log_axon_normal, axon_diameter, g_ratio) |>
+    relocate(level0, level2, INCAT, log_axon_count, axon_diameter, g_ratio) |>
     data.frame()
 
 mrvi_data <- 
@@ -154,19 +155,13 @@ names(phmap_cols_level0) <- unique(metadata[["level0"]])
 phmap_cols_INCAT <- c("white", RColorBrewer::brewer.pal(length(unique(metadata$INCAT))-1, "Reds"))
 names(phmap_cols_INCAT) <- c("-", "1", "2", "3", "4", "5", "6")
 
-phmap_cols_center <- RColorBrewer::brewer.pal(length(unique(metadata$center)), "Set2")
-names(phmap_cols_center) <- unique(metadata[["center"]])
-
-# phmap_cols_axon_normal <- viridis::viridis(length(unique(metadata$log_axon_normal)))
-phmap_cols_axon_normal <- viridis::magma(length(unique(metadata$log_axon_normal)))
-names(phmap_cols_axon_normal) <- unique(metadata[["log_axon_normal"]])
+phmap_cols_axon_count <- viridis::magma(length(unique(metadata$log_axon_count)))
+names(phmap_cols_axon_count) <- unique(metadata[["log_axon_count"]])
 
 phmap_cols_axon_diameter <- viridis::magma(length(unique(metadata$axon_diameter)))
-# phmap_cols_axon_diameter <- viridis::viridis(length(unique(metadata$axon_diameter)))
 names(phmap_cols_axon_diameter) <- unique(metadata$axon_diameter)
 
 phmap_cols_gratio <- viridis::magma(length(unique(metadata$g_ratio)))
-# phmap_cols_gratio <- viridis::viridis(length(unique(metadata$g_ratio)))
 names(phmap_cols_gratio) <- unique(metadata$g_ratio)
 
 phmap_list <-
@@ -174,7 +169,7 @@ phmap_list <-
         level0 = phmap_cols_level0,
         level2 = phmap_cols_level2,
         INCAT = phmap_cols_INCAT,
-        log_axon_normal = phmap_cols_axon_normal,
+        log_axon_count = phmap_cols_axon_count,
         axon_diameter = phmap_cols_axon_diameter,
         g_ratio = phmap_cols_gratio
     )
