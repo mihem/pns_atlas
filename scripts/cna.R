@@ -64,10 +64,11 @@ cor_pnp_plot <-
         panel.border = element_rect(color = "black", size = 1, fill = NA)
     ) +
     labs(
-        title = "PNP", color = "Correlation"
+        title = "PNP", color = "Correlation", x = "UMAP1", y= "UMAP2"
     )
 
-ggsave(plot = cor_pnp_plot, file.path("results", "cna", "cna_pnp_sex_age1.png"), width = 10, height = 10)
+ggsave(plot = cor_pnp_plot, file.path("results", "cna", "cna_pnp_sex_age.png"), width = 10, height = 10)
+ggsave(plot = cor_pnp_plot, file.path("results", "cna", "cna_pnp_sex_age.pdf"), width = 10, height = 10)
 
 # immune cells
 ic$pnp <- as.numeric(ic$level2 != "CTRL")
@@ -154,11 +155,12 @@ cor_incat_plot <-
         panel.border = element_rect(color = "black", size = 1, fill = NA)
     ) +
     labs(
-        title = "INCAT", color = "Correlation"
-    )
+        title = "INCAT", color = "Correlation", x = "UMAP1", y= "UMAP2"
+    ) 
 
 ggsave(plot = cor_incat_plot, file.path("results", "cna", "cna_incat.png"), width = 10, height = 10)
-ggsave(plot = cor_incat_plot, file.path("results", "cna", "cna_incat_sex_age1.png"), width = 10, height = 10)
+ggsave(plot = cor_incat_plot, file.path("results", "cna", "cna_incat_sex_age.pdf"), width = 10, height = 10)
+ggsave(plot = cor_incat_plot, file.path("results", "cna", "cna_incat_sex_age.png"), width = 10, height = 10)
 ggsave(plot = cor_incat_plot, file.path("results", "cna", "cna_incat_sex_age_center.png"), width = 10, height = 10)
 
 # correlation with axon count ----
@@ -423,7 +425,7 @@ cor_axon_normal_plot <-
         title = "Normal axons", color = "Correlation"
     )
 
-ggsave(plot = cor_axon_normal_plot, file.path("results", "cna", "cna_normal_axon1.png"), width = 10, height = 10)
+ggsave(plot = cor_axon_normal_plot, file.path("results", "cna", "cna_normal_axon.png"), width = 10, height = 10)
 ggsave(plot = cor_axon_normal_plot, file.path("results", "cna", "cna_normal_axon_sex_age.png"), width = 10, height = 10)
 
 # correlation with ncv ----
@@ -535,10 +537,11 @@ cor_gratio_plot <-
         panel.border = element_rect(color = "black", size = 1, fill = NA)
     ) +
     labs(
-        title = "g ratio", color = "Correlation"
+        title = "g ratio", color = "Correlation", x = "UMAP1", y = "UMAP2"
     )
 
 ggsave(plot = cor_gratio_plot, file.path("results", "cna", "cna_gratio_sex_age.png"), width = 10, height = 10)
+ggsave(plot = cor_gratio_plot, file.path("results", "cna", "cna_gratio_sex_age.pdf"), width = 10, height = 10)
 
 # correlation with axon diameter ----
 obj <- association.Seurat(
