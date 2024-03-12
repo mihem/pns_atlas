@@ -211,7 +211,13 @@ volcanoPlot <- function(filename, sheet, FCcutoff = 2, selectLab = NULL, drawCon
 
 # lab_blood <- list("actCD4" = c("NKG7", "GNLY", "GZMB", "KLDR1", "CCL5", "HLA-DRB1", "HLA-DRB5", "HLA-DRA", "LTB", "CCR7"), "naiveBc" = c("FOS", "JUNB", "FCER1G", "IFITM3"))
 
-cluster_de <- c("repairSC", "mySC", "nmSC", "PC2", "ven_capEC1", "artEC")
+cluster_de <- c("repairSC", "mySC", "nmSC", "PC2")
+lab_pnp_ctrl <- list(
+    "mySC" = c("DCN", "TNXB", "COL1A1", "COL15A1", "CD53", "IL4R", "CD74"),
+    "nmSC" = c("IL10RA", "IL13RA1", "CSF2RA", "TGFBI"),
+    "repairSC" = c("GALR1", "TMEM47"),
+    "PC2" = c("MFAP5", "NLGN4Y", "PCDH11Y", "IFIT3", "OASL", "MX1", "CCL2", "CCL8")
+)
 
 # PNP vs CTRL
 lapply(
@@ -222,7 +228,8 @@ lapply(
             sheet = cluster,
             FCcutoff = 2,
             condition1 = "PNP",
-            condition2 = "CTRL"
+            condition2 = "CTRL",
+            selectLab = lab_pnp_ctrl[[cluster]]
         )
     }
 )
