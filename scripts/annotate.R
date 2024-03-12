@@ -58,10 +58,14 @@ Idents(sc_merge) <- sc_merge$cluster
 DefaultAssay(sc_merge) <- "RNA"
 
 umap <-
-    DimPlot(sc_merge, reduction = "umap.scvi.full", pt.size = .1, raster = FALSE, alpha = 0.1, group.by = "cluster", cols = sc_merge@misc$cluster_col, label = FALSE) +
+    DimPlot(sc_merge, reduction = "umap.scvi.full", pt.size = .1, raster = FALSE, alpha = 0.1, group.by = "cluster", cols = sc_merge@misc$cluster_col, label = TRUE) +
     theme_rect() +
-    NoLegend()
+    NoLegend() + 
+    xlab("UMAP1") + 
+    ylab("UMAP2")
+
 ggsave(plot = umap, file.path("results", "umap", "scvi_umap_full_annotated.png"), width = 10, height = 8)
+
 ggsave(plot = umap, file.path("results", "umap", "scvi_umap_full_annotated.pdf"), width = 10, height = 8)
 
 # save object ---
