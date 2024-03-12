@@ -135,33 +135,6 @@ scMisc::dotplotPropeller(
     filename = "PNP_CTRL_ic",
     height = 6
 )
-# CIAP vs CTRL
-propeller_CIAP_CTRL <-
-  scMisc::propellerCalc(
-    seu_obj1 = sc_merge,
-    condition1 = "CIAP",
-    condition2 = "CTRL",
-    cluster_col = "cluster",
-    meta_col = "level2",
-    lookup = sample_lookup,
-    sample_col = "sample",
-    formula = "~0 + level2",
-    min_cells = 30
-  )
-
-scMisc::plotPropeller(
-  data = propeller_CIAP_CTRL,
-  color = sc_merge@misc$cluster_col,
-  filename = "CIAP_CTRL",
-  FDR = 0.1
-)
-
-scMisc::dotplotPropeller(
-    data = propeller_CIAP_CTRL,
-    color = sc_merge@misc$cluster_col,
-    filename = "CIAP_CTRL",
-)
-
 
 # CIDP vs CTRL
 propeller_CIDP_CTRL <-
@@ -232,15 +205,13 @@ propeller_VN_CTRL <-
         lookup = sample_lookup,
         sample_col = "sample",
         formula = "~0 + level2",
-        # formula = "~0 + level2 + sex + age + center",
         min_cells = 30
     )
 
 scMisc::plotPropeller(
   data = propeller_VN_CTRL,
   color = sc_merge@misc$cluster_col,
-#   filename = "VN_CTRL",
-  filename = "VN_CTRL_sex_age_center",
+  filename = "VN_CTRL",
   FDR = 0.1
 )
 
@@ -261,7 +232,6 @@ propeller_VN_CTRL_ic <-
         lookup = sample_lookup,
         sample_col = "sample",
         formula = "~0 + level2",
-        # formula = "~0 + level2 + sex + age ",
         min_cells = 30
     )
 
@@ -279,102 +249,60 @@ scMisc::dotplotPropeller(
   height = 6
 )
 
-#  VN vs CIAP
-propeller_VN_CIAP <-
-  scMisc::propellerCalc(
-    seu_obj1 = sc_merge,
-    condition1 = "VN",
-    condition2 = "CIAP",
-    cluster_col = "cluster",
-    meta_col = "level2",
-    lookup = sample_lookup,
-    sample_col = "sample",
-    formula = "~0 + level2",
-    # formula = "~0 + level2 + sex + age + center",
-    min_cells = 30
-  )
+#  CIAP vs CTRL
+propeller_CIAP_CTRL <-
+    scMisc::propellerCalc(
+        seu_obj1 = sc_merge,
+        condition1 = "CIAP",
+        condition2 = "CTRL",
+        cluster_col = "cluster",
+        meta_col = "level2",
+        lookup = sample_lookup,
+        sample_col = "sample",
+        formula = "~0 + level2",
+        min_cells = 30
+    )
 
 scMisc::plotPropeller(
-  data = propeller_VN_CIAP,
+  data = propeller_CIAP_CTRL,
   color = sc_merge@misc$cluster_col,
-  filename = "VN_CIAP",
-#   filename = "VN_CIAP_sex_age_center",
+  filename = "CIAP_CTRL",
   FDR = 0.1
 )
 
 scMisc::dotplotPropeller(
-  data = propeller_VN_CIAP,
+  data = propeller_CIAP_CTRL,
   color = sc_merge@misc$cluster_col,
-  filename = "VN_CIAP"
+  filename = "CIAP_CTRL"
 )
 
-#  VN vs CIDP
-propeller_VN_CIDP <-
-  scMisc::propellerCalc(
-    seu_obj1 = sc_merge,
-    condition1 = "VN",
-    condition2 = "CIDP",
-    cluster_col = "cluster",
-    meta_col = "level2",
-    lookup = sample_lookup,
-    sample_col = "sample",
-    formula = "~0 + level2",
-    # formula = "~0 + level2 + sex + age + center",
-    min_cells = 30
-  )
+# immune cells
+propeller_CIAP_CTRL_ic <-
+    scMisc::propellerCalc(
+        seu_obj1 = ic,
+        condition1 = "CIAP",
+        condition2 = "CTRL",
+        cluster_col = "ic_cluster",
+        meta_col = "level2",
+        lookup = sample_lookup,
+        sample_col = "sample",
+        formula = "~0 + level2",
+        min_cells = 30
+    )
 
 scMisc::plotPropeller(
-  data = propeller_VN_CIDP,
-  color = sc_merge@misc$cluster_col,
-  filename = "VN_CIDP",
-#   filename = "VN_CIDP_sex_age_center",
+  data = propeller_CIAP_CTRL_ic,
+  color = ic@misc$ic_cluster_col,
+  filename = "CIAP_CTRL_ic",
   FDR = 0.1
 )
 
 scMisc::dotplotPropeller(
-  data = propeller_VN_CIDP,
-  color = sc_merge@misc$cluster_col,
-  filename = "VN_CIDP"
+  data = propeller_CIAP_CTRL_ic,
+  color = ic@misc$ic_cluster_col,
+  filename = "CIAP_CTRL_ic",
+  height = 6
 )
-
-# CIDP vs CIAP
-propeller_CIDP_CIAP <-
-  scMisc::propellerCalc(
-    seu_obj1 = sc_merge,
-    condition1 = "CIDP",
-    condition2 = "CIAP",
-    cluster_col = "cluster",
-    meta_col = "level2",
-    lookup = sample_lookup,
-    sample_col = "sample",
-    # formula = "~0 + level2",
-    formula = "~0 + level2 + sex + age + center",
-    min_cells = 30
-  )
-
-scMisc::plotPropeller(
-  data = propeller_CIDP_CIAP,
-  color = sc_merge@misc$cluster_col,
-  filename = "CIDP_CIAP_sex_age_center",
-#   filename = "CIDP_CIAP",
-  FDR = 0.1
-)
-
-scMisc::dotplotPropeller(
-  data = propeller_CIDP_CIAP,
-  color = sc_merge@misc$cluster_col,
-  filename = "CIDP_CIAP"
-)
-
-as.data.frame.matrix(table(sc_merge@meta.data[["cluster"]], sc_merge@meta.data[["sample"]])) |>
-  mutate(across(where(is.numeric), function(x) x / sum(x) * 100)) |>
-  rownames_to_column("cluster") |>
-  dplyr::filter(cluster == "repairSC") |>
-  pivot_longer(-cluster, names_to = "sample", values_to = "value") |>
-  arrange(desc(value))   |>
-  left_join(select(sample_lookup, sample, level2, internal_name)) |>
-  write_csv(file.path("results", "abundance", "repairSC.csv"))
-
 
 # abundance of mrVI groups ----
 mrvi_lookup <- read_csv(file.path("lookup", "mrvi_lookup.csv"))
