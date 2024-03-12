@@ -125,8 +125,10 @@ qsave(ic_slim, file.path("objects", "ic_reclustered.qs"))
 # plot umaps ----
 # rpca looked best
 umap_ic_map <-
-    DimPlot(ic_slim, reduction = "umap.rpca", pt.size = .5, raster = FALSE, alpha = 0.1, group.by = "ic_level2", cols = my_cols_25, label = TRUE) +
-    theme_rect()
+    DimPlot(ic, reduction = "umap.rpca", pt.size = .5, raster = FALSE, alpha = 0.1, group.by = "ic_level2", cols = my_cols_25, label = TRUE) +
+    theme_rect() + 
+    xlab("UMAP1") + 
+    ylab("UMAP2")
 
 ggsave(plot = umap_ic_map, file.path("results", "map", "ic_azimuth_rpca.png"), width = 10, height = 8)
 
@@ -171,6 +173,62 @@ ggsave(plot = clustree, file.path("results", "umap", "ic_clustree.png"), width =
 
 
 # feature plots ----
+endo_epi_macs <-
+  FeaturePlot(
+    ic,
+    features = c("CX3CR1", "TREM2", "LYVE1", "FOLR2", "CXCR2", "MS4A7", "TIMD4"),
+    reduction = "umap.rpca",
+    pt.size = 0.1,
+    raster = FALSE,
+    # alpha = 0.2,
+    coord.fixed = TRUE,
+    cols = c("#F0F0F0", "#CB181D"),
+    order = TRUE,
+    ncol = 2
+  ) &
+    theme(
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      panel.border = element_rect(color = "black", fill = NA, size = 1.0)
+    ) &
+    xlab("UMAP1") &
+    ylab("UMAP2")
+ggsave(file.path("results", "featureplot", "ic_endo_epi_macs.png"), endo_epi_macs, width = 8, height = 16)
+ggsave(file.path("results", "featureplot", "ic_endo_epi_macs.pdf"), endo_epi_macs, width = 8, height = 16)
+
+b_igh <- 
+  FeaturePlot(
+    ic,
+    features = c("IGHM", "IGHD", "IGHG1", "IGHG2", "IGHG3", "IGHG4", "IGHA1", "IGHA2"),
+    reduction = "umap.rpca",
+    pt.size = 0.1,
+    raster = FALSE,
+    coord.fixed = TRUE,
+    cols = c("#F0F0F0", "#CB181D"),
+    order = TRUE,
+    ncol = 2
+  ) &
+    theme(
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      panel.border = element_rect(color = "black", fill = NA, size = 1.0)
+    ) &
+    xlab("UMAP1") &
+    ylab("UMAP2")
+ggsave(file.path("results", "featureplot", "ic_bc_igh.png"), b_igh, width = 8, height = 16)
+ggsave(file.path("results", "featureplot", "ic_bc_igh.pdf"), b_igh, width = 8, height = 16)
+
+dotPlot(
+  path = file.path("lookup", "markers.csv"),
+  object = ic,
+  par = "Bc_Ig",
+  dot_min = 0.01,
+  height = 8,
+  width = 6
+) 
+
+
+
 scMisc::fPlot(ic_slim,
   path = file.path("lookup", "markers.csv"),
   par = "cellmarkers_aie",
@@ -523,10 +581,14 @@ ic$ic_cluster <- factor(Idents(ic), levels = ic@misc$ic_cluster_order)
 Idents(ic) <- ic$ic_cluster
 
 umap_ic <-
-    DimPlot(ic, reduction = "umap.rpca", pt.size = .5, raster = FALSE, alpha = 0.1, group.by = "ic_cluster", cols = ic@misc$ic_cluster_col, label = TRUE) +
+    DimPlot(ic, reduction = "umap.rpca", pt.size = .1, raster = FALSE, alpha = 0.3, group.by = "ic_cluster", cols = ic@misc$ic_cluster_col, label = TRUE) +
     theme_rect() +
-    NoLegend()
-ggsave(plot = umap_ic, file.path("results", "umap", "ic_rpca_annotated.png"), width = 12, height = 9)
+    NoLegend() + 
+    xlab("UMAP1") +
+    ylab("UMAP2")
+
+ggsave(plot = umap_ic, file.path("results", "umap", "ic_rpca_annotated.png"), width = 8, height = 7)
+ggsave(plot = umap_ic, file.path("results", "umap", "ic_rpca_annotated.pdf"), width = 8, height = 7)
 
 # save object ---
 qs::qsave(ic, file.path("objects", "ic.qs"))
