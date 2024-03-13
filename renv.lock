@@ -1851,6 +1851,28 @@
       ],
       "Hash": "fafe8a992eab30cdac7c88d0c25aa1e7"
     },
+    "arrow": {
+      "Package": "arrow",
+      "Version": "14.0.0.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "R6",
+        "assertthat",
+        "bit64",
+        "cpp11",
+        "glue",
+        "methods",
+        "purrr",
+        "rlang",
+        "stats",
+        "tidyselect",
+        "utils",
+        "vctrs"
+      ],
+      "Hash": "042f2ee2286a91abe5a3d66c9be92380"
+    },
     "askpass": {
       "Package": "askpass",
       "Version": "1.2.0",
@@ -1860,6 +1882,16 @@
         "sys"
       ],
       "Hash": "cad6cf7f1d5f6e906700b9d3e718c796"
+    },
+    "assertthat": {
+      "Package": "assertthat",
+      "Version": "0.2.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "tools"
+      ],
+      "Hash": "50c838a310445e954bc13f26f26a6ecf"
     },
     "backports": {
       "Package": "backports",
@@ -3274,6 +3306,18 @@
         "tibble"
       ],
       "Hash": "1bc682f6919559275c36c241cb5274a1"
+    },
+    "ggvenn": {
+      "Package": "ggvenn",
+      "Version": "0.1.10",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "dplyr",
+        "ggplot2",
+        "grid"
+      ],
+      "Hash": "76c1d0fc86099be703106f11ba755520"
     },
     "glmGamPoi": {
       "Package": "glmGamPoi",
@@ -5564,22 +5608,6 @@
         "stats"
       ],
       "Hash": "10ee4b91ec812690bd55d9bf51edccee"
-    },
-    "sceasy": {
-      "Package": "sceasy",
-      "Version": "0.0.7",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "sceasy",
-      "RemoteUsername": "cellgeni",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "0cfc0e39da4b3ce4abf19d2171daa0e4d2acdd03",
-      "Requirements": [
-        "R",
-        "reticulate"
-      ],
-      "Hash": "251bb852d3351cbccf28d37351ad1c1d"
     },
     "scran": {
       "Package": "scran",
