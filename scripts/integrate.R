@@ -69,11 +69,10 @@ qs::qsave(sc_merge, file.path("objects", "sc_merge.qs"))
 
 # seurat map to reference datasets ----
 pns_sn_sciatic_milbrandt <- qs::qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/pns_atlas_milbrandt/pns_sn_sciatic_GSE182098.qs", nthreads = 4)
-
+DimPlot(pns_sn_sciatic_milbrandt, label = TRUE)
 dplyr::count(pns_sn_sciatic_milbrandt@meta.data, cluster)
 
-pns_milbrandt_sc <- readRDS("/home/mischko/Documents/beruf/forschung/scRNA_reference/pns_atlas_milbrandt/GSE182098_peripheral-nerves-Schwann-cell-specific_single-nuclei-atlas-8Feb2021.RDS")
-
+# pns_milbrandt_sc <- readRDS("/home/mischko/Documents/beruf/forschung/scRNA_reference/pns_atlas_milbrandt/GSE182098_peripheral-nerves-Schwann-cell-specific_single-nuclei-atlas-8Feb2021.RDS")
 suter_p1 <- readRDS("/home/mischko/Documents/beruf/forschung/scRNA_reference/sciatic_nerve_atlas_suter/10xGeno_P1.rds")
 suter_p1$cluster <- Idents(suter_p1)
 
@@ -266,21 +265,29 @@ pred_plot_heming_full <-
 ggsave(plot = pred_plot_heming_full, file.path("results", "map", "map_heming_full.png"), width = 8, height = 8)
 
 pred_plot_milbrandt_full <-
- DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "milbrandt_sciatic_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE) +
-  theme_rect() + 
-  NoLegend()
+  DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "milbrandt_sciatic_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE) +
+  theme_rect() +
+  NoLegend() +
+  xlab("UMAP1") +
+  ylab("UMAP2") +
+  ggtitle("Yim et al.")
+
 ggsave(plot = pred_plot_milbrandt_full, file.path("results", "map", "map_milbrandt_full.png"), width = 8, height = 8)
 
 pred_plot_suter_p1_full <-
  DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "suter_p1_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE) +
   theme_rect() + 
-  NoLegend()
+  NoLegend() + 
 ggsave(plot = pred_plot_suter_p1_full, file.path("results", "map", "map_suter_p1_full.png"), width = 8, height = 8)
 
 pred_plot_suter_p60_full <-
  DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "suter_p60_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE) +
   theme_rect() + 
-  NoLegend()
+  NoLegend() + 
+  xlab("UMAP1") +
+  ylab("UMAP2") + 
+  ggtitle("Gerber et al. p60")
+
 ggsave(plot = pred_plot_suter_p60_full, file.path("results", "map", "map_suter_p60_full.png"), width = 8, height = 8)
 
 pred_plot_suter_merge_full <-
@@ -313,10 +320,20 @@ pred_plot_bbb <-
   theme_rect()
 ggsave(plot = pred_plot_bbb, file.path("results", "map", "map_bbb_full.png"), width = 8, height = 8)
 
+# only keep large clusters
+ec_rosmap <- subset(ec, subset = rosmap_label %in% c("aEndo", "capEndo", "vEndo"))
+table(ec_rosmap$rosmap_label)
+
 pred_plot_rosmap <-
- DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "rosmap_label", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = FALSE) +
-  theme_rect()
-ggsave(plot = pred_plot_rosmap, file.path("results", "map", "map_rosmap_full.png"), width = 8, height = 8)
+ DimPlot(ec_rosmap, reduction = "umap.scvi.full", group.by = "rosmap_label", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE)  + 
+  theme_rect() +
+  NoLegend() + 
+  xlim(-12, -5) +
+  ylim(2, 10) +
+  xlab("UMAP1") +
+  ylab("UMAP2") + 
+  ggtitle("ROSMAP vascular cells")
+ggsave(plot = pred_plot_rosmap, file.path("results", "map", "map_rosmap_full.png"), width = 4, height = 4)
 
 dplyr::count(sc_merge@meta.data, rosmap_score)
 
