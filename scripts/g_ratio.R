@@ -38,10 +38,14 @@ g_ratio_plot <-
     ggplot(aes(x = sample, y = g_ratio)) +
     geom_boxplot() +
     geom_jitter(height = 0, width = 0.1, alpha = 0.3, size = 0.1) +
-    theme_bw()
+    theme_bw() + 
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+    xlab("") + 
+    ylab("") +
+    ggtitle("g-ratio") 
 
 ggsave(file.path("results", "gratio", "g_ratio.pdf"),
-    width = 10, height = 3,
+    width = 6, height = 3,
     plot = g_ratio_plot
 )
 
@@ -83,7 +87,7 @@ g_ratio_level2 <-
         legend.position = "none"
     )
 
-ggsave(plot = g_ratio_level2, file.path("results", "gratio", "level2_g_ratio.pdf"), width = 5, height = 5)
+ggsave(plot = g_ratio_level2, file.path("results", "gratio", "level2_g_ratio.pdf"), width = 2, height = 3)
 
 library(dplyr)
 library(purrr)
@@ -105,15 +109,6 @@ models_gratio <-
     unnest(cols = c(data)) |>
     select(sample, level2, slope) |>
     distinct()
-
-s22_gratio <-
-    g_ratio |>
-    dplyr::filter(sample == "S22")
-
-s22_gratio |>
-    lm(g_ratio ~ axon_diameter, data = _) |>
-    broom::tidy()
-
 
 slope_level2 <-
     models_gratio |>
