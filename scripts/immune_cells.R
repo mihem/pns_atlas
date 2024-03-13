@@ -176,7 +176,7 @@ ggsave(plot = clustree, file.path("results", "umap", "ic_clustree.png"), width =
 endo_epi_macs <-
   FeaturePlot(
     ic,
-    features = c("CX3CR1", "TREM2", "LYVE1", "FOLR2", "CXCR2", "MS4A7", "TIMD4"),
+    features = c("MS4A7", "CX3CR1", "TREM2", "LYVE1", "FOLR2", "TIMD4"),
     reduction = "umap.rpca",
     pt.size = 0.1,
     raster = FALSE,
@@ -184,7 +184,7 @@ endo_epi_macs <-
     coord.fixed = TRUE,
     cols = c("#F0F0F0", "#CB181D"),
     order = TRUE,
-    ncol = 2
+    ncol = 3
   ) &
     theme(
       axis.text = element_blank(),
@@ -193,8 +193,8 @@ endo_epi_macs <-
     ) &
     xlab("UMAP1") &
     ylab("UMAP2")
-ggsave(file.path("results", "featureplot", "ic_endo_epi_macs.png"), endo_epi_macs, width = 8, height = 16)
-ggsave(file.path("results", "featureplot", "ic_endo_epi_macs.pdf"), endo_epi_macs, width = 8, height = 16)
+ggsave(file.path("results", "featureplot", "ic_endo_epi_macs.png"), endo_epi_macs, width = 8, height = 6)
+ggsave(file.path("results", "featureplot", "ic_endo_epi_macs.pdf"), endo_epi_macs, width = 8, height = 6)
 
 b_igh <- 
   FeaturePlot(
@@ -218,6 +218,33 @@ b_igh <-
 ggsave(file.path("results", "featureplot", "ic_bc_igh.png"), b_igh, width = 8, height = 16)
 ggsave(file.path("results", "featureplot", "ic_bc_igh.pdf"), b_igh, width = 8, height = 16)
 
+b_plasma <- subset(ic, subset = ic_cluster %in% c("Plasma", "B"))
+# Idents(b_plasma) <- "B_plasma"
+
+dp_b_plasma <-
+  DotPlot(b_plasma,
+    features = c("IGHM", "IGHD", "IGHG1", "IGHG2", "IGHG3", "IGHG4", "IGHA1", "IGHA2"),
+    scale = FALSE
+  ) +
+  viridis::scale_color_viridis(option = "viridis") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, face = "italic")) +
+  xlab("") +
+  ylab("")
+
+ggsave(plot = dp_b_plasma, file.path("results", "dotplot", "dp_ic_bc_igh.pdf"), width = 4.5, height = 1.5)
+ggsave(plot = dp_b_plasma, file.path("results", "dotplot", "dp_ic_bc_igh_legend.pdf"), width = 4.5, height = 5)
+# ggsave(plot = dp_b_plasma, file.path("results", "dotplot", "dp_ic_bc_igh_merged.pdf"), width = 4.5, height = 1.25)
+
+dotPlot(
+  path = file.path("lookup", "markers.csv"),
+  object = b_plasma,
+  par = "Bc_Ig",
+  dot_min = 0.01,
+  height = 2,
+  width = 6
+)
+
+
 dotPlot(
   path = file.path("lookup", "markers.csv"),
   object = ic,
@@ -226,7 +253,6 @@ dotPlot(
   height = 8,
   width = 6
 ) 
-
 
 
 scMisc::fPlot(ic_slim,
