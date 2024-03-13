@@ -41,7 +41,9 @@ folders <- c(
   "module",
   "projectil",
   "venn",
-  "gratio"
+  "gratio",
+  "demographics",
+  "violinplot"
 )
 lapply(file.path("results", folders), dir.create, recursive = TRUE)
 
