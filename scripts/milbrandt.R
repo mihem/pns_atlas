@@ -19,6 +19,10 @@ options(warn = 0)
 future::plan("multicore", workers = 6)
 conflicts_prefer(base::setdiff)
 
+remotes::install_github("mihem/scMisc")
+detach(package:scMisc, unload = TRUE)
+
+
 # load preprocessed data ----
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 
@@ -125,11 +129,32 @@ vennPlot("periC")
 
 markers_xenium <- read_xlsx(file.path("lookup", "xenium_list_final.xlsx"))
 
-test1 <- 
-markers_xenium |>
-    dplyr::filter(cluster == "mySC") |>
-    pull(transcript)
+# dotplot comparison
+sc_merge_subset <- subset(sc_merge, subset = cluster %in% c("mySC", "nmSC", "ven_capEC2", "periC1", "periC2", "periC3"))
 
-test2 <- topmarkers$mySC$gene[1:25]
+table(sc_merge$cluster)
 
-union(test1, test2)
+
+dotPlot(
+  path = file.path("lookup", "markers.csv"),
+  object = sc_merge_subset,
+  par = "novel",
+  dot_min = 0.01,
+  height = 2.5,
+  width = 5.5,
+  scale = FALSE
+)
+
+pns_sn_sciatic_milbrandt_subset <- subset(pns_sn_sciatic_milbrandt, subset = cluster %in% c("mySC", "nmSC", "mvEC", "PnC"))
+Idents(pns_sn_sciatic_milbrandt_subset) <- factor(pns_sn_sciatic_milbrandt_subset$cluster, levels = c("mySC", "nmSC", "PnC", "mvEC"))
+
+dotPlot(
+  path = file.path("lookup", "markers.csv"),
+  object = pns_sn_sciatic_milbrandt_subset,
+  par = "novel",
+  dot_min = 0.01,
+  height = 2,
+  width = 5,
+  ortho = "human2mouse",
+  scale = FALSE
+)
