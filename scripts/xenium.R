@@ -233,6 +233,14 @@ for (i in names(xenium_objects)) {
     ggsave(plot = p1, filename = file.path("results", "xenium", paste0("seurat_predict_group_", i, ".png")), width = 15, height = 15)
 }
 
+# S24_CTRL cropped 
+cropped_coords_S24_CTRL_group <- Crop(xenium_objects[["S24_CTRL"]][["fov"]], x = c(700, 2700), y = c(900, 3900), coords = "plot")
+xenium_objects[["S24_CTRL"]][["zoom"]] <- cropped_coords_S24_CTRL_group
+S24_group_plot <- ImageDimPlot(xenium_objects[["S24_CTRL"]], group.by = "sn_predictions_group", cols = prediction_group_col, axes = FALSE, size = .5, fov = "zoom") + 
+    theme(legend.title = element_blank())
+ggsave(plot = S24_group_plot, filename = file.path("results", "xenium", paste0("seurat_predict_group_S24_CTRL_cropped.png")), width = 7, height = 5, dpi = 600)
+
+
 for (i in names(xenium_objects)) {
     Idents(xenium_objects[[i]]) <- xenium_objects[[i]]$sn_predictions_group
 }
