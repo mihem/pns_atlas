@@ -57,6 +57,7 @@ Idents(sc_merge) <- sc_merge$cluster
 
 DefaultAssay(sc_merge) <- "RNA"
 
+# final annotated UMAP plot by cluster
 umap <-
     DimPlot(sc_merge, reduction = "umap.scvi.full", pt.size = .1, raster = FALSE, alpha = 0.1, group.by = "cluster", cols = sc_merge@misc$cluster_col, label = TRUE) +
     theme_rect() +
@@ -65,8 +66,28 @@ umap <-
     ylab("UMAP2")
 
 ggsave(plot = umap, file.path("results", "umap", "scvi_umap_full_annotated.png"), width = 10, height = 8)
-
 ggsave(plot = umap, file.path("results", "umap", "scvi_umap_full_annotated.pdf"), width = 10, height = 8)
+
+# final UMAP plot by center
+umap_center <-
+    DimPlot(sc_merge, reduction = "umap.scvi.full", pt.size = .1, raster = FALSE, alpha = 0.1, group.by = "center", cols = pals::cols25(3), label = FALSE) +
+    theme_rect() +
+    xlab("UMAP1") + 
+    ylab("UMAP2")
+
+ggsave(plot = umap_center, file.path("results", "umap", "scvi_umap_group_center_full.png"), width = 10, height = 8)
+ggsave(plot = umap_center, file.path("results", "umap", "scvi_umap_group_center_full.pdf"), width = 10, height = 8)
+
+
+# final UMAP plot by sample
+umap_sample <-
+    DimPlot(sc_merge, reduction = "umap.scvi.full", pt.size = .1, raster = FALSE, alpha = 0.1, group.by = "sample", cols = my_cols_50, label = FALSE) +
+    theme_rect() +
+    xlab("UMAP1") + 
+    ylab("UMAP2")
+
+ggsave(plot = umap_sample, file.path("results", "umap", "scvi_umap_group_sample_full.png"), width = 10, height = 8)
+ggsave(plot = umap_sample, file.path("results", "umap", "scvi_umap_group_sample_full.pdf"), width = 10, height = 8)
 
 # save object ---
 qs::qsave(sc_merge, file.path("objects", "sc_merge.qs"))
