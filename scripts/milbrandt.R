@@ -130,23 +130,25 @@ vennPlot("periC")
 markers_xenium <- read_xlsx(file.path("lookup", "xenium_list_final.xlsx"))
 
 # dotplot comparison
-sc_merge_subset <- subset(sc_merge, subset = cluster %in% c("mySC", "nmSC", "ven_capEC2", "periC1", "periC2", "periC3"))
+sc_merge_subset <- subset(sc_merge, subset = cluster %in% c("mySC", "nmSC", "periC1", "periC2", "periC3"))
 
-table(sc_merge$cluster)
-
+# rename periC1, periC2, periC3 to periC
+sc_merge_subset$cluster <- gsub(pattern = "periC\\d", replacement = "periC", x = sc_merge_subset$cluster)
+sc_merge_subset$cluster <- factor(sc_merge_subset$cluster, levels = c("mySC", "nmSC", "periC"))
+Idents(sc_merge_subset) <- sc_merge_subset$cluster
 
 dotPlot(
   path = file.path("lookup", "markers.csv"),
   object = sc_merge_subset,
   par = "novel",
   dot_min = 0.01,
-  height = 2.5,
-  width = 5.5,
-  scale = FALSE
+  height = 2,
+  width = 4,
 )
 
-pns_sn_sciatic_milbrandt_subset <- subset(pns_sn_sciatic_milbrandt, subset = cluster %in% c("mySC", "nmSC", "mvEC", "PnC"))
-Idents(pns_sn_sciatic_milbrandt_subset) <- factor(pns_sn_sciatic_milbrandt_subset$cluster, levels = c("mySC", "nmSC", "PnC", "mvEC"))
+
+pns_sn_sciatic_milbrandt_subset <- subset(pns_sn_sciatic_milbrandt, subset = cluster %in% c("mySC", "nmSC", "PnC"))
+Idents(pns_sn_sciatic_milbrandt_subset) <- factor(pns_sn_sciatic_milbrandt_subset$cluster, levels = c("mySC", "nmSC", "PnC"))
 
 dotPlot(
   path = file.path("lookup", "markers.csv"),
@@ -154,7 +156,7 @@ dotPlot(
   par = "novel",
   dot_min = 0.01,
   height = 2,
-  width = 5,
-  ortho = "human2mouse",
-  scale = FALSE
+  width = 4,
+  ortho = "human2mouse"
+  # scale = FALSE
 )
