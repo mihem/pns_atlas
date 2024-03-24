@@ -3307,18 +3307,6 @@
       ],
       "Hash": "1bc682f6919559275c36c241cb5274a1"
     },
-    "ggvenn": {
-      "Package": "ggvenn",
-      "Version": "0.1.10",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "dplyr",
-        "ggplot2",
-        "grid"
-      ],
-      "Hash": "76c1d0fc86099be703106f11ba755520"
-    },
     "glmGamPoi": {
       "Package": "glmGamPoi",
       "Version": "1.14.0",
