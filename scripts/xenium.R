@@ -6,11 +6,13 @@ library(tidyverse)
 library(scMisc)
 future::plan("multicore", workers = 6)
 
+
 # load Xenium data
 xenium_paths <- list.dirs(file.path("xenium", "raw"), full.names = TRUE, recursive = FALSE)
 
 # Get the center position of each centroid. There is one row per cell in this dataframe.
 str(GetTissueCoordinates(xenium_s11[["fov"]][["centroids"]]))
+
 
 xenium_meta <- 
     readxl::read_excel(file.path("lookup", "xenium_meta.xlsx"))  |>
@@ -182,8 +184,10 @@ for (i in c("S24_CTRL", "S30_VN")) {
         cols = xenium_objects[[i]]@misc$cluster_col,
         # axes = TRUE,
         fov = "zoom",
-        size = 1)
-    ggsave(plot = p1, filename = file.path("results", "xenium", "SC", paste0("seurat_predict_zoom_", i, ".pdf")), width = 8, height = 8)
+        size = 1, 
+        flip_xy = FALSE) + 
+        theme(legend.title = element_blank())
+    ggsave(plot = p1, filename = file.path("results", "xenium", "SC", paste0("seurat_predict_zoom_", i, ".png")), width = 3.5, height = 3.5, dpi = 600)
 }
 
 
@@ -234,11 +238,11 @@ for (i in names(xenium_objects)) {
 }
 
 # S24_CTRL cropped 
-cropped_coords_S24_CTRL_group <- Crop(xenium_objects[["S24_CTRL"]][["fov"]], x = c(700, 2700), y = c(900, 3900), coords = "plot")
+cropped_coords_S24_CTRL_group <- Crop(xenium_objects[["S24_CTRL"]][["fov"]], x = c(1500, 2500), y = c(2200, 3500), coords = "plot")
 xenium_objects[["S24_CTRL"]][["zoom"]] <- cropped_coords_S24_CTRL_group
-S24_group_plot <- ImageDimPlot(xenium_objects[["S24_CTRL"]], group.by = "sn_predictions_group", cols = prediction_group_col, axes = FALSE, size = .5, fov = "zoom") + 
+S24_group_plot <- ImageDimPlot(xenium_objects[["S24_CTRL"]], group.by = "sn_predictions_group", cols = prediction_group_col, axes = FALSE, size = 1, fov = "zoom") + 
     theme(legend.title = element_blank())
-ggsave(plot = S24_group_plot, filename = file.path("results", "xenium", paste0("seurat_predict_group_S24_CTRL_cropped.png")), width = 7, height = 5, dpi = 600)
+ggsave(plot = S24_group_plot, filename = file.path("results", "xenium", paste0("seurat_predict_group_S24_CTRL_cropped.png")), width = 5, height = 5, dpi = 600)
 
 
 for (i in names(xenium_objects)) {
@@ -314,14 +318,14 @@ plotQuanti <- function(y_value, name) {
                 vjust = 0.3,
             )
         )
-    ggsave(file.path("results", "xenium", "quantification", paste0(name, ".pdf")), width = 3, height = 3)
+    ggsave(file.path("results", "xenium", "quantification", paste0(name, ".pdf")), width = 2, height = 2.5)
 }
 
-plotQuanti(y_value = "endoPTPRC_mean", name = "PTPRC_endo_mean")
-plotQuanti(y_value = "epiPTPRC", name = "PTPRC_epi")
-plotQuanti(y_value = "endoPTPRC_density_mean", name = "PTPRC_endo_density_mean")
-plotQuanti(y_value = "endoPTPRC_density_sum", name = "PTPRC_endo_density_sum")
 plotQuanti(y_value = "epiPTPRC_density", name = "PTPRC_epi_density")
+plotQuanti(y_value = "endoPTPRC_density_sum", name = "PTPRC_endo_density_sum")
+# plotQuanti(y_value = "endoPTPRC_mean", name = "PTPRC_endo_mean")
+# plotQuanti(y_value = "epiPTPRC", name = "PTPRC_epi")
+# plotQuanti(y_value = "endoPTPRC_density_mean", name = "PTPRC_endo_density_mean")
 
 # abundance of xenium cell predictions ----
 cells_list <-
@@ -504,3 +508,4 @@ dplyr::count(xenium_objects[["S04_CIAP"]]@meta.data, sn_predictions_group)
 # # niche.plot <- ImageDimPlot(xenium.obj, group.by = "niches", size = 1.5, dark.background = F) + ggtitle("Niches") +
 # #     scale_fill_manual(values = c("#442288", "#6CA2EA", "#B5D33D", "#FED23F", "#EB7D5B"))
 # # celltype.plot | niche.plot
+
