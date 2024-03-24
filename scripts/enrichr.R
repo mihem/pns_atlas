@@ -108,6 +108,7 @@ plotEnrichrFun <- function(filename, sheet, width, height) {
     enrichr <- readxl::read_excel(file.path("results", "enrichr", glue::glue("enrichr_{filename}.xlsx")), sheet = sheet) |>
         dplyr::slice_min(order_by = Adjusted.P.value, n = 10, with_ties = FALSE) |>
         tidyr::separate(Overlap, into = c("overlap1", "overlap2")) |> # separate overlap in two columns
+        dplyr::mutate(Term = gsub(x = Term, pattern = "\\s\\(.+\\)", replacement = "")) |>
         dplyr::mutate(overlap = as.numeric(overlap1) / as.numeric(overlap2)) |> # calculcate overlap
         ggplot(aes(y = reorder(Term, -log10(Adjusted.P.value)), x = -log10(Adjusted.P.value))) +
         geom_col(fill = scales::hue_pal()(5)[1]) +
@@ -124,7 +125,7 @@ plotEnrichrFun <- function(filename, sheet, width, height) {
 lapply(
     c("Macro2", "Macro17", "Macro18"),
     FUN = function(x) {
-        plotEnrichrFun(x, sheet = "GO_Biological_Process_2023", width = 7, height = 3)
+        plotEnrichrFun(x, sheet = "GO_Biological_Process_2023", width = 6, height = 2)
     })
 
 # plot enrichment of main clusters ----
