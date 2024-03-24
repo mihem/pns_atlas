@@ -153,7 +153,7 @@ plotDE <- function(name, title) {
         geom_col() +
         coord_flip() +
         scale_fill_manual(values = sc_merge@misc$cluster_col) +
-        theme_bw() +
+        theme_classic() +
         theme(legend.position = "none") +
         labs(
             x = "",
@@ -174,17 +174,20 @@ plotDE("pnp_ctrl_pseudobulk", title = "PNP vs CTRL")
 # volcano plot
 volcanoPlot <- function(filename, sheet, FCcutoff = 2, selectLab = NULL, drawConnectors = TRUE, condition1, condition2) {
     input <- readxl::read_excel(file.path("results", "de", paste0(filename, ".xlsx")), sheet = sheet)
+    # input <- dplyr::filter(input, abs(avg_logFC) > 1)
     if (nrow(input) != 0) {
         volcano <- EnhancedVolcano::EnhancedVolcano(
             data.frame(input),
-            lab = input[["gene"]],
+            lab = paste0("italic('", input[["gene"]], "')"),
             x = "avg_logFC",
             y = "p_val_adj",
+            xlim = c(min(input[["avg_logFC"]], max(input[["avg_logFC"]]))),
+            ylim = c(0, max(-log10(input[["p_val_adj"]]))),
             pCutoff = 0.1,
             FCcutoff = FCcutoff,
             axisLabSize = 15,
-            pointSize = 1,
-            labSize = 2,
+            pointSize = 2,
+            labSize = 5,
             subtitle = NULL,
             caption = NULL,
             border = "full",
@@ -192,32 +195,37 @@ volcanoPlot <- function(filename, sheet, FCcutoff = 2, selectLab = NULL, drawCon
             gridlines.minor = FALSE,
             drawConnectors = drawConnectors,
             lengthConnectors = unit(0.0001, "npc"),
-               title = paste(condition1, "vs", condition2, "in ", sheet),
+            title = paste(condition1, "vs", condition2, "in ", sheet),
             boxedLabels = TRUE,
             selectLab = selectLab,
-            xlab = "Log2 fold change",
-            ylab = "-Log10 adjusted pvalue",
+            xlab = bquote(~ Log[2] ~ "fold change"),
+            ylab = bquote(~ -Log[10] ~ "adjusted p-value"),
+            parseLabels = TRUE,
             legendLabels = c(
                 "NS", "logFC",
                 "p-val", "p-val + logFC"
             ),
-            legendPosition = "right"
+            # legendPosition = "right",
+            legendPosition = "none"
         )
-        pdf(file.path("results", "de", paste0(filename, "_", sheet, ".pdf")), width = 8, height = 6)
+        png(file.path("results", "de", paste0(filename, "_", sheet, ".png")), width = 10, height = 12, units = "cm", res = 300)
+        # pdf(file.path("results", "de", paste0(filename, "_", sheet, ".pdf")), width = 8, height = 6)
         print(volcano)
         dev.off()
     }
 }
-
 # lab_blood <- list("actCD4" = c("NKG7", "GNLY", "GZMB", "KLDR1", "CCL5", "HLA-DRB1", "HLA-DRB5", "HLA-DRA", "LTB", "CCR7"), "naiveBc" = c("FOS", "JUNB", "FCER1G", "IFITM3"))
 
 cluster_de <- c("repairSC", "mySC", "nmSC", "PC2")
+
 lab_pnp_ctrl <- list(
-    "mySC" = c("DCN", "TNXB", "COL1A1", "COL15A1", "CD53", "IL4R", "CD74"),
-    "nmSC" = c("IL10RA", "IL13RA1", "CSF2RA", "TGFBI"),
-    "repairSC" = c("GALR1", "TMEM47"),
-    "PC2" = c("MFAP5", "NLGN4Y", "PCDH11Y", "IFIT3", "OASL", "MX1", "CCL2", "CCL8")
+    "mySC" = paste0("italic('", c("DCN", "TNXB", "COL1A1", "COL15A1", "CD53", "IL4R", "CD74"), "')"),
+    "nmSC" = paste0("italic('", c("IL10RA", "IL13RA1", "CSF2RA", "TGFBI"), "')"),
+    "repairSC" = paste0("italic('", c("GALR1", "TMEM47"), "')"),
+    "PC2" = paste0("italic('", c("MFAP5", "NLGN4Y", "PCDH11Y", "IFIT3", "OASL", "MX1", "CCL2", "CCL8"), "')")
 )
+
+paste0("italic('", c("DCN", "TNXB"), "')")
 
 # PNP vs CTRL
 lapply(
