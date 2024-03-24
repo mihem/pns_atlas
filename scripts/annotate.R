@@ -59,13 +59,15 @@ DefaultAssay(sc_merge) <- "RNA"
 
 # final annotated UMAP plot by cluster
 umap <-
-    DimPlot(sc_merge, reduction = "umap.scvi.full", pt.size = .1, raster = FALSE, alpha = 0.1, group.by = "cluster", cols = sc_merge@misc$cluster_col, label = TRUE) +
+    DimPlot(sc_merge, reduction = "umap.scvi.full", pt.size = .1, raster = FALSE, alpha = 0.1, group.by = "cluster", cols = sc_merge@misc$cluster_col, label = FALSE) +
     theme_rect() +
     NoLegend() + 
-    xlab("UMAP1") + 
-    ylab("UMAP2")
+    xlab("") + 
+    ylab("") + 
+    ggtitle("")
 
 ggsave(plot = umap, file.path("results", "umap", "scvi_umap_full_annotated.png"), width = 10, height = 8)
+ggsave(plot = umap, file.path("results", "umap", "scvi_umap_full_annotated_no_axis.png"), width = 10, height = 8)
 ggsave(plot = umap, file.path("results", "umap", "scvi_umap_full_annotated.pdf"), width = 10, height = 8)
 
 # final UMAP plot by center
@@ -112,6 +114,16 @@ dotPlot(
   height = 7,
   width = 16
 )
+
+dotPlot(
+  path = file.path("lookup", "markers.csv"),
+  object = sc_merge,
+  par = "dotplot_jolien",
+  dot_min = 0.01,
+  height = 7,
+  width = 15
+)
+
 
 # ec_atlas_markers <- readxl::read_excel(file.path("lookup", "ec_atlas_table3.xlsx"))
 
