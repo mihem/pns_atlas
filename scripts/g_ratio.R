@@ -49,20 +49,6 @@ ggsave(file.path("results", "gratio", "g_ratio.pdf"),
     plot = g_ratio_plot
 )
 
-gratioPlot <- function(name) {
-    g_ratio |>
-        dplyr::filter(level2 == {{ name }}) |>
-        ggplot(aes(x = axon_diameter, y = g_ratio, color = sample)) +
-        geom_point(alpha = 0.5, size = 0.1) +
-        geom_smooth(method = "lm", se = FALSE) +
-        scale_color_manual(values = pals::cols25()) +
-        theme_bw() +
-        ggtitle(name)
-}
-g_ratio_axon_plots <- lapply(levels(g_ratio$level2), FUN = gratioPlot)
-g_ratio_axon_patch <- patchwork::wrap_plots(g_ratio_level2_plots, ncol = 2)
-
-ggsave(file.path("results", "gratio", "axon_gratio.pdf"), plot = g_ratio_axon_patch, width = 10, height = 10)
 
 g_ratio_level2 <-
     g_ratio |>
@@ -89,37 +75,21 @@ g_ratio_level2 <-
 
 ggsave(plot = g_ratio_level2, file.path("results", "gratio", "level2_g_ratio.pdf"), width = 2, height = 3)
 
-library(dplyr)
-library(purrr)
-
-# Assuming g_ratio and axon_diameter are columns in your data frame, and it's grouped by 'sample'
-
-lmGratio <- function(data) {
-    model <- lm(g_ratio ~ axon_diameter, data = data) 
-    model <- broom::tidy(model)
-    result <- model$estimate[2]
-    return(result)
-}
-
-models_gratio <-
+# axon diameter level2 ----
+axon_diameter_level2 <-
     g_ratio |>
     group_by(sample) |>
-    nest() |>
-    mutate(slope = map_dbl(data, function(x) lmGratio(data = x))) |>
-    unnest(cols = c(data)) |>
-    select(sample, level2, slope) |>
-    distinct()
-
-slope_level2 <-
-    models_gratio |>
-    ggplot(aes(x = level2, y = slope, fill = level2)) +
+    mutate(axon_diameter = mean(axon_diameter)) |>
+    select(sample, level2, axon_diameter) |>
+    distinct() |>
+    ggplot(aes(x = level2, y = axon_diameter, fill = level2)) +
     geom_boxplot() +
     geom_jitter(height = 0, width = 0.1) +
     scale_fill_manual(values = sc_merge@misc$level2_cols) +
     theme_classic() +
     ylab("") +
     xlab("") +
-    ggtitle("slope") +
+    ggtitle("Axon diameter (µm)") +
     theme(
         axis.text.x = element_text(
             angle = 90,
@@ -128,69 +98,149 @@ slope_level2 <-
         ),
         legend.position = "none"
     )
-
-ggsave(plot = slope_level2, file.path("results", "gratio", "level2_slope.pdf"), width = 5, height = 5)
+ggsave(plot = axon_diameter_level2, file.path("results", "gratio", "level2_axon_diameter.pdf"), width = 2, height = 3)
 
 # comparison with ncv ---
-g_ratio <-
+# g_ratio <-
+#     g_ratio |>
+#     group_by(sample) |>
+#     mutate(g_ratio = mean(g_ratio),
+#             axon_diameter = mean(axon_diameter)) |>
+#     ungroup() |>
+#     distinct() |>
+#     left_join(select(models_gratio, sample, slope), join_by(sample)) |>
+#     distinct()
+
+cor_g_ratio_ephysio <-
     g_ratio |>
     group_by(sample) |>
-    mutate(g_ratio = mean(g_ratio),
-            axon_diameter = mean(axon_diameter)) |>
-    ungroup() |>
-    distinct() |>
-    left_join(select(models_gratio, sample, slope), join_by(sample)) |>
-    distinct()
+    summarize(
+        g_ratio = mean(g_ratio),
+        ncv_tibial_motoric = mean(ncv_tibial_motoric)
+    ) |>
+    ggplot(aes(x = ncv_tibial_motoric, y = g_ratio)) +
+    geom_smooth(method = "lm") +
+    geom_point() + 
+    theme_bw() +
+    xlab("NCV tibial motoric (m/s)") +
+    ylab("Normal axon count")
+ggsave(plot = cor_g_ratio_ephysio, file.path("results", "gratio", "cor_g_ratio_ephysio.pdf"), width = 3, height = 3)
 
-gratioEphysioPlot <- function(x_axis, y_axis) {
+cor_axon_diameter_ephysio <-
     g_ratio |>
-        group_by(sample) |>
-        summarize(
-            x_axis = median(.data[[x_axis]]),
-            y_axis = median(.data[[y_axis]])
-        ) |>
-        ggplot(aes(x = x_axis, y = y_axis)) +
-        geom_smooth(method = "lm") +
-        geom_jitter(height = 0, width = 0.1) +
-        guides(fill = guide_legend(title = NULL)) +
-        theme_bw() +
-        xlab(x_axis) +
-        ylab(y_axis) 
-}
+    group_by(sample) |>
+    summarize(
+        axon_diameter = mean(axon_diameter),
+        ncv_tibial_motoric = mean(ncv_tibial_motoric)
+    ) |>
+    ggplot(aes(x = ncv_tibial_motoric, y = axon_diameter)) +
+    geom_smooth(method = "lm") +
+    geom_point() + 
+    theme_bw() +
+    xlab("NCV tibial motoric (m/s)") +
+    ylab("Axon diameter (µm)")
+ggsave(plot = cor_axon_diameter_ephysio, file.path("results", "gratio", "cor_axon_diameter_ephysio.pdf"), width = 3, height = 3)
 
-# correlation of ephysio with gratio ---
-x_axis_var <- g_ratio |>
-    select(cmap_ulnar:ncv_sural) |>
-    names()
 
-gratio_ephysio_plots <- lapply(
-    x_axis_var,
-    function(x) {
-        gratioEphysioPlot(y_axis = "g_ratio", x_axis = x)
-    }
-)
+# gratioPlot <- function(name) {
+#     g_ratio |>
+#         dplyr::filter(level2 == {{ name }}) |>
+#         ggplot(aes(x = axon_diameter, y = g_ratio, color = sample)) +
+#         geom_point(alpha = 0.5, size = 0.1) +
+#         geom_smooth(method = "lm", se = FALSE) +
+#         scale_color_manual(values = pals::cols25()) +
+#         theme_bw() +
+#         ggtitle(name)
+# }
+# g_ratio_axon_plots <- lapply(levels(g_ratio$level2), FUN = gratioPlot)
+# g_ratio_axon_patch <- patchwork::wrap_plots(g_ratio_level2_plots, ncol = 2)
 
-gratio_ephysio_plots_patch <- patchwork::wrap_plots(gratio_ephysio_plots, ncol = 3)
-ggsave(plot = gratio_ephysio_plots_patch, file.path("results", "gratio", "gratio_ephysio.pdf"), width = 15, height = 15)
+# ggsave(file.path("results", "gratio", "axon_gratio.pdf"), plot = g_ratio_axon_patch, width = 10, height = 10)
+# lmGratio <- function(data) {
+#     model <- lm(g_ratio ~ axon_diameter, data = data) 
+#     model <- broom::tidy(model)
+#     result <- model$estimate[2]
+#     return(result)
+# }
 
-# correlation of ephysio with g ratio slope
-gratio_slope_plots <- lapply(
-    x_axis_var,
-    function(x) {
-        gratioEphysioPlot(y_axis = "slope", x_axis = x)
-    }
-)
+# models_gratio <-
+#     g_ratio |>
+#     group_by(sample) |>
+#     nest() |>
+#     mutate(slope = map_dbl(data, function(x) lmGratio(data = x))) |>
+#     unnest(cols = c(data)) |>
+#     select(sample, level2, slope) |>
+#     distinct()
 
-gratio_slope_plots_patch <- patchwork::wrap_plots(gratio_slope_plots, ncol = 3)
-ggsave(plot = gratio_slope_plots_patch, file.path("results", "gratio", "slope_ephysio.pdf"), width = 15, height = 15)
+# slope_level2 <-
+#     models_gratio |>
+#     ggplot(aes(x = level2, y = slope, fill = level2)) +
+#     geom_boxplot() +
+#     geom_jitter(height = 0, width = 0.1) +
+#     scale_fill_manual(values = sc_merge@misc$level2_cols) +
+#     theme_classic() +
+#     ylab("") +
+#     xlab("") +
+#     ggtitle("slope") +
+#     theme(
+#         axis.text.x = element_text(
+#             angle = 90,
+#             hjust = 1,
+#             vjust = 0.3
+#         ),
+#         legend.position = "none"
+#     )
 
-# correlation of ephysio with axon diameter
-axon_diameter_plots <- lapply(
-    x_axis_var,
-    function(x) {
-        gratioEphysioPlot(y_axis = "axon_diameter", x_axis = x)
-    }
-)
+# ggsave(plot = slope_level2, file.path("results", "gratio", "level2_slope.pdf"), width = 5, height = 5)
+# gratioEphysioPlot <- function(x_axis, y_axis) {
+#     g_ratio |>
+#         group_by(sample) |>
+#         summarize(
+#             x_axis = mean(.data[[x_axis]]),
+#             y_axis = mean(.data[[y_axis]])
+#         ) |>
+#         ggplot(aes(x = x_axis, y = y_axis)) +
+#         geom_smooth(method = "lm") +
+#         geom_jitter(height = 0, width = 0.1) +
+#         guides(fill = guide_legend(title = NULL)) +
+#         theme_bw() +
+#         xlab(x_axis) +
+#         ylab(y_axis) 
+# }
 
-axon_diameter_plots_patch <- patchwork::wrap_plots(axon_diameter_plots, ncol = 3)
-ggsave(plot = axon_diameter_plots_patch, file.path("results", "gratio", "axon_diameter_ephysio.pdf"), width = 15, height = 15)
+# # correlation of ephysio with gratio ---
+# x_axis_var <- g_ratio |>
+#     select(cmap_ulnar:ncv_sural) |>
+#     names()
+
+# gratio_ephysio_plots <- lapply(
+#     x_axis_var,
+#     function(x) {
+#         gratioEphysioPlot(y_axis = "g_ratio", x_axis = x)
+#     }
+# )
+
+# gratio_ephysio_plots_patch <- patchwork::wrap_plots(gratio_ephysio_plots, ncol = 3)
+# ggsave(plot = gratio_ephysio_plots_patch, file.path("results", "gratio", "gratio_ephysio.pdf"), width = 15, height = 15)
+
+# # correlation of ephysio with g ratio slope
+# gratio_slope_plots <- lapply(
+#     x_axis_var,
+#     function(x) {
+#         gratioEphysioPlot(y_axis = "slope", x_axis = x)
+#     }
+# )
+
+# gratio_slope_plots_patch <- patchwork::wrap_plots(gratio_slope_plots, ncol = 3)
+# ggsave(plot = gratio_slope_plots_patch, file.path("results", "gratio", "slope_ephysio.pdf"), width = 15, height = 15)
+
+# # correlation of ephysio with axon diameter
+# axon_diameter_plots <- lapply(
+#     x_axis_var,
+#     function(x) {
+#         gratioEphysioPlot(y_axis = "axon_diameter", x_axis = x)
+#     }
+# )
+
+# axon_diameter_plots_patch <- patchwork::wrap_plots(axon_diameter_plots, ncol = 3)
+# ggsave(plot = axon_diameter_plots_patch, file.path("results", "gratio", "axon_diameter_ephysio.pdf"), width = 15, height = 15)

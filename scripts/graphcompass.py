@@ -14,6 +14,7 @@ import pyarrow.parquet as pq
 
 import graphcompass as gc
 
+
 # adata list
 
 def create_adata(i):
@@ -263,3 +264,4 @@ breast.obs
 # sq.pl.spatial_scatter(breast, color = "cell_type_original", library_id = "sample", shape = None)
 
 help(gc.pl.filtration_curves)
+
