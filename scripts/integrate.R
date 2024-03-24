@@ -265,7 +265,7 @@ pred_plot_heming_full <-
 ggsave(plot = pred_plot_heming_full, file.path("results", "map", "map_heming_full.png"), width = 8, height = 8)
 
 pred_plot_milbrandt_full <-
-  DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "milbrandt_sciatic_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE) +
+  DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "milbrandt_sciatic_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE, label.size = 6) +
   theme_rect() +
   NoLegend() +
   xlab("UMAP1") +
@@ -281,7 +281,7 @@ pred_plot_suter_p1_full <-
 ggsave(plot = pred_plot_suter_p1_full, file.path("results", "map", "map_suter_p1_full.png"), width = 8, height = 8)
 
 pred_plot_suter_p60_full <-
- DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "suter_p60_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE) +
+ DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "suter_p60_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE, label.size = 6) +
   theme_rect() + 
   NoLegend() + 
   xlab("UMAP1") +
