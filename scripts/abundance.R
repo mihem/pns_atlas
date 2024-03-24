@@ -5,6 +5,10 @@ library(scMisc)
 library(qs)
 library(pheatmap)
 
+remotes::install_github("mihem/scMisc")
+
+detach(package:scMisc, unload = TRUE)
+
 # load preprocessed data ----
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 ic <- qs::qread(file.path("objects", "ic.qs"), nthread = 4)
@@ -108,6 +112,19 @@ scMisc::dotplotPropeller(
     filename = "PNP_CTRL",
 )
 
+# only plot logFC > 0.5
+propeller_PNP_CTRL |>
+  dplyr::filter(abs(log2ratio) > 0.5)  |>
+  scMisc::dotplotPropeller(
+    data = _,
+    color = sc_merge@misc$cluster_col,
+    filename = "PNP_CTRL_logFC_0.5",
+    width = 2.5,
+    height = 3
+  )
+
+
+
 # immune cells
 propeller_PNP_CTRL_ic <-
   scMisc::propellerCalc(
@@ -135,6 +152,17 @@ scMisc::dotplotPropeller(
     filename = "PNP_CTRL_ic",
     height = 6
 )
+
+# only plot logFC > 0.5
+propeller_PNP_CTRL_ic |>
+  dplyr::filter(abs(log2ratio) > 0.5)  |>
+  scMisc::dotplotPropeller(
+    data = _,
+    color = ic@misc$ic_cluster_col,
+    filename = "PNP_CTRL_ic_logFC_0.5",
+    width = 2.5,
+    height = 2.5
+  )
 
 # CIDP vs CTRL
 propeller_CIDP_CTRL <-
@@ -165,6 +193,17 @@ scMisc::dotplotPropeller(
     filename = "CIDP_CTRL",
 )
 
+# only plot logFC > 0.5
+propeller_CIDP_CTRL |>
+  dplyr::filter(abs(log2ratio) > 0.5) |>
+  scMisc::dotplotPropeller(
+    data = _,
+    color = sc_merge@misc$cluster_col,
+    filename = "CIDP_CTRL_logFC_0.5",
+    width = 2.5,
+    height = 3
+  )
+
 # immune cells ----
 propeller_CIDP_CTRL_ic <-
   scMisc::propellerCalc(
@@ -194,6 +233,18 @@ scMisc::dotplotPropeller(
     height = 6
 )
 
+
+# only plot logFC > 0.5
+propeller_CIDP_CTRL_ic |>
+  dplyr::filter(abs(log2ratio) > 0.5) |>
+  scMisc::dotplotPropeller(
+    data = _,
+    color = ic@misc$ic_cluster_col,
+    filename = "CIDP_CTRL_ic_logFC_0.5",
+    width = 2.5,
+    height = 3
+  )
+
 #  VN vs CTRL
 propeller_VN_CTRL <-
     scMisc::propellerCalc(
@@ -220,6 +271,17 @@ scMisc::dotplotPropeller(
   color = sc_merge@misc$cluster_col,
   filename = "VN_CTRL"
 )
+
+# only plot logFC > 0.5
+propeller_VN_CTRL |>
+  dplyr::filter(abs(log2ratio) > 0.5) |>
+  scMisc::dotplotPropeller(
+    data = _,
+    color = sc_merge@misc$cluster_col,
+    filename = "VN_CTRL_logFC_0.5",
+    width = 2.5,
+    height = 3
+  )
 
 # immune cells
 propeller_VN_CTRL_ic <-
@@ -249,6 +311,17 @@ scMisc::dotplotPropeller(
   height = 6
 )
 
+# only plot logFC > 0.5
+propeller_VN_CTRL_ic |>
+  dplyr::filter(abs(log2ratio) > 0.5) |>
+  scMisc::dotplotPropeller(
+    data = _,
+    color = ic@misc$ic_cluster_col,
+    filename = "VN_CTRL_ic_logFC_0.5",
+    width = 2.5,
+    height = 3
+  )
+
 #  CIAP vs CTRL
 propeller_CIAP_CTRL <-
     scMisc::propellerCalc(
@@ -275,6 +348,17 @@ scMisc::dotplotPropeller(
   color = sc_merge@misc$cluster_col,
   filename = "CIAP_CTRL"
 )
+
+# only plot logFC > 0.5
+propeller_CIAP_CTRL |>
+  dplyr::filter(abs(log2ratio) > 0.5) |>
+  scMisc::dotplotPropeller(
+    data = _,
+    color = sc_merge@misc$cluster_col,
+    filename = "CIAP_CTRL_logFC_0.5",
+    width = 2.5,
+    height = 3
+  )
 
 # immune cells
 propeller_CIAP_CTRL_ic <-
@@ -303,6 +387,17 @@ scMisc::dotplotPropeller(
   filename = "CIAP_CTRL_ic",
   height = 6
 )
+
+ # only plot logFC > 0.5
+propeller_CIAP_CTRL_ic |>
+  dplyr::filter(abs(log2ratio) > 0.5) |>
+  scMisc::dotplotPropeller(
+    data = _,
+    color = ic@misc$ic_cluster_col,
+    filename = "CIAP_CTRL_ic_logFC_0.5",
+    width = 2.5,
+    height = 3
+  )
 
 # abundance of mrVI groups ----
 mrvi_lookup <- read_csv(file.path("lookup", "mrvi_lookup.csv"))
@@ -362,6 +457,22 @@ g_ratio_axon_diameter_mrvi <-
   left_join(mrvi_lookup, join_by(sample)) |>
   dplyr::filter(!is.na(mrvi_cluster))  
 
+g_ratio_mrvi_stats <- scMisc:::compStat(x_var = "g_ratio", group = "mrvi_cluster", data = g_ratio_axon_diameter_mrvi, paired = FALSE)
+
+g_ratio_mrvi_plot <-
+  g_ratio_axon_diameter_mrvi |>
+  ggplot(aes(x = mrvi_cluster, y = g_ratio)) +
+  ggsignif::geom_signif(comparisons = g_ratio_mrvi_stats$comparisons, annotation = g_ratio_mrvi_stats$annotation, textsize = 5, step_increase = 0.05, vjust = 0.7) +
+  geom_boxplot(aes(fill = mrvi_cluster)) +
+  geom_point() +
+  theme_bw() +
+  xlab("") +
+  ylab("") +
+  ggtitle("g-ratio") +
+  scale_fill_manual(values = pals::cols25()) +
+  theme(legend.position = "none")
+ggsave(file.path("results", "abundance", "boxplot_g_ratio_mrvi.pdf"), plot = g_ratio_mrvi_plot, width = 3, height = 3)
+
 # axon diameter
 axon_diameter_mrvi_stats <- scMisc:::compStat(x_var = "axon_diameter", group = "mrvi_cluster", data = g_ratio_axon_diameter_mrvi, paired = FALSE)
 
@@ -374,11 +485,11 @@ axon_diameter_mrvi_plot <-
   theme_bw() +
   xlab("") +
   ylab("") +
-  ggtitle("axon diameter") +
+  ggtitle("Axon diameter") +
   scale_fill_manual(values = pals::cols25()) +
   theme(legend.position = "none")
   
-ggsave(file.path("results", "abundance", "boxplot_axon_diameter_mrvi.pdf"), plot = axon_diameter_mrvi_plot, width = 5, height = 5)
+ggsave(file.path("results", "abundance", "boxplot_axon_diameter_mrvi.pdf"), plot = axon_diameter_mrvi_plot, width = 3, height = 3)
 
 # axon counts
 axon_count_mrvi <-
@@ -397,11 +508,11 @@ axon_count_mrvi_plot <-
   theme_bw() +
   xlab("") +
   ylab("") +
-  ggtitle("axon count") +
+  ggtitle("Normal axon count") +
   scale_fill_manual(values = pals::cols25()) +
   theme(legend.position = "none")
   
-ggsave(file.path("results", "abundance", "boxplot_axon_count_mrvi.pdf"), plot = axon_count_mrvi_plot, width = 5, height = 5)
+ggsave(file.path("results", "abundance", "boxplot_axon_count_mrvi.pdf"), plot = axon_count_mrvi_plot, width = 3, height = 3)
 
 # incat -----
 incat_mrvi <-
@@ -425,4 +536,5 @@ incat_mrvi_plot <-
   scale_fill_manual(values = pals::cols25()) +
   theme(legend.position = "none")
   
-ggsave(file.path("results", "abundance", "boxplot_incat_mrvi.pdf"), plot = incat_mrvi_plot, width = 5, height = 5)
+ggsave(file.path("results", "abundance", "boxplot_incat_mrvi.pdf"), plot = incat_mrvi_plot, width = 3, height = 3)
+
