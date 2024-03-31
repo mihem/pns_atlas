@@ -57,65 +57,6 @@ for (res in resolutions) {
 umap_list <- patchwork::wrap_plots(umap_list, ncol = 2)
 ggsave(plot = umap_list, file.path("results", "umap", "scvi_umap_full_resolutions.png"), width = 16, height = 30)
 
-# dotplot
-DefaultAssay(sc_merge) <- "RNA"
-
-dotPlot(
-  path = file.path("lookup", "markers.csv"),
-  object = sc_merge,
-  par = "dotplot",
-  dot_min = 0.01,
-  height = 8,
-  width = 26
-)
-
-# dotplot for ec only
-ec <- subset(sc_merge, subset = RNA_snn_res.0.7 %in% c("7", "10", "11", "19"))
-
-lapply(
-  c("ec_bnb_jolien", "EC_BNB", "Yang_2022_venous", "Yang_2022_capillary", "Yang_2022_arterial"),
-  FUN = function(x) {
-    dotPlot(
-      path = file.path("lookup", "markers.csv"),
-      object = ec,
-      par = x,
-      dot_min = 0.01,
-      height = 4,
-      width = 10
-    )
-  }
-)
-
-lapply(
-  c("Garcia_2022_capillary", "Garcia_2022_arterial", "Garcia_2022_venous"),
-  FUN = function(x) {
-    dotPlot(
-      path = file.path("lookup", "markers.csv"),
-      object = ec,
-      par = x,
-      dot_min = 0.01,
-      height = 4,
-      width = 10
-    )
-  }
-)
-
-vsmc_pc <- subset(sc_merge, subset = RNA_snn_res.0.7 %in% c("3", "6", "17"))
-
-lapply(
-  c("telocytes_jolien"),
-  FUN = function(x) {
-    dotPlot(
-      path = file.path("lookup", "markers.csv"),
-      object = vsmc_pc,
-      par = x,
-      dot_min = 0.01,
-      height = 4,
-      width = 10
-    )
-  }
-)
-
 # find markers ---
 sc_merge <- JoinLayers(sc_merge)
 
@@ -150,12 +91,3 @@ writexl::write_xlsx(topmarkers, file.path("results", "de", "topmarkers_final.xls
 
 dplyr::count(sc_merge@meta.data, RNA_snn_res.0.7, sample) |>
   dplyr::filter(RNA_snn_res.0.7 == "13")
-
-
-# feature plots ----
-lapply(unique(markers_pns$cell_source),
-  FUN = purrr::possibly(scMisc::fPlotCustom),
-  object = sc_merge,
-  markers = markers_pns,
-  reduction = "umap.scvi.full"
-)
