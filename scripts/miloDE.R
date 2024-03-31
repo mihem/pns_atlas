@@ -168,18 +168,26 @@ de_stat <- qs::qread(file.path("objects", "milo_de_stat_ciap_ctrl.qs"), nthread 
 
 stat_de_magnitude <- rank_neighbourhoods_by_DE_magnitude(de_stat)
 
+
+# system.time(
+#   length(miloR:::graph(milo_DE))
+# )
+
+system.time(
 p1 <- plot_milo_by_single_metric(
   milo_DE,
   stat_de_magnitude,
   colour_by = "n_DE_genes",
   layout = "UMAP.SCVI.FULL",
-  size_range = c(0.2, 3),
+  # size_range = c(0.2, 3),
+  size_range = c(0.5, 5),
   edge_width = c(0.1, 1.0), 
   edge_weight.thres = 10
 ) +
   viridis::scale_fill_viridis(name = "# DE genes", option = "inferno")
+)
 
-ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_PNP_CTRL.pdf"), width = 6, height = 6, device = cairo_pdf)
+ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_PNP_CTRL_v3.pdf"), width = 6, height = 6, device = cairo_pdf)
 ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_VN_CTRL.pdf"), width = 6, height = 6, device = cairo_pdf)
 ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_CIDP_CTRL.pdf"), width = 6, height = 6, device = cairo_pdf)
 ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_CIAP_CTRL.pdf"), width = 6, height = 6, device = cairo_pdf)
