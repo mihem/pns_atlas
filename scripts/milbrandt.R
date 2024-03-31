@@ -12,7 +12,6 @@ library(writexl)
 library(readxl)
 library(RColorBrewer)
 library(homologene)
-library(ggvenn)
 
 # general settings  ----
 options(warn = 0)
@@ -92,71 +91,71 @@ topmarkers[["periC"]] <- findMarkers(
 )
 
 
-vennPlot <- function(cluster) {
-    top_rodent <- topmarkers_milbrandt[[cluster]]$gene |>
-        homologene::mouse2human(db = homologene::homologeneData2) |>
-        # dplyr::slice(1:25) |>
-        pull(humanGene)
-    top_human <- topmarkers[[cluster]]$gene[1:25]
-    # top_human <- topmarkers[[cluster]]$gene
-    # top_human <- markers_xenium$transcript[markers_xenium$cluster == cluster]
-    plot <- ggvenn(
-        list(
-            rodent = top_rodent,
-            human = top_human
-        ),
-        fill_color = brewer.pal(name = "Set2", n = 3),
-        show_elements = TRUE,
-        # show_elements = FALSE,
-        label_sep = "\n",
-        text_size = 1,
-    )
-    ggsave(file.path("results", "venn", paste0(cluster, "_milbrandt_long.pdf")),
-        width = 5, height = 5,
-        plot = plot
-    )
-}
+# vennPlot <- function(cluster) {
+#     top_rodent <- topmarkers_milbrandt[[cluster]]$gene |>
+#         homologene::mouse2human(db = homologene::homologeneData2) |>
+#         # dplyr::slice(1:25) |>
+#         pull(humanGene)
+#     top_human <- topmarkers[[cluster]]$gene[1:25]
+#     # top_human <- topmarkers[[cluster]]$gene
+#     # top_human <- markers_xenium$transcript[markers_xenium$cluster == cluster]
+#     plot <- ggvenn(
+#         list(
+#             rodent = top_rodent,
+#             human = top_human
+#         ),
+#         fill_color = brewer.pal(name = "Set2", n = 3),
+#         show_elements = TRUE,
+#         # show_elements = FALSE,
+#         label_sep = "\n",
+#         text_size = 1,
+#     )
+#     ggsave(file.path("results", "venn", paste0(cluster, "_milbrandt_long.pdf")),
+#         width = 5, height = 5,
+#         plot = plot
+#     )
+# }
 
-lapply(
-    c("mySC", "nmSC", "endoC", "epiC", "periC"),
-    FUN = vennPlot
-)
+# lapply(
+#     c("mySC", "nmSC", "endoC", "epiC", "periC"),
+#     FUN = vennPlot
+# )
 
-vennPlot("mySC")
-vennPlot("nmSC")
-vennPlot("periC")
-
-
-markers_xenium <- read_xlsx(file.path("lookup", "xenium_list_final.xlsx"))
-
-# dotplot comparison
-sc_merge_subset <- subset(sc_merge, subset = cluster %in% c("mySC", "nmSC", "periC1", "periC2", "periC3"))
-
-# rename periC1, periC2, periC3 to periC
-sc_merge_subset$cluster <- gsub(pattern = "periC\\d", replacement = "periC", x = sc_merge_subset$cluster)
-sc_merge_subset$cluster <- factor(sc_merge_subset$cluster, levels = c("mySC", "nmSC", "periC"))
-Idents(sc_merge_subset) <- sc_merge_subset$cluster
-
-dotPlot(
-  path = file.path("lookup", "markers.csv"),
-  object = sc_merge_subset,
-  par = "novel",
-  dot_min = 0.01,
-  height = 2,
-  width = 4,
-)
+# vennPlot("mySC")
+# vennPlot("nmSC")
+# vennPlot("periC")
 
 
-pns_sn_sciatic_milbrandt_subset <- subset(pns_sn_sciatic_milbrandt, subset = cluster %in% c("mySC", "nmSC", "PnC"))
-Idents(pns_sn_sciatic_milbrandt_subset) <- factor(pns_sn_sciatic_milbrandt_subset$cluster, levels = c("mySC", "nmSC", "PnC"))
+# markers_xenium <- read_xlsx(file.path("lookup", "xenium_list_final.xlsx"))
 
-dotPlot(
-  path = file.path("lookup", "markers.csv"),
-  object = pns_sn_sciatic_milbrandt_subset,
-  par = "novel",
-  dot_min = 0.01,
-  height = 2,
-  width = 4,
-  ortho = "human2mouse"
-  # scale = FALSE
-)
+# # dotplot comparison
+# sc_merge_subset <- subset(sc_merge, subset = cluster %in% c("mySC", "nmSC", "periC1", "periC2", "periC3"))
+
+# # rename periC1, periC2, periC3 to periC
+# sc_merge_subset$cluster <- gsub(pattern = "periC\\d", replacement = "periC", x = sc_merge_subset$cluster)
+# sc_merge_subset$cluster <- factor(sc_merge_subset$cluster, levels = c("mySC", "nmSC", "periC"))
+# Idents(sc_merge_subset) <- sc_merge_subset$cluster
+
+# dotPlot(
+#   path = file.path("lookup", "markers.csv"),
+#   object = sc_merge_subset,
+#   par = "novel",
+#   dot_min = 0.01,
+#   height = 2,
+#   width = 4,
+# )
+
+
+# pns_sn_sciatic_milbrandt_subset <- subset(pns_sn_sciatic_milbrandt, subset = cluster %in% c("mySC", "nmSC", "PnC"))
+# Idents(pns_sn_sciatic_milbrandt_subset) <- factor(pns_sn_sciatic_milbrandt_subset$cluster, levels = c("mySC", "nmSC", "PnC"))
+
+# dotPlot(
+#   path = file.path("lookup", "markers.csv"),
+#   object = pns_sn_sciatic_milbrandt_subset,
+#   par = "novel",
+#   dot_min = 0.01,
+#   height = 2,
+#   width = 4,
+#   ortho = "human2mouse"
+#   # scale = FALSE
+# )
