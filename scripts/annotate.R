@@ -94,7 +94,15 @@ ggsave(plot = umap_sample, file.path("results", "umap", "scvi_umap_group_sample_
 # save object ---
 qs::qsave(sc_merge, file.path("objects", "sc_merge.qs"))
 
-# dotplot ---
+# feature plots ----
+lapply(unique(markers_pns$cell_source),
+  FUN = purrr::possibly(scMisc::fPlotCustom),
+  object = sc_merge,
+  markers = markers_pns,
+  reduction = "umap.scvi.full"
+)
+
+# dot plots ---
 DefaultAssay(sc_merge) <- "RNA"
 
 dotPlot(
@@ -122,4 +130,51 @@ dotPlot(
   dot_min = 0.01,
   height = 7,
   width = 15
+)
+
+# dotplot for ec only
+ec <- subset(sc_merge, subset = RNA_snn_res.0.7 %in% c("7", "10", "11", "19"))
+
+lapply(
+  c("ec_bnb_jolien", "EC_BNB", "Yang_2022_venous", "Yang_2022_capillary", "Yang_2022_arterial"),
+  FUN = function(x) {
+    dotPlot(
+      path = file.path("lookup", "markers.csv"),
+      object = ec,
+      par = x,
+      dot_min = 0.01,
+      height = 4,
+      width = 10
+    )
+  }
+)
+
+lapply(
+  c("Garcia_2022_capillary", "Garcia_2022_arterial", "Garcia_2022_venous"),
+  FUN = function(x) {
+    dotPlot(
+      path = file.path("lookup", "markers.csv"),
+      object = ec,
+      par = x,
+      dot_min = 0.01,
+      height = 4,
+      width = 10
+    )
+  }
+)
+
+vsmc_pc <- subset(sc_merge, subset = RNA_snn_res.0.7 %in% c("3", "6", "17"))
+
+lapply(
+  c("telocytes_jolien"),
+  FUN = function(x) {
+    dotPlot(
+      path = file.path("lookup", "markers.csv"),
+      object = vsmc_pc,
+      par = x,
+      dot_min = 0.01,
+      height = 4,
+      width = 10
+    )
+  }
 )
