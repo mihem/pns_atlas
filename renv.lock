@@ -5456,7 +5456,7 @@
       "RemoteRepo": "scMisc",
       "RemoteUsername": "mihem",
       "RemoteRef": "HEAD",
-      "RemoteSha": "0e1042df91d20f378d7886f649ef4937dc9e5551",
+      "RemoteSha": "6b1e979e6613e0e195b1ca29ec50e693c04c7908",
       "Requirements": [
         "FactoMineR",
         "RColorBrewer",
@@ -5487,7 +5487,7 @@
         "viridis",
         "writexl"
       ],
-      "Hash": "710155260e210d3bfd1469f6a6558ba2"
+      "Hash": "b50af0199720c553a960d80f9aad4d1c"
     },
     "scSHC": {
       "Package": "scSHC",
