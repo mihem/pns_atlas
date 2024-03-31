@@ -265,7 +265,7 @@ pred_plot_heming_full <-
 ggsave(plot = pred_plot_heming_full, file.path("results", "map", "map_heming_full.png"), width = 8, height = 8)
 
 pred_plot_milbrandt_full <-
-  DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "milbrandt_sciatic_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE, label.size = 6) +
+  DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "milbrandt_sciatic_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = FALSE, label.size = 6) +
   theme_rect() +
   NoLegend() +
   xlab("UMAP1") +
@@ -273,6 +273,7 @@ pred_plot_milbrandt_full <-
   ggtitle("Yim et al.")
 
 ggsave(plot = pred_plot_milbrandt_full, file.path("results", "map", "map_milbrandt_full.png"), width = 8, height = 8)
+ggsave(plot = pred_plot_milbrandt_full, file.path("results", "map", "map_milbrandt_full_nolabel.png"), width = 8, height = 8)
 
 pred_plot_suter_p1_full <-
  DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "suter_p1_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE) +
@@ -281,7 +282,7 @@ pred_plot_suter_p1_full <-
 ggsave(plot = pred_plot_suter_p1_full, file.path("results", "map", "map_suter_p1_full.png"), width = 8, height = 8)
 
 pred_plot_suter_p60_full <-
- DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "suter_p60_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE, label.size = 6) +
+ DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "suter_p60_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = FALSE, label.size = 6) +
   theme_rect() + 
   NoLegend() + 
   xlab("UMAP1") +
@@ -289,6 +290,7 @@ pred_plot_suter_p60_full <-
   ggtitle("Gerber et al. p60")
 
 ggsave(plot = pred_plot_suter_p60_full, file.path("results", "map", "map_suter_p60_full.png"), width = 8, height = 8)
+ggsave(plot = pred_plot_suter_p60_full, file.path("results", "map", "map_suter_p60_full_nolabel.png"), width = 8, height = 8)
 
 pred_plot_suter_merge_full <-
  DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "suter_merge_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE) +
@@ -325,7 +327,7 @@ ec_rosmap <- subset(ec, subset = rosmap_label %in% c("aEndo", "capEndo", "vEndo"
 table(ec_rosmap$rosmap_label)
 
 pred_plot_rosmap <-
- DimPlot(ec_rosmap, reduction = "umap.scvi.full", group.by = "rosmap_label", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE)  + 
+ DimPlot(ec_rosmap, reduction = "umap.scvi.full", group.by = "rosmap_label", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = FALSE)  + 
   theme_rect() +
   NoLegend() + 
   xlim(-12, -5) +
@@ -333,8 +335,10 @@ pred_plot_rosmap <-
   xlab("UMAP1") +
   ylab("UMAP2") + 
   ggtitle("ROSMAP vascular cells")
-ggsave(plot = pred_plot_rosmap, file.path("results", "map", "map_rosmap_full.png"), width = 4, height = 4)
 
+ggsave(plot = pred_plot_rosmap, file.path("results", "map", "map_rosmap_full.png"), width = 4, height = 4)
+ggsave(plot = pred_plot_rosmap, file.path("results", "map", "map_rosmap_full_nolabel.png"), width = 4, height = 4)
+ 
 dplyr::count(sc_merge@meta.data, rosmap_score)
 
 sc_merge@meta.data |>

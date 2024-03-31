@@ -141,6 +141,11 @@ cor_axon_diameter_ephysio <-
     ylab("Axon diameter (µm)")
 ggsave(plot = cor_axon_diameter_ephysio, file.path("results", "gratio", "cor_axon_diameter_ephysio.pdf"), width = 3, height = 3)
 
+sc_merge@meta.data |>
+    dplyr::select(sample, age, axon_normal, g_ratio, axon_diameter) |>
+    distinct() |>
+    write_csv(file.path("results", "qc", "meta_data.csv"))
+
 
 # gratioPlot <- function(name) {
 #     g_ratio |>
