@@ -218,8 +218,8 @@ b_igh <-
 ggsave(file.path("results", "featureplot", "ic_bc_igh.png"), b_igh, width = 8, height = 16)
 ggsave(file.path("results", "featureplot", "ic_bc_igh.pdf"), b_igh, width = 8, height = 16)
 
+# dotplots ---
 b_plasma <- subset(ic, subset = ic_cluster %in% c("Plasma", "B"))
-# Idents(b_plasma) <- "B_plasma"
 
 dp_b_plasma <-
   DotPlot(b_plasma,
@@ -233,7 +233,6 @@ dp_b_plasma <-
 
 ggsave(plot = dp_b_plasma, file.path("results", "dotplot", "dp_ic_bc_igh.pdf"), width = 4.5, height = 1.5)
 ggsave(plot = dp_b_plasma, file.path("results", "dotplot", "dp_ic_bc_igh_legend.pdf"), width = 4.5, height = 5)
-# ggsave(plot = dp_b_plasma, file.path("results", "dotplot", "dp_ic_bc_igh_merged.pdf"), width = 4.5, height = 1.25)
 
 dotPlot(
   path = file.path("lookup", "markers.csv"),
@@ -244,7 +243,6 @@ dotPlot(
   width = 6
 )
 
-
 dotPlot(
   path = file.path("lookup", "markers.csv"),
   object = ic,
@@ -254,62 +252,6 @@ dotPlot(
   width = 6
 ) 
 
-
-scMisc::fPlot(ic_slim,
-  path = file.path("lookup", "markers.csv"),
-  par = "cellmarkers_aie",
-  reduction = "umap.rpca",
-)
-
-scMisc::fPlot(ic,
-  path = file.path("lookup", "markers.csv"),
-  par = "NK",
-  reduction = "umap.rpca",
-)
-
-scMisc::fPlot(ic_slim,
-  path = file.path("lookup", "markers.csv"),
-  par = "tcells_subcluster_aie",
-  reduction = "umap.rpca",
-)
-
-scMisc::fPlot(ic,
-  path = file.path("lookup", "markers.csv"),
-  par = "MAIT",
-  reduction = "umap.rpca",
-)
-
-scMisc::fPlot(ic,
-  path = file.path("lookup", "markers.csv"),
-  par = "iNKT",
-  reduction = "umap.rpca",
-)
-
-# features plot endoMacro epiMacro
-macro_names <- str_subset(ic@misc$ic_cluster_order, "Macro")
-macro <- subset(ic, subset = ic_cluster %in% macro_names)
-
-scMisc::fPlot(
-  macro,
-  path = file.path("lookup", "markers.csv"),
-  par = "EpiMac_Ydens",
-  reduction = "umap.rpca",
-)
-
-scMisc::fPlot(
-  macro,
-  path = file.path("lookup", "markers.csv"),
-  par = "EndoMac_Ydens",
-  reduction = "umap.rpca",
-)
-
-FeaturePlot(ic, features = markers$MAIT, reduction = "umap.rpca", order = TRUE)
-ggsave(file.path("results", "featureplot", "fp_ic_MAIT.pdf"), width = 10, height = 8)
-
-FeaturePlot(ic, features = markers$iNKT, reduction = "umap.rpca", order = TRUE)
-ggsave(file.path("results", "featureplot", "fp_ic_iNKT.pdf"), width = 10, height = 8)
-
-# dotplots ---
 dotPlot(
   path = file.path("lookup", "markers.csv"),
   object = ic,
@@ -319,92 +261,8 @@ dotPlot(
   width = 12
 ) 
 
-# epiMacs endoMacs
-macro_names <- str_subset(ic@misc$ic_cluster_order, "Macro")
-macro <- subset(ic, subset = ic_cluster %in% macro_names)
-
-dotPlot(
-  path = file.path("lookup", "markers.csv"),
-  object = macro,
-  par = "EpiMac_Ydens",
-  dot_min = 0.01,
-  height = 6.5,
-  width = 5.5,
-) 
-
-dotPlot(
-  path = file.path("lookup", "markers.csv"),
-  object = macro,
-  par = "EndoMac_Ydens",
-  dot_min = 0.01,
-  height = 6.5,
-  width = 8,
-) 
-
-
-lapply(
-  paste0("DC", 1:6, "_villani"),
-  FUN = function(x) {
-    dotPlot(
-      path = file.path("lookup", "markers.csv"),
-      object = ic_slim,
-      par = x,
-      dot_min = 0.01,
-      height = 8,
-      width = 10
-    )
-  })
-
-dotPlot(
-  path = file.path("lookup", "markers.csv"),
-  object = ic_slim,
-  par = "dotplot_short",
-  dot_min = 0.01,
-  height = 8,
-  width = 26
-) 
-
-dotPlot(
-  path = file.path("lookup", "markers.csv"),
-  object = ic_slim,
-  par = "PNS_Macro",
-  dot_min = 0.01,
-  height = 8,
-  width = 6
-) 
-
-dotPlot(
-  path = file.path("lookup", "markers.csv"),
-  object = ic_slim,
-  par = "microglia",
-  dot_min = 0.01,
-  height = 8,
-  width = 6
-) 
-
-# endo_epi_Macs_Ydens <- read_csv("/home/mischko/Documents/beruf/forschung/markers/markers_pns.csv") |>
-#   dplyr::filter(cell_source %in% c("EndoMac_Ydens", "EpiMac_Ydens")) |>
-#   dplyr::filter(!is.na(gene))
-
-# print(endo_epi_Macs_Ydens, n = Inf)
-
-lapply(
-  c("EndoMac_Ydens", "EpiMac_Ydens"),
-  FUN = function(x) {
-    dotPlot(
-      path = file.path("lookup", "markers.csv"),
-      object = ic_slim,
-      par = x,
-      dot_min = 0.01,
-      height = 8,
-      width = 7
-    )
-  })
-
-# join layers ---
+# find markers ---
 ic_slim <- JoinLayers(ic_slim)
-
-# find markers
 
 # find markers helper function
 findMarkers <- function(ident1, ident2 = NULL, object, only_pos, min_pct, logfc_threshold, assay = assay) {
