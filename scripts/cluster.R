@@ -59,7 +59,6 @@ ggsave(plot = umap_list, file.path("results", "umap", "scvi_umap_full_resolution
 
 # dotplot
 DefaultAssay(sc_merge) <- "RNA"
-# Idents(sc_merge) <- "RNA_snn_res.0.7"
 
 dotPlot(
   path = file.path("lookup", "markers.csv"),
@@ -69,26 +68,6 @@ dotPlot(
   height = 8,
   width = 26
 )
-
-dotPlot(
-  path = file.path("lookup", "markers.csv"),
-  object = sc_merge,
-  par = "jolien_ish",
-  dot_min = 0.01,
-  height = 8,
-  width = 8
-)
-
-dotPlot(
-  path = file.path("lookup", "markers.csv"),
-  object = sc_merge,
-  par = "telocytes_jolien",
-  dot_min = 0.01,
-  height = 8,
-  width = 8
-)
-
-
 
 # dotplot for ec only
 ec <- subset(sc_merge, subset = RNA_snn_res.0.7 %in% c("7", "10", "11", "19"))
@@ -122,8 +101,6 @@ lapply(
 )
 
 vsmc_pc <- subset(sc_merge, subset = RNA_snn_res.0.7 %in% c("3", "6", "17"))
-
-DimPlot(vsmc_pc, label = TRUE, raster = TRUE)
 
 lapply(
   c("telocytes_jolien"),
@@ -164,7 +141,6 @@ topmarkers <-
 
   str(sc_merge@misc)
 
-# names(topmarkers) <- unique(sc_merge$RNA_snn_res.0.7)
 names(topmarkers) <- sc_merge@misc$cluster_order
 
 # remove failed lists (because of too few cells)
@@ -176,198 +152,10 @@ dplyr::count(sc_merge@meta.data, RNA_snn_res.0.7, sample) |>
   dplyr::filter(RNA_snn_res.0.7 == "13")
 
 
-# module plot ----
-telocytes_jolien <-
-  read_csv(file.path("lookup", "markers.csv")) |>
-  dplyr::filter(!is.na(telocytes_jolien)) |>
-  pull(telocytes_jolien)
-
-ec_bnb_jolien <-
-  read_csv(file.path("lookup", "markers.csv")) |>
-  dplyr::filter(!is.na(ec_bnb_jolien)) |>
-  pull(ec_bnb_jolien)
-
-# module score
-sc_merge <- AddModuleScore(sc_merge, features = list(telocytes_jolien), assay = "RNA", name = "telocytes")
-sc_merge <- AddModuleScore(sc_merge, features = list(ec_bnb_jolien), assay = "RNA", name = "ec_bnb")
-
-telocytes_fp <-
-  Seurat::FeaturePlot(
-    object = sc_merge,
-    features = "telocytes1",
-    # cols = c("#F0F0F0", "#CB181D"),
-    reduction = "umap.scvi.full",
-    pt.size = 0.1,
-    order = TRUE,
-    coord.fixed = TRUE,
-    ncol = 1,
-    raster = FALSE,
-    alpha = .5
-  ) &
-    theme(
-      axis.text = element_blank(),
-      axis.ticks = element_blank(), panel.border = element_rect(
-        color = "black",
-        size = 1, fill = NA
-      )
-    ) &
-    viridis::scale_color_viridis()
-
-ggsave(plot = telocytes_fp, file.path("results", "featureplot", "fp_telocytes.png"), width = 24, height = 10, limitsize = FALSE)
-
-ec_bnb_fp <-
-  Seurat::FeaturePlot(
-    object = sc_merge,
-    features = "ec_bnb1",
-    # cols = c("#F0F0F0", "#CB181D"),
-    reduction = "umap.scvi.full",
-    pt.size = 0.1,
-    order = TRUE,
-    coord.fixed = TRUE,
-    ncol = 1,
-    raster = FALSE,
-    alpha = .5
-  ) &
-    theme(
-      axis.text = element_blank(),
-      axis.ticks = element_blank(), panel.border = element_rect(
-        color = "black",
-        size = 1, fill = NA
-      )
-    ) &
-    viridis::scale_color_viridis()
-
-ggsave(plot = ec_bnb_fp, file.path("results", "featureplot", "fp_ec_bnb.png"), width = 24, height = 10, limitsize = FALSE)
-
-# check if top genes are in marker list
-topmarkers$`13` |>
-  dplyr::inner_join(markers_pns) |>
-  tibble() |>
-  print(n = Inf)
-
-# feature plots
-scMisc::fPlot(sc_merge,
-  path = file.path("lookup", "markers.csv"),
-  par = "jolien_ish",
-  reduction = "umap.scvi.full",
-)
-
-scMisc::fPlot(sc_merge,
-  path = file.path("lookup", "markers.csv"),
-  par = "telocytes_jolien",
-  reduction = "umap.scvi.full",
-)
-
-scMisc::fPlot(sc_merge,
-  path = file.path("lookup", "markers.csv"),
-  par = "ec_bnb_jolien",
-  reduction = "umap.scvi.full",
-)
-
+# feature plots ----
 lapply(unique(markers_pns$cell_source),
-       FUN = purrr::possibly(scMisc::fPlotCustom),
-       object = sc_merge,
-       markers = markers_pns,
-       reduction = "umap.scvi.full")
-
-# selected feature plots with different settings than default
-endo_macs_genes <- dplyr::filter(markers_pns, cell_source == "EndoMac_Ydens")
-
-endo_macs <-
-  Seurat::FeaturePlot(
-    object = sc_merge,
-    features = unique(endo_macs_genes$gene),
-    cols = c("#F0F0F0", "#CB181D"),
-    reduction = "umap.scvi.full",
-    pt.size = 0.1,
-    order = TRUE,
-    coord.fixed = TRUE,
-    ncol = 4,
-    raster = FALSE,
-    alpha = 0.2
-  ) &
-    theme(
-      axis.text = element_blank(),
-      axis.ticks = element_blank(), panel.border = element_rect(
-        color = "black",
-        size = 1, fill = NA
-      )
-    )
-
-ggsave(plot = endo_macs, file.path("results", "featureplot", "large_fp_EndoMac_Ydens.png"), width = 24, height = 40, limitsize = FALSE)
-
-epi_macs_genes <- dplyr::filter(markers_pns, cell_source == "EpiMac_Ydens")
-
-epi_macs <-
-  Seurat::FeaturePlot(
-    object = sc_merge,
-    features = unique(epi_macs_genes$gene),
-    cols = c("#F0F0F0", "#CB181D"),
-    reduction = "umap.scvi.full",
-    pt.size = 0.1,
-    order = TRUE,
-    coord.fixed = TRUE,
-    ncol = 4,
-    raster = FALSE,
-    alpha = 0.2
-  ) &
-    theme(
-      axis.text = element_blank(),
-      axis.ticks = element_blank(), panel.border = element_rect(
-        color = "black",
-        size = 1, fill = NA
-      )
-    )
-
-ggsave(plot = epi_macs, file.path("results", "featureplot", "large_fp_EpiMac_Ydens.png"), width = 24, height = 40, limitsize = FALSE)
-
-
-pc_genes <- dplyr::filter(markers_pns, cell_source == "PC_Chen")
-
-pc <-
-  Seurat::FeaturePlot(
-    object = sc_merge,
-    features = unique(pc_genes$gene),
-    cols = c("#F0F0F0", "#CB181D"),
-    reduction = "umap.scvi.full",
-    pt.size = 0.1,
-    order = TRUE,
-    coord.fixed = TRUE,
-    ncol = 4,
-    raster = FALSE,
-    alpha = 0.2
-  ) &
-    theme(
-      axis.text = element_blank(),
-      axis.ticks = element_blank(), panel.border = element_rect(
-        color = "black",
-        size = 1, fill = NA
-      )
-    )
-
-ggsave(plot = pc, file.path("results", "featureplot", "fp_large_pc.png"), width = 24, height = 10, limitsize = FALSE)
-
-iSC <-
-  Seurat::FeaturePlot(
-    object = sc_merge,
-    features = c("NGFR", "NCAM1", "L1CAM"),
-    cols = c("#F0F0F0", "#CB181D"),
-    reduction = "umap.scvi.full",
-    pt.size = 0.1,
-    order = TRUE,
-    coord.fixed = TRUE,
-    ncol = 4,
-    raster = FALSE,
-    alpha = 0.2
-  ) &
-    theme(
-      axis.text = element_blank(),
-      axis.ticks = element_blank(), panel.border = element_rect(
-        color = "black",
-        size = 1, fill = NA
-      )
-    )
-
-ggsave(plot = iSC, file.path("results", "featureplot", "fp_iSC.png"), width = 24, height = 10, limitsize = FALSE)
-
-
+  FUN = purrr::possibly(scMisc::fPlotCustom),
+  object = sc_merge,
+  markers = markers_pns,
+  reduction = "umap.scvi.full"
+)
