@@ -102,19 +102,22 @@ ggsave(plot = axon_count_level2, file.path("results", "histo", "level2_axon_coun
 # correlating normal axons with ephysio ----
 cor_axon_ephysio <-
     axon_count_fascicle |>
-        group_by(sample) |>
-        summarize(
-            axon_count = mean(normal_myelin),
-            ncv_tibial_motoric = mean(ncv_tibial_motoric)
-        ) |>
-        ggplot(aes(x = ncv_tibial_motoric, y = axon_count)) +
-        geom_smooth(method = "lm") +
-        geom_point() +
-        theme_bw() +
-        xlab("NCV tibial motoric (m/s)") +
-        ylab("Normal axon count")
+    group_by(sample) |>
+    summarize(
+        axon_count = mean(normal_myelin),
+        ncv_tibial_motoric = mean(ncv_tibial_motoric)
+    ) |>
+    mutate(log_axon_normal = log(axon_count)) |>
+    ggplot(aes(x = ncv_tibial_motoric, y = axon_count)) +
+    # ggplot(aes(x = ncv_tibial_motoric, y = log_axon_normal)) +
+    geom_smooth(method = "lm") +
+    geom_point() +
+    theme_bw() +
+    xlab("NCV tibial motoric (m/s)") +
+    ylab("Normal axon count")
 
 ggsave(plot = cor_axon_ephysio, file.path("results", "histo", "cor_axon_ephysio.pdf"), width = 3, height = 3)
+# ggsave(plot = cor_axon_ephysio, file.path("results", "histo", "cor_log_axon_ephysio.pdf"), width = 3, height = 3)
 
 
 # correlating axon counts with mySC ----
@@ -127,16 +130,16 @@ abundance_axon <-
   left_join(axon_count_mean, join_by(sample)) 
 
 abundance_axon_mySC <-
-  abundance_axon |>
-  dplyr::filter(cell == "mySC") |>
-  ggplot(aes(x = log_axon_normal, y = count)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  theme_bw() + 
-  xlab("Log normal axon counts") + 
-  ylab("mySC (%)") 
+    abundance_axon |>
+    dplyr::filter(cell == "mySC") |>
+    ggplot(aes(x = log_axon_normal, y = count)) +
+    geom_point() +
+    geom_smooth(method = "lm") +
+    theme_bw() +
+    xlab("Log normal axon counts") +
+    ylab("mySC (%)")
 
-ggsave(file.path("results", "abundance", "abundance_axon_mySC.pdf"), plot = abundance_axon_mySC, width = 3, height = 3)
+ggsave(file.path("results", "histo", "cor_axon_mySC.pdf"), plot = abundance_axon_mySC, width = 3, height = 3)
 
 # abundance_axon_nmSC <-
 #   abundance_axon |>
@@ -149,16 +152,17 @@ ggsave(file.path("results", "abundance", "abundance_axon_mySC.pdf"), plot = abun
 # ggsave(file.path("results", "abundance", "abundance_axon_nmSC.pdf"), plot = abundance_axon_nmSC, width = 3, height = 3)
 
 abundance_axon_repairSC <-
-  abundance_axon |>
-  dplyr::filter(cell == "repairSC") |>
-  ggplot(aes(x = log_axon_normal, y = count)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  theme_bw() + 
-  xlab("Log normal axon counts") + 
-  ylab("repairSC (%)") 
+    abundance_axon |>
+    dplyr::filter(cell == "repairSC") |>
+    ggplot(aes(x = log_axon_normal, y = count)) +
+    #   ggplot(aes(x = axon_normal, y = count)) +
+    geom_point() +
+    geom_smooth(method = "lm") +
+    theme_bw() +
+    xlab("Log normal axon counts") +
+    ylab("repairSC (%)")
 
-ggsave(file.path("results", "abundance", "abundance_axon_repairSC.pdf"), plot = abundance_axon_repairSC, width = 3, height = 3)
+ggsave(file.path("results", "histo", "cor_axon_repairSC.pdf"), plot = abundance_axon_repairSC, width = 3, height = 3)
 
 # abundance_axon_damageSC <-
 #   abundance_axon |>
