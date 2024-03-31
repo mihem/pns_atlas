@@ -72,7 +72,6 @@ pns_sn_sciatic_milbrandt <- qs::qread("/home/mischko/Documents/beruf/forschung/s
 DimPlot(pns_sn_sciatic_milbrandt, label = TRUE)
 dplyr::count(pns_sn_sciatic_milbrandt@meta.data, cluster)
 
-# pns_milbrandt_sc <- readRDS("/home/mischko/Documents/beruf/forschung/scRNA_reference/pns_atlas_milbrandt/GSE182098_peripheral-nerves-Schwann-cell-specific_single-nuclei-atlas-8Feb2021.RDS")
 suter_p1 <- readRDS("/home/mischko/Documents/beruf/forschung/scRNA_reference/sciatic_nerve_atlas_suter/10xGeno_P1.rds")
 suter_p1$cluster <- Idents(suter_p1)
 
@@ -84,8 +83,6 @@ suter_p60_diet <- DietSeurat(suter_p60)
 suter_merge <- merge(x = suter_p1_diet, y = suter_p60_diet)
 dplyr::count(suter_merge@meta.data, cluster)
 
-sc_merge_prev <- qs::qread("../sn_suralis_2023_02/sc_final.qs", nthreads = 4)
-sc_merge_prev_small <- subset(sc_merge_prev, downsample = 1000)
 ec_atlas <- qs::qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/ec_atlas/ec_atlas.qs")
 ts_ec_small <- qs::qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/tabula_sapiens/ts_ec_small.qs")
 bbb_vascular <- qs::qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/bbb/bbb_vascular.qs")
@@ -131,14 +128,12 @@ sc_merge[["sketch"]] <- JoinLayers(sc_merge[["sketch"]])
 
 DefaultAssay(sc_merge) <- "sketch"
 
-predictions_prev <- mapSeurat(ref = sc_merge_prev_small, query = sc_merge)
 predictions_milbrandt <- mapSeurat(ref = human_pns_sciatic_milbrandt, query = sc_merge)
 predictions_ec <- mapSeurat(ref = human_ec_atlas, query = sc_merge)
 predictions_ts_ec <- mapSeurat(ref = ts_ec_small, query = sc_merge)
 predictions_suter_p1 <- mapSeurat(ref = human_suter_p1, query = sc_merge)
 predictions_suter_p60 <- mapSeurat(ref = human_suter_p60, query = sc_merge)
 predictions_suter_merge <- mapSeurat(ref = human_suter_merge, query = sc_merge)
-
 predictions_bbb <- mapSeurat(ref = bbb_vascular, query = sc_merge)
 predictions_rosmap <- mapSeurat(ref = rosmap, query = sc_merge)
 
@@ -164,7 +159,6 @@ storePred <- function(predictions, label_col, score_col, seu_obj) {
   return(seu_obj)
 }
 
-sc_merge <- storePred(predictions_prev, label_col = "heming_sural_label", score_col = "heming_sural_score", seu_obj = sc_merge)
 sc_merge <- storePred(predictions_milbrandt, label_col = "milbrandt_sciatic_label", score_col = "milbrandt_sciatic_score", seu_obj = sc_merge)
 sc_merge <- storePred(predictions_ec, label_col = "ec_atlas_label", score_col = "ec_atlas_score", seu_obj = sc_merge)
 sc_merge <- storePred(predictions_ts_ec, label_col = "ts_ec_label", score_col = "ts_ec_score", seu_obj = sc_merge)
@@ -338,11 +332,4 @@ pred_plot_rosmap <-
 
 ggsave(plot = pred_plot_rosmap, file.path("results", "map", "map_rosmap_full.png"), width = 4, height = 4)
 ggsave(plot = pred_plot_rosmap, file.path("results", "map", "map_rosmap_full_nolabel.png"), width = 4, height = 4)
- 
-dplyr::count(sc_merge@meta.data, rosmap_score)
-
-sc_merge@meta.data |>
-  ggplot(aes(x = cluster, y = rosmap_score)) +
-  geom_boxplot()
-
 
