@@ -205,11 +205,11 @@ volcanoPlot <- function(filename, sheet, FCcutoff = 2, selectLab = NULL, drawCon
                 "NS", "logFC",
                 "p-val", "p-val + logFC"
             ),
-            # legendPosition = "right",
-            legendPosition = "none"
+            legendPosition = "right",
+            # legendPosition = "none"
         )
-        png(file.path("results", "de", paste0(filename, "_", sheet, ".png")), width = 10, height = 12, units = "cm", res = 300)
-        # pdf(file.path("results", "de", paste0(filename, "_", sheet, ".pdf")), width = 8, height = 6)
+        # png(file.path("results", "de", paste0(filename, "_", sheet, ".png")), width = 10, height = 12, units = "cm", res = 300)
+        pdf(file.path("results", "de", paste0(filename, "_", sheet, ".pdf")), width = 8, height = 6)
         print(volcano)
         dev.off()
     }
