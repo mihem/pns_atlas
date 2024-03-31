@@ -123,15 +123,3 @@ dotPlot(
   height = 7,
   width = 15
 )
-
-
-# ec_atlas_markers <- readxl::read_excel(file.path("lookup", "ec_atlas_table3.xlsx"))
-
-# cap_markers <-
-#     ec_atlas_markers |>
-#     dplyr::filter(cell.type.ident == "EC general capillary") |>
-#     dplyr::filter(logFC > 0.75)
-
-# topmarkers[[11]] |>
-#     inner_join(select(cap_markers, gene))
-
