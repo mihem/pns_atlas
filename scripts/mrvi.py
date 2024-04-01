@@ -37,7 +37,6 @@ pickle.dump(cell_sample_representations, file = open("cell_sample_representation
 pickle.dump(cell_sample_sample_distances, file = open("cell_sample_sample_distances.pickle", "wb"))
 print("sample representation and distances saved")
 
-# anaylsis after hpc run
 adata = anndata.read_h5ad("objects/sc_diet_mrvi.h5ad")
 
 adata.obsm["X_mrvi_u"]
@@ -116,76 +115,3 @@ for cluster in unique_clusters:
 # save the cluster_dataframes as csv
 for cluster, df in cluster_dataframes.items():
     df.to_csv(f"results/mrvi/mrvi_cluster_{cluster}_average.csv")
-
-
-
-
-
-# # toy_df = pd.DataFrame(reshaped_array, index=row_labels, columns=col_labels)
-
-# lut = dict(zip(species.unique(), "rbg"))
-# row_colors = species.map(lut)
-
-# # map the colors
-# row_colors = sample_lookup.level1
-# sample_lookup["sample"].map(sample_lookup.level1)
-
-# sample_lookup.level2.unique()
-
-# lut = dict(zip(sample_lookup.level2.unique(), "rgbrgbrgbrgb"))
-# row_color = sample_lookup.level2.map(lut)
-
-# import itertools
-
-# # Create a dictionary to map each unique item in sample_lookup.level2 to a color
-# color_mapping = {level: color for level, color in zip(sample_lookup.center.unique(), ['r', 'g', 'b'])}
-# color_mapping = dict(zip(sample_lookup.center.unique(), "rbg"))
-# color_mapping = {level: color for level, color in zip(sample_lookup.level2.unique(), itertools.cycle(['r', 'g', 'b', 'c', 'm', 'y', 'k', 'w']))}
-
-# # Map the colors to the rows in the clustermap based on sample_lookup.level2
-# row_colors = sample_lookup.level2.map(color_mapping)
-# row_colors = sample_lookup.center.map(color_mapping)
-
-# #change columnames of row_colors
-# row_colors.index = sample_order
-
-# # Plot the clustermap with colored labels
-# sns.clustermap(toy_df, cmap = "viridis", row_colors=row_colors)
-# sns.clustermap(toy_df, row_colors=row_colors)
-# plt.show()
-# plt.savefig("output1.png")
-
-
-# iris = sns.load_dataset("iris")
-# species = iris.pop("species")
-# sns.clustermap(iris)
-# plt.savefig("output.png")
-
-# lut = dict(zip(species.unique(), "rbg"))
-# row_colors = species.map(lut)
-# sns.clustermap(iris, row_colors=row_colors, cmap = "viridis")
-# plt.savefig("output.png")
-
-# iris.shape
-# row_colors.shape
-
-# # Create a toy array
-# toy_array = np.array([[[1, 2], [3, 4]],
-#                       [[5, 6], [7, 8]],
-#                       [[9, 10], [11, 12]],
-#                       [[13, 14], [15, 16]]])
-
-# toy_array.shape
-# toy_array
-
-# # Reshape the array to 2-D
-# reshaped_array = np.reshape(toy_array, (4, -1))
-# reshaped_array.shape
-
-# # Create row and column labels
-# row_labels = [f"Cell {i+1}" for i in range(4)]
-# col_labels = ["Sample A", "Sample B", "Sample A", "Sample B"]
-
-# toy_df = pd.DataFrame(reshaped_array, index=row_labels, columns=col_labels)
-# sns.clustermap(toy_df)
-# plt.savefig("toy1.png")
