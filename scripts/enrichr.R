@@ -34,27 +34,6 @@ macro_de_top <-
         setNames(c("Macro2", "Macro17", "Macro18")) 
 
 
-# get de of main cluster ---
-cluster_de <- c("repairSC", "mySC", "nmSC", "PC2", "ven_capEC1", "artEC")
-
-cluster_de_top_pos <-
-    lapply(cluster_de,
-        FUN = function(x) {
-            read_excel(file.path("results", "de", "pnp_ctrl_pseudobulk_sig.xlsx"), sheet = x) |>
-            dplyr::filter(avg_logFC > 2)
-        } 
-    ) |>
-    setNames(cluster_de)
-
-cluster_de_top_neg <-
-    lapply(cluster_de,
-        FUN = function(x) {
-            read_excel(file.path("results", "de", "pnp_ctrl_pseudobulk_sig.xlsx"), sheet = x) |>
-            dplyr::filter(avg_logFC < 2)
-        } 
-    ) |>
-    setNames(cluster_de)
-
 # perform enrichment with macro ----
 macro_enrichr <-
     lapply(c("Macro2", "Macro17", "Macro18"),
@@ -70,37 +49,6 @@ lapply(
     FUN = function(x) {
         write_xlsx(macro_enrichr[[x]], file.path("results", "enrichr", paste0("enrichr_", x, ".xlsx")))
     })
-
-# perform enrichment with main clusters ----
-clusters_enrichr_pos <-
-    lapply(cluster_de,
-        FUN = function(x) {
-            enrichr(cluster_de_top_pos[[x]]$gene, dbs)
-        }
-    ) |>
-    setNames(cluster_de)
-
-clusters_enrichr_neg <-
-    lapply(cluster_de,
-        FUN = function(x) {
-            enrichr(cluster_de_top_neg[[x]]$gene, dbs)
-        }
-    ) |>
-    setNames(cluster_de)
-
-lapply(
-    cluster_de,
-    FUN = function(x) {
-        write_xlsx(clusters_enrichr_pos[[x]], file.path("results", "enrichr", paste0("enrichr_pos_", x, ".xlsx")))
-    }
-)
-
-lapply(
-    cluster_de,
-    FUN = function(x) {
-        write_xlsx(clusters_enrichr_neg[[x]], file.path("results", "enrichr", paste0("enrichr_neg_", x, ".xlsx")))
-    }
-)
 
 # function to plot enrichment results ----
 plotEnrichrFun <- function(filename, sheet, width, height) {
@@ -126,15 +74,5 @@ lapply(
     c("Macro2", "Macro17", "Macro18"),
     FUN = function(x) {
         plotEnrichrFun(x, sheet = "GO_Biological_Process_2023", width = 6, height = 2)
-    })
-
-# plot enrichment of main clusters ----
-lapply(
-    c(
-        paste0("pos_", cluster_de),
-        paste0("neg_", cluster_de)
-    ),
-    FUN = function(x) {
-        plotEnrichrFun(x, sheet = "GO_Biological_Process_2023", width = 7, height = 3)
     }
 )
