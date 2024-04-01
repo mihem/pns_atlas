@@ -5,9 +5,8 @@ library(scMisc)
 library(qs)
 library(pheatmap)
 
-remotes::install_github("mihem/scMisc")
-
-detach(package:scMisc, unload = TRUE)
+# detach(package:scMisc, unload = TRUE)
+# remotes::install_github("mihem/scMisc")
 
 # load preprocessed data ----
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
@@ -41,16 +40,6 @@ scMisc::stackedPlot(
 
 scMisc::stackedPlot(
   object = sc_merge,
-  x_axis = "level1",
-  y_axis = "cluster",
-  x_order = unique(sc_merge$level1),
-  y_order = sc_merge@misc$cluster_order,
-  color = sc_merge@misc$cluster_col,
-  width = 4
-)
-
-scMisc::stackedPlot(
-  object = sc_merge,
   x_axis = "level2",
   y_axis = "cluster",
   x_order = unique(sc_merge$level2),
@@ -80,8 +69,6 @@ scMisc::stackedPlot(
   width = 5
 )
 
-
-str(sc_merge@meta.data)
 
 # propeller abundance analysis ---
 
@@ -122,8 +109,6 @@ propeller_PNP_CTRL |>
     width = 2.5,
     height = 3
   )
-
-
 
 # immune cells
 propeller_PNP_CTRL_ic <-
