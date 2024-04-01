@@ -1,4 +1,4 @@
-# analyse xenium data
+# analyze xenium data
 
 # load libraries
 library(Seurat)
@@ -12,7 +12,6 @@ xenium_paths <- list.dirs(file.path("xenium", "raw"), full.names = TRUE, recursi
 
 # Get the center position of each centroid. There is one row per cell in this dataframe.
 str(GetTissueCoordinates(xenium_s11[["fov"]][["centroids"]]))
-
 
 xenium_meta <- 
     readxl::read_excel(file.path("lookup", "xenium_meta.xlsx"))  |>
@@ -295,9 +294,6 @@ ptprc_result <-
     mutate(epiPTPRC_density = epiPTPRC / epiarea) |>
     mutate(endoPTPRC_density_sum = endoPTPRC_sum / endoarea_sum) |>
     mutate(endoPTPRC_density_mean = endoPTPRC_mean / endoarea_mean) 
-    # mutate(PTPRC_ratio = endoPTPRC/nervePTPRC) |>
-    # mutate(nervePTPRC_density = nervePTPRC/nervearea) |>
-    # mutate(PTPRC_density_ratio = endoPTPRC_density/nervePTPRC_density)
 
 plotQuanti <- function(y_value, name) {
     ptprc_result |>
