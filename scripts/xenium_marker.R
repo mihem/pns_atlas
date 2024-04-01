@@ -1,3 +1,5 @@
+# create a reference data set for Xenium Panel Design
+
 # libraries  ----
 library(Seurat)
 library(BPCells)
@@ -48,12 +50,6 @@ DropletUtils::write10xCounts(
   path = file.path("objects", "sc_xenium_count.h5"),
   version = "3"
 )
-
-# DropletUtils::write10xCounts(
-#   x = sc_merge_small$RNA$counts,
-#   path = file.path("objects", "sc_merge_small_count"),
-#   version = "3"
-# )
 
 # save annotations for Xenium
 str(sc_merge_small@meta.data)
@@ -108,8 +104,6 @@ dotPlot(
   width = 20
 )
 
-str(sc_xenium@meta.data)
-
 Idents(sc_xenium) <- sc_xenium$level2
 
 cluster_order_de <-
@@ -132,7 +126,3 @@ dotPlot(
   height = 15,
   width = 7
 )
-
-
-
-
