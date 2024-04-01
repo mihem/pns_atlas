@@ -33,7 +33,6 @@ obj <- association.Seurat(
     verbose = TRUE,
     batches = NULL, ## no batch variables to include, only works with matched design https://github.com/immunogenomics/cna/issues/11
     # covs = NULL ## no covariates to include  
-    # covs = c("sex_numeric", "age", "center_numeric") 
     covs = c("sex_numeric", "age")
 )
 
@@ -249,8 +248,6 @@ samples_no_ncv <-
 
 sc_merge_ncv <- subset(sc_merge, subset = sample %in% samples_no_ncv, invert = TRUE)
 
-dplyr::count(sc_merge@meta.data, ncv_tibial_motoric)
-
 obj <- association.Seurat(
     seurat_object = sc_merge_ncv, 
     test_var = "ncv_tibial_motoric", 
@@ -383,5 +380,4 @@ cor_axon_diameter_plot <-
     )
 
 ggsave(plot = cor_axon_diameter_plot, file.path("results", "cna", "cna_axon_diameter_sex_age.png"), width = 10, height = 10)
-# ggsave(plot = cor_axon_diameter_plot, file.path("results", "cna", "cna_axon_diameter.png"), width = 10, height = 10)
 
