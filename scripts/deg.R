@@ -45,32 +45,15 @@ dePseudo <- function(seu_obj, cell_type_col, label_col) {
         de_type = "LRT",
         n_threads = 6
     )
-    # res_count <-
-    #     res |>
-    #     dplyr::count(gene) |>
-    #     arrange(desc(n)) |>
-    #     dplyr::filter(n < 10)
-
-    # res_sig <-
-    #     res |>
-    #     dplyr::filter(p_val < 0.05) |>
-    #     # dplyr::filter(gene %in% res_count$gene) |>
-    #     arrange(desc(avg_logFC))
-
-
     res <- arrange(res, cell_type, desc(avg_logFC))
     res_split <- split(res, res$cell_type)
     write_xlsx(res_split, path = file.path("results", "de", paste0(seu_obj_parse, ".xlsx")))
 }
 
-#needs to be dgCMatrix for Libra not BPCellsMatrix
-# sc_merge$RNA$counts <- as(object = sc_merge[["RNA"]]$counts, Class = "dgCMatrix")
-
 # PNP vs CTRL pseudobulk ----
 sc_merge$level0 <- factor(sc_merge$level0, levels = c("PNP", "CTRL"))
 dePseudo(sc_merge, cell_type_col = "cluster", label_col = "level0")
 
-# sanity check
 nmSC <- subset(sc_merge, cluster %in% c("nmSC"))
 AggregateExpression(nmSC, assay = "RNA", group.by = "level0", features = c("IFI44L"))
 
