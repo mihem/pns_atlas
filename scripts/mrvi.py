@@ -1,3 +1,5 @@
+# run mrvi.py with preprocessed Seurat object (mrvi.R)
+
 import mrvi
 import anndata
 

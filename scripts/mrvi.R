@@ -1,3 +1,4 @@
+# preprare Seurat object for mrvi analysis and plot mrvi results (after mrvi.py has been run)
 # libraries  ----
 library(Seurat)
 library(BPCells)
