@@ -4,6 +4,7 @@ library(tidyverse)
 library(scMisc)
 library(qs)
 library(pheatmap)
+library(speckle)
 
 # detach(package:scMisc, unload = TRUE)
 # remotes::install_github("mihem/scMisc")
