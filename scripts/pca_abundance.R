@@ -26,7 +26,7 @@ pcaSeurat <- function(object, label1, label2, label3, label3_colors = NULL) {
 
   colnames(cl_size) <- levels(object@meta.data[[label1]])
 
-  pca_result <-FactoMineR::PCA(cl_size, scale.unit = TRUE, ncp = 30, graph = FALSE)
+  pca_result <- FactoMineR::PCA(cl_size, scale.unit = TRUE, ncp = 30, graph = FALSE)
   factoextra::fviz_eig(pca_result, addlabels = TRUE, ylim = c(0,50), ncp = 7)
   ggsave(paste0("./results/pca/pca_", object_parse, "_", label3, "_eigen.pdf"))
 
@@ -192,46 +192,6 @@ pcaSeurat(
   label1 = "ic_cluster",
   label2 = "sample",
   label3 = "incat"
-)
-
-
-# without scDamage
-sc_merge_no_damageSC <- subset(sc_merge, subset = cluster %in% c("damageSC"), invert = TRUE)
-sc_merge_no_damageSC$cluster <- droplevels(sc_merge_no_damageSC$cluster)
-
-pcaSeurat(
-  object = sc_merge_no_damageSC,
-  label1 = "cluster",
-  label2 = "sample",
-  label3 = "level2"
-)
-
-# only intraneuronal cells
-sc_merge_neuronal <- subset(sc_merge, subset = cluster %in% c("LEC", "artEC", "venEC", "epiC", "periC3", "periC2", "periC1", "Adipo", "damageSC"), invert = TRUE)
-
-sc_merge_neuronal$cluster <- droplevels(sc_merge_neuronal$cluster)
-
-dplyr::count(sc_merge_neuronal@meta.data, cluster)
-
-pcaSeurat(
-  object = sc_merge_neuronal,
-  label1 = "cluster",
-  label2 = "sample",
-  label3 = "level2"
-)
-
-# only sc cluster
-sc_merge_sc <- subset(sc_merge, subset = cluster %in% c("nmSC", "mySC", "repairSC", "damageSC"))
-
-sc_merge_sc$cluster <- droplevels(sc_merge_sc$cluster)
-
-dplyr::count(sc_merge_sc@meta.data, cluster)
-
-pcaSeurat(
-  object = sc_merge_sc,
-  label1 = "cluster",
-  label2 = "sample",
-  label3 = "level2"
 )
 
 # NMF not superior to PCA
