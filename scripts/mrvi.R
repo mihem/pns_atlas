@@ -38,7 +38,8 @@ sc_diet <- RenameAssays(object = sc_diet, RNA3 = 'RNA')
 # convert using sceasy ----
 sceasy::convertFormat(sc_diet, from = "seurat", to = "anndata", outFile = file.path("objects", "sc_diet.h5ad"))
 
-# reticulate::py_config()
+################################################################################################################
+# after mrvi.py has binished contiue with this script
 
 # mrvvi anaylsis for all cluster combined ---
 mrvi_all_average <-
@@ -55,72 +56,6 @@ histo_lookup <-
         axon_diameter = sc_merge$axon_diameter
     ) |>
     distinct() 
-
-histo_lookup |>
-    ggplot(aes(x = axon_normal)) +
-    geom_histogram(bins = 100))
-
-metadata <- 
-    read_csv(file.path("lookup", "sample_lookup.csv")) |>
-    left_join(axon_count_lookup) |>
-    select(level2, INCAT, center, log_axon_normal) |>
-    mutate(level0 = if_else(level2 == "CTRL", "CTRL", "PNP")) |>
-    # select(!log_axon_normal) |>
-    data.frame()
-
-
-# make sure that rownames and columnnames of data and metadata are the same
-rownames(metadata) <- colnames(mrvi_all_average)
-
-# create colors for annotations
-phmap_cols_level2 <- pals::cols25(length(unique(metadata$level2)))
-names(phmap_cols_level2) <- unique(metadata[["level2"]])
-
-phmap_cols_level0 <- RColorBrewer::brewer.pal(length(unique(metadata$level0)), "Set1")[1:2]
-names(phmap_cols_level0) <- unique(metadata[["level0"]])
-
-phmap_cols_INCAT <- c("white", RColorBrewer::brewer.pal(length(unique(metadata$INCAT))-1, "Reds"))
-names(phmap_cols_INCAT) <- c("-", "1", "2", "3", "4", "5", "6")
-
-phmap_cols_center <- RColorBrewer::brewer.pal(length(unique(metadata$center)), "Set2")
-names(phmap_cols_center) <- unique(metadata[["center"]])
-
-phmap_cols_axon_normal <- viridis::viridis(length(unique(metadata$log_axon_normal)))
-names(phmap_cols_axon_normal) <- unique(metadata[["log_axon_normal"]])
-
-phmap_list <-
-    list(
-        level0 = phmap_cols_level0,
-        level2 = phmap_cols_level2,
-        INCAT = phmap_cols_INCAT,
-        center = phmap_cols_center,
-        log_axon_normal = phmap_cols_axon_normal
-    )
-
-phmap_mrvi <-
-    pheatmap(
-        mrvi_all_average,
-        cluster_rows = TRUE,
-        cluster_cols = TRUE,
-        color = viridis::magma(100),
-        cellwidth = 10,
-        cellheight = 10,
-        treeheight_row = 15,
-        treeheight_col = 15,
-        clustering_distance_rows = "euclidean",
-        clustering_distance_cols = "euclidean",
-        clustering_method = "ward.D2",
-        border_color = NA,
-        cutree_cols = 5,
-        cutree_rows = 5,
-        annotation_row = metadata,
-        annotation_colors = phmap_list,
-        main = "All"
-    )
-
-pdf(file.path("results", "mrvi", "heatmap_mrvi_average_all.pdf"), width = 10, height = 10)
-print(phmap_mrvi)
-dev.off()
 
 # only for CIDP, CIAP, CTRL and VN ----
 metadata <- 
@@ -199,72 +134,70 @@ pdf(file.path("results", "mrvi", "heatmap_mrvi_average_all.pdf"), width = 10, he
 print(phmap_mrvi)
 dev.off()
 
-
-# for each cluster separately ---
-
-mrviPlot <- function(cluster) {
-    mrvi_input <-
-        read.csv(file.path("results", "mrvi", paste0("mrvi_cluster_", cluster, "_average.csv"))) |>
-        tibble::column_to_rownames("X")
+# # for each cluster separately ---
+# mrviPlot <- function(cluster) {
+#     mrvi_input <-
+#         read.csv(file.path("results", "mrvi", paste0("mrvi_cluster_", cluster, "_average.csv"))) |>
+#         tibble::column_to_rownames("X")
 
 
-    metadata <-
-        read_csv(file.path("lookup", "sample_lookup.csv")) |>
-        select(level2, INCAT, center) |>
-        mutate(level0 = if_else(level2 == "CTRL", "CTRL", "PNP")) |>
-        data.frame()
+#     metadata <-
+#         read_csv(file.path("lookup", "sample_lookup.csv")) |>
+#         select(level2, INCAT, center) |>
+#         mutate(level0 = if_else(level2 == "CTRL", "CTRL", "PNP")) |>
+#         data.frame()
 
 
 
-    # make sure that rownames and columnnames of data and metadata are the same
-    rownames(metadata) <- colnames(mrvi_input)
+#     # make sure that rownames and columnnames of data and metadata are the same
+#     rownames(metadata) <- colnames(mrvi_input)
 
-    # create colors for annotations
-    phmap_cols_level2 <- pals::cols25(length(unique(metadata$level2)))
-    names(phmap_cols_level2) <- unique(metadata[["level2"]])
+#     # create colors for annotations
+#     phmap_cols_level2 <- pals::cols25(length(unique(metadata$level2)))
+#     names(phmap_cols_level2) <- unique(metadata[["level2"]])
 
-    phmap_cols_level0 <- RColorBrewer::brewer.pal(length(unique(metadata$level0)), "Set1")[1:2]
-    names(phmap_cols_level0) <- unique(metadata[["level0"]])
+#     phmap_cols_level0 <- RColorBrewer::brewer.pal(length(unique(metadata$level0)), "Set1")[1:2]
+#     names(phmap_cols_level0) <- unique(metadata[["level0"]])
 
-    phmap_cols_INCAT <- c("white", RColorBrewer::brewer.pal(length(unique(metadata$INCAT)) - 1, "Reds"))
-    names(phmap_cols_INCAT) <- c("-", "1", "2", "3", "4", "5", "6")
+#     phmap_cols_INCAT <- c("white", RColorBrewer::brewer.pal(length(unique(metadata$INCAT)) - 1, "Reds"))
+#     names(phmap_cols_INCAT) <- c("-", "1", "2", "3", "4", "5", "6")
 
-    phmap_cols_center <- RColorBrewer::brewer.pal(length(unique(metadata$center)), "Set2")
-    names(phmap_cols_center) <- unique(metadata[["center"]])
+#     phmap_cols_center <- RColorBrewer::brewer.pal(length(unique(metadata$center)), "Set2")
+#     names(phmap_cols_center) <- unique(metadata[["center"]])
 
-    phmap_list <-
-        list(
-            level0 = phmap_cols_level0,
-            level2 = phmap_cols_level2,
-            INCAT = phmap_cols_INCAT,
-            center = phmap_cols_center
-        )
+#     phmap_list <-
+#         list(
+#             level0 = phmap_cols_level0,
+#             level2 = phmap_cols_level2,
+#             INCAT = phmap_cols_INCAT,
+#             center = phmap_cols_center
+#         )
 
-    phmap_mrvi <-
-        pheatmap(
-            mrvi_input,
-            cluster_rows = TRUE,
-            cluster_cols = TRUE,
-            color = viridis::magma(100),
-            cellwidth = 10,
-            cellheight = 10,
-            treeheight_row = 15,
-            treeheight_col = 15,
-            clustering_distance_rows = "euclidean",
-            clustering_distance_cols = "euclidean",
-            clustering_method = "ward.D2",
-            border_color = NA,
-            cutree_cols = 5,
-            cutree_rows = 5,
-            annotation_row = metadata,
-            annotation_colors = phmap_list,
-            main = cluster,
-        )
+#     phmap_mrvi <-
+#         pheatmap(
+#             mrvi_input,
+#             cluster_rows = TRUE,
+#             cluster_cols = TRUE,
+#             color = viridis::magma(100),
+#             cellwidth = 10,
+#             cellheight = 10,
+#             treeheight_row = 15,
+#             treeheight_col = 15,
+#             clustering_distance_rows = "euclidean",
+#             clustering_distance_cols = "euclidean",
+#             clustering_method = "ward.D2",
+#             border_color = NA,
+#             cutree_cols = 5,
+#             cutree_rows = 5,
+#             annotation_row = metadata,
+#             annotation_colors = phmap_list,
+#             main = cluster,
+#         )
 
 
-    pdf(file.path("results", "mrvi", paste0("heatmap_mrvi_cluster_", cluster, "_average.pdf")), width = 10, height = 10)
-    print(phmap_mrvi)
-    dev.off()
-}
+#     pdf(file.path("results", "mrvi", paste0("heatmap_mrvi_cluster_", cluster, "_average.pdf")), width = 10, height = 10)
+#     print(phmap_mrvi)
+#     dev.off()
+# }
 
-lapply(sc_merge@misc$cluster_order, mrviPlot)
+# lapply(sc_merge@misc$cluster_order, mrviPlot)
