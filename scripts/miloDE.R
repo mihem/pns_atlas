@@ -21,10 +21,10 @@ detach(package:miloDE, unload = TRUE)
 # sc_merge$RNA$counts <- as(object = sc_merge[["RNA"]]$counts, Class = "dgCMatrix")
 # sc_merge$RNA$data <- as(object = sc_merge[["RNA"]]$data, Class = "dgCMatrix")
 
-# downsample ---
-sc_merge_small <- subset(sc_merge, downsample = 1000)
-sc_merge_small <- ScaleData(sc_merge_small)
-qsave(sc_merge_small, file.path("objects", "sc_merge_small.qs"))
+# # downsample ---
+# sc_merge_small <- subset(sc_merge, downsample = 1000)
+# sc_merge_small <- ScaleData(sc_merge_small)
+# qsave(sc_merge_small, file.path("objects", "sc_merge_small.qs"))
 
 # convert to sparse matrix and scale data
 sc_merge_small$RNA$counts <- as(object = sc_merge_small[["RNA"]]$counts, Class = "dgCMatrix")
@@ -52,7 +52,7 @@ sce <- as.SingleCellExperiment(sc_diet, assay = "RNA")
 counts(sce)
 logcounts(sce)
 
-#  mulit core for miloDE
+#  multi core for miloDE
 ncores <- 6
 mcparam <- MulticoreParam(workers = ncores)
 register(mcparam)
@@ -93,7 +93,7 @@ milo_hood_plot <-
   scale_fill_manual(values = my_cols_25, name = "cluster")
 
 ggsave(plot = milo_hood_plot, file.path("results", "miloDE", "milo_rna_nhood.pdf"), width = 10, height = 7)
-ggsave(file.path("results", "miloDE", "milo_rna_nhood_downsampled.pdf"), width = 10, height = 7)
+# ggsave(file.path("results", "miloDE", "milo_rna_nhood_downsampled.pdf"), width = 10, height = 7)
 
 
 ## #calculate AUC
@@ -125,7 +125,6 @@ qsave(milo_DE, file.path("objects", "milo_DE.qs"))
 
 str(counts(miloDE), max.level = 3)
 str(logcounts(miloDE), max.level = 3)
-scMisc::lss()
 
 # careful! computationally very expensive (22h runtime with 1 core and 170k cells
 # and 38h for ~400k cells with 1 core)
@@ -179,7 +178,6 @@ p1 <- plot_milo_by_single_metric(
   stat_de_magnitude,
   colour_by = "n_DE_genes",
   layout = "UMAP.SCVI.FULL",
-  # size_range = c(0.2, 3),
   size_range = c(0.5, 5),
   edge_width = c(0.1, 1.0), 
   edge_weight.thres = 10
@@ -187,7 +185,7 @@ p1 <- plot_milo_by_single_metric(
   viridis::scale_fill_viridis(name = "# DE genes", option = "inferno")
 )
 
-ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_PNP_CTRL_v3.pdf"), width = 6, height = 6, device = cairo_pdf)
+ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_PNP_CTRL.pdf"), width = 6, height = 6, device = cairo_pdf)
 ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_VN_CTRL.pdf"), width = 6, height = 6, device = cairo_pdf)
 ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_CIDP_CTRL.pdf"), width = 6, height = 6, device = cairo_pdf)
 ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_CIAP_CTRL.pdf"), width = 6, height = 6, device = cairo_pdf)
@@ -216,8 +214,6 @@ ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_CIAP_CTRL.p
 
 # ggsave(plot = p3, file.path("results", "miloDE", "milo_DE_PNP_CTRL_IFI44L.pdf"), width = 6, height = 6, device = cairo_pdf)
 # p1_p2 <- patchwork::wrap_plots(p1, p2)
-
-
 
 
 # stat_de_magnitude |>
@@ -250,13 +246,3 @@ ggsave(plot = p1, filename = file.path("results", "miloDE", "milo_DE_CIAP_CTRL.p
 # assay_de_genes_z <- t(apply(assay_de_genes, 1, function(x) {(x - mean(x, na.rm = TRUE))/sd(x, na.rm  = TRUE)}))
 
 # head(sort(assay_de_genes_z[,425][assay_de_genes_z[,425] < -3]), 25)
-
-
-# fp_1 <- FeaturePlot(sc_merge, reduction = "umap.scvi.full", features = c("PPIAL4G"), split.by = "level0", pt.size = .01, raster = FALSE, order = TRUE)
-# ggsave(plot = fp_1, file.path("results", "miloDE", "milo_DE_PPIAL4G.png"), width = 12, height = 7)
-
-# fp_2 <- FeaturePlot(sc_merge, reduction = "umap.scvi.full", features = c("HLA-DPB1"), split.by = "level0", pt.size = .01, raster = FALSE, order = TRUE)
-# ggsave(plot = fp_2, file.path("results", "miloDE", "milo_DE_HLA-DPB1.png"), width = 12, height = 7)
-
-# fp_3 <- FeaturePlot(sc_merge, reduction = "umap.scvi.full", features = c("SERPINA1"), split.by = "level0", pt.size = .01, raster = FALSE, order = TRUE)
-# ggsave(plot = fp_3, file.path("results", "miloDE", "milo_SERPINA1.png"), width = 12, height = 7)
