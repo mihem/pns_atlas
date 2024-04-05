@@ -241,7 +241,7 @@ cropped_coords_S24_CTRL_group <- Crop(xenium_objects[["S24_CTRL"]][["fov"]], x =
 xenium_objects[["S24_CTRL"]][["zoom"]] <- cropped_coords_S24_CTRL_group
 S24_group_plot <- ImageDimPlot(xenium_objects[["S24_CTRL"]], group.by = "sn_predictions_group", cols = prediction_group_col, axes = FALSE, size = 1, fov = "zoom") + 
     theme(legend.title = element_blank())
-ggsave(plot = S24_group_plot, filename = file.path("results", "xenium", paste0("seurat_predict_group_S24_CTRL_cropped.png")), width = 5, height = 5, dpi = 600)
+ggsave(plot = S24_group_plot, filename = file.path("results", "xenium", paste0("seurat_predict_group_S24_CTRL_cropped.png")), width = 3.5, height = 3.5, dpi = 600)
 
 
 for (i in names(xenium_objects)) {
