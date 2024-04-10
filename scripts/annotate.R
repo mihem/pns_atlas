@@ -12,9 +12,6 @@ library(scMisc)
 library(Polychrome)
 library(readxl)
 
-remotes::install_github("mihem/scMisc")
-detach(package:scMisc, unload = TRUE)
-
 # general settings  ----
 options(warn = 0)
 options(Seurat.object.assay.version = "v5")
