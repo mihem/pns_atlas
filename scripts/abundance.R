@@ -430,6 +430,53 @@ print(phmap_mrvi_cluster)
 dev.off()
 
 
+# abundance of mrVI groups in immune cells  ----
+mrvi_lookup <- read_csv(file.path("lookup", "mrvi_lookup.csv"))  
+
+ic@meta.data <-
+    ic@meta.data |>
+    tibble::rownames_to_column("barcode") |>
+    dplyr::left_join(mrvi_lookup, by = "sample") |>
+    tibble::column_to_rownames(var = "barcode")
+
+ic_vn_cidp_ciap_ctrl <- subset(ic, level2 %in% c("VN", "CIDP", "CIAP", "CTRL"))
+
+str(ic_vn_cidp_ciap_ctrl@meta.data)
+
+scMisc::abBoxPlot(
+  object = ic_vn_cidp_ciap_ctrl,
+  cluster_idents = "ic_cluster",
+  sample = "sample",
+  cluster_order = ic_vn_cidp_ciap_ctrl@misc$ic_cluster_order,
+  group_by =  "mrvi_cluster",
+  group_order = paste0("p-cl", 1:5),
+  color = pals::cols25()
+)
+
+phmap_mrvi_cluster_ic <-
+  table(ic_vn_cidp_ciap_ctrl$ic_cluster, ic_vn_cidp_ciap_ctrl$mrvi_cluster) |>
+  pheatmap(
+    scale = "column",
+    cluster_rows = TRUE,
+    cluster_cols = FALSE,
+    color = viridis::magma(100),
+    cellwidth = 10,
+    cellheight = 10,
+    treeheight_row = 15,
+    treeheight_col = 15,
+    clustering_distance_rows = "euclidean",
+    clustering_distance_cols = "euclidean",
+    clustering_method = "ward.D2",
+    border_color = NA,
+    cutree_rows = 5,
+    main = "mrVI cluster"
+  )
+
+pdf(file.path("results", "abundance", "mrvi_heatmap_abundance_ic_cluster.pdf"), width = 5, height = 7)
+print(phmap_mrvi_cluster_ic)
+dev.off()
+
+
 # g ratio and axon diameter boxplots ----
 g_ratio_axon_diameter_mrvi <-
   g_ratio |>
