@@ -66,11 +66,6 @@ topmarkers <-
     ) |>
     setNames(sc_merge@misc$cluster_order)
 
-sc_merge$cluster <- as.character(sc_merge$cluster)
-sc_merge$cluster[sc_merge$cluster == "periC1"] <- "periC"
-sc_merge$cluster[sc_merge$cluster == "periC2"] <- "periC"
-sc_merge$cluster[sc_merge$cluster == "periC3"] <- "periC"
-
 topmarkers_milbrandt <-
     lapply(
         unique(pns_sn_sciatic_milbrandt$cluster),
@@ -97,19 +92,6 @@ names(topmarkers_suter)[8] <- "Per_VSMC"
 names(topmarkers_suter)[9] <- "Per_EC"
 
 write_xlsx(topmarkers_suter, file.path("results", "de", "topmarkers_suter.xlsx"))
-
-topmarkers_carr_comMes <-
-    lapply(
-        unique(carr_comMes$cluster),
-        function(x) {
-            message("Processing cluster ", x)
-            try(findMarkers(ident1 = x, object = carr_comMes, only_pos = TRUE, min_pct = 0.1, logfc_threshold = 0.25, assay = "RNA"))
-        }
-    ) |>
-    setNames(unique(carr_comMes$cluster))
-
-
-write_xlsx(topmarkers_carr_comMes, file.path("results", "de", "topmarkers_carr_comMes.xlsx"))
 
 topmarkers_wolbert <-
     lapply(
