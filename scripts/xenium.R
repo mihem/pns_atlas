@@ -6,7 +6,6 @@ library(tidyverse)
 library(scMisc)
 future::plan("multicore", workers = 6)
 
-
 # load Xenium data
 xenium_paths <- list.dirs(file.path("xenium", "raw"), full.names = TRUE, recursive = FALSE)
 
@@ -364,14 +363,14 @@ for (i in names(xenium_objects)) {
 qs::qsave(xenium_objects, file.path("objects", "xenium_objects.qs"))
 xenium_objects <- qs::qread(file.path("objects", "xenium_objects.qs"))
 
-# abundance of xenium ptprc based on manual quantification ----
-ptprc_quanti <-
-    read_csv(file.path("lookup", "xenium_manual_ptprc_quantification.csv"))|>
+# abundance of xenium markers based on manual quantification ----
+quanti <-
+    read_csv(file.path("lookup", "xenium_manual_quantification.csv"))|>
     pivot_longer(!sample, names_to = "name", values_to = "value") |>
     separate_wider_delim(name, delim = "_", names = c("variable", "area"))
 
-ptprc_stats <-
-    ptprc_quanti |>
+quanti_stats <-
+    quanti |>
     dplyr::filter(area != "all") |>
     group_by(sample, variable) |>
     summarize(
@@ -382,23 +381,28 @@ ptprc_stats <-
     unite("variable", variable, name)
 
 
-ptprc_result <-
-    ptprc_quanti |>
+quanti_result <-
+    quanti |>
     dplyr::filter(area == "all") |>
     select(sample, variable, value) |>
-    bind_rows(ptprc_stats) |>
+    bind_rows(quanti_stats)  |>
     arrange(sample) |>
     pivot_wider(names_from = variable, values_from = value) |>
     left_join(select(sample_lookup, sample, level2), join_by(sample)) |>
     mutate(level2 = factor(level2, levels = sc_merge@misc$level2_order)) |>
-    mutate(epiPTPRC = nervePTPRC - endoPTPRC_sum) |>
     mutate(epiarea = nervearea - endoarea_sum) |>
+    mutate(epiPTPRC = nervePTPRC - endoPTPRC_sum) |>
+    mutate(epiMS4A1 = nerveMS4A1 - endoMS4A1_sum) |>
+    mutate(epiCD3E = nerveCD3E - endoCD3E_sum) |>
     mutate(epiPTPRC_density = epiPTPRC / epiarea) |>
+    mutate(epiMS4A1_density = epiMS4A1 / epiarea) |>
+    mutate(epiCD3E_density = epiCD3E / epiarea) |>
     mutate(endoPTPRC_density_sum = endoPTPRC_sum / endoarea_sum) |>
-    mutate(endoPTPRC_density_mean = endoPTPRC_mean / endoarea_mean) 
+    mutate(endoMS4A1_density_sum = endoMS4A1_sum / endoarea_sum) |>
+    mutate(endoCD3E_density_sum = endoCD3E_sum / endoarea_sum)
 
 plotQuanti <- function(y_value, name) {
-    ptprc_result |>
+    quanti_result |>
         ggplot(aes(x = level2, y = .data[[y_value]], fill = level2)) +
         geom_boxplot() +
         geom_jitter(height = 0, width = 0.1) +
@@ -421,9 +425,13 @@ plotQuanti <- function(y_value, name) {
 
 plotQuanti(y_value = "epiPTPRC_density", name = "PTPRC_epi_density")
 plotQuanti(y_value = "endoPTPRC_density_sum", name = "PTPRC_endo_density_sum")
-# plotQuanti(y_value = "endoPTPRC_mean", name = "PTPRC_endo_mean")
-# plotQuanti(y_value = "epiPTPRC", name = "PTPRC_epi")
-# plotQuanti(y_value = "endoPTPRC_density_mean", name = "PTPRC_endo_density_mean")
+
+
+plotQuanti(y_value = "epiMS4A1_density", name = "MS4A1_epi_density")
+plotQuanti(y_value = "endoMS4A1_density_sum", name = "MS4A1_endo_density_sum")
+
+plotQuanti(y_value = "epiCD3E_density", name = "CD3E_epi_density")
+plotQuanti(y_value = "endoCD3E_density_sum", name = "CD3E_endo_density_sum")
 
 # abundance of xenium cell predictions ----
 cells_list <-
