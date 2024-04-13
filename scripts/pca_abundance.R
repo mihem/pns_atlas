@@ -64,7 +64,7 @@ pca_var_plot <-
    pca_plot_group <-
     factoextra::fviz_pca_ind(
       pca_result,
-      pointsize = 3,
+      pointsize = 5,
       pointshape = 21,
       geom.ind = "point",
       fill.ind = lookup$label3,
@@ -154,45 +154,53 @@ pcaSeurat(
   label3 = "incat"
 )
 
-ic_vn_cidp_ciap_ctrl <- subset(ic, level2 %in% c("CIDP", "VN", "CTRL", "CIAP"))
-
 pcaSeurat(
-  object = ic_vn_cidp_ciap_ctrl,
-  label1 = "ic_cluster",
+  object = vn_cidp_ciap_ctrl,
+  label1 = "cluster",
   label2 = "sample",
-  label3 = "level2",
-  label3_colors = ic@misc$level2_cols
+  label3 = "mrvi_cluster",
+  label3_colors =  pals::cols25()
 )
 
-pcaSeurat(
-  object = ic_vn_cidp_ciap_ctrl,
-  label1 = "ic_cluster",
-  label2 = "sample",
-  label3 = "log_axon_normal",
-)
+# ic_vn_cidp_ciap_ctrl <- subset(ic, level2 %in% c("CIDP", "VN", "CTRL", "CIAP"))
 
-pcaSeurat(
-  object = ic_vn_cidp_ciap_ctrl,
-  label1 = "ic_cluster",
-  label2 = "sample",
-  label3 = "g_ratio"
-)
+# pcaSeurat(
+#   object = ic_vn_cidp_ciap_ctrl,
+#   label1 = "ic_cluster",
+#   label2 = "sample",
+#   label3 = "level2",
+#   label3_colors = ic@misc$level2_cols
+# )
 
-pcaSeurat(
-  object = ic_vn_cidp_ciap_ctrl,
-  label1 = "ic_cluster",
-  label2 = "sample",
-  label3 = "axon_diameter"
-)
+# pcaSeurat(
+#   object = ic_vn_cidp_ciap_ctrl,
+#   label1 = "ic_cluster",
+#   label2 = "sample",
+#   label3 = "log_axon_normal",
+# )
 
-ic_vn_cidp_ciap_ctrl$incat <- as.numeric(ic_vn_cidp_ciap_ctrl$incat)
+# pcaSeurat(
+#   object = ic_vn_cidp_ciap_ctrl,
+#   label1 = "ic_cluster",
+#   label2 = "sample",
+#   label3 = "g_ratio"
+# )
 
-pcaSeurat(
-  object = ic_vn_cidp_ciap_ctrl,
-  label1 = "ic_cluster",
-  label2 = "sample",
-  label3 = "incat"
-)
+# pcaSeurat(
+#   object = ic_vn_cidp_ciap_ctrl,
+#   label1 = "ic_cluster",
+#   label2 = "sample",
+#   label3 = "axon_diameter"
+# )
+
+# ic_vn_cidp_ciap_ctrl$incat <- as.numeric(ic_vn_cidp_ciap_ctrl$incat)
+
+# pcaSeurat(
+#   object = ic_vn_cidp_ciap_ctrl,
+#   label1 = "ic_cluster",
+#   label2 = "sample",
+#   label3 = "incat"
+# )
 
 # NMF not superior to PCA
 # library(NMF)
