@@ -427,7 +427,7 @@ plotQuanti <- function(y_value, name) {
                 vjust = 0.3,
             )
         )
-    ggsave(file.path("results", "xenium", "quantification", paste0(name, ".pdf")), width = 2, height = 2.5)
+    ggsave(file.path("results", "xenium", "quantification", paste0(name, ".pdf")), width = 1.75, height = 2.5)
 }
 
 plotQuanti(y_value = "epiPTPRC_density", name = "PTPRC_epi_density")
