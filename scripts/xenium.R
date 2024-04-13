@@ -162,12 +162,16 @@ for (i in names(xenium_objects)) {
         cells = WhichCells(xenium_objects[[i]], idents = c("repairSC", "nmSC", "mySC")),
         group.by = "sn_predictions",
         cols = xenium_objects[[i]]@misc$cluster_col,
-        axes = TRUE
-    )
-    ggsave(plot = p1, filename = file.path("results", "xenium", "SC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
+        axes = TRUE,
+        dark.background = FALSE,
+        size = 0.5
+    ) + 
+        theme_classic() + 
+        theme(legend.title = element_blank())
+    ggsave(plot = p1, filename = file.path("results", "xenium", "SC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8, dpi = 1200)
 }
 
-# crop S24_CTRL and S30_VN to representative areas
+# crop to representative areas
 cropped_coords_S24_CTRL <- Crop(xenium_objects[["S24_CTRL"]][["fov"]], x = c(1900, 2800), y = c(2000, 3200), coords = "plot")
 xenium_objects[["S24_CTRL"]][["zoom"]] <- cropped_coords_S24_CTRL
 
@@ -189,106 +193,106 @@ for (i in c("S24_CTRL", "S30_VN")) {
 }
 
 
-# predictions, periC only
-for (i in names(xenium_objects)) {
-    p1 <- ImageDimPlot(
-        xenium_objects[[i]],
-        cells = WhichCells(xenium_objects[[i]], idents = c("periC1", "periC2", "periC3")),
-        group.by = "sn_predictions",
-        cols = xenium_objects[[i]]@misc$cluster_col
-    )
-    ggsave(plot = p1, filename = file.path("results", "xenium", "periC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
-}
+# # predictions, periC only
+# for (i in names(xenium_objects)) {
+#     p1 <- ImageDimPlot(
+#         xenium_objects[[i]],
+#         cells = WhichCells(xenium_objects[[i]], idents = c("periC1", "periC2", "periC3")),
+#         group.by = "sn_predictions",
+#         cols = xenium_objects[[i]]@misc$cluster_col
+#     )
+#     ggsave(plot = p1, filename = file.path("results", "xenium", "periC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
+# }
 
-for (i in names(xenium_objects)) {
-    p1 <- ImageDimPlot(xenium_objects[[i]], molecules = "TIMP1", group.by = "orig.ident", cols = "white")
-    ggsave(plot = p1, filename = file.path("results", "xenium", "TIMP1", paste0(i, ".png")), width = 8, height = 8)
-}
+# for (i in names(xenium_objects)) {
+#     p1 <- ImageDimPlot(xenium_objects[[i]], molecules = "TIMP1", group.by = "orig.ident", cols = "white")
+#     ggsave(plot = p1, filename = file.path("results", "xenium", "TIMP1", paste0(i, ".png")), width = 8, height = 8)
+# }
 
-# predictions, LEC only
-for (i in names(xenium_objects)) {
-    p1 <- ImageDimPlot(
-        xenium_objects[[i]],
-        cells = WhichCells(xenium_objects[[i]], idents = c("LEC")),
-        group.by = "sn_predictions",
-        cols = xenium_objects[[i]]@misc$cluster_col,
-        size = 1
-    )
-    ggsave(plot = p1, filename = file.path("results", "xenium", "LEC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
-}
+# # predictions, LEC only
+# for (i in names(xenium_objects)) {
+#     p1 <- ImageDimPlot(
+#         xenium_objects[[i]],
+#         cells = WhichCells(xenium_objects[[i]], idents = c("LEC")),
+#         group.by = "sn_predictions",
+#         cols = xenium_objects[[i]]@misc$cluster_col,
+#         size = 1
+#     )
+#     ggsave(plot = p1, filename = file.path("results", "xenium", "LEC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
+# }
 
-# predictions, IC only
-for (i in names(xenium_objects)) {
-    try(
-        p1 <- ImageDimPlot(
-            xenium_objects[[i]],
-            cells = WhichCells(xenium_objects[[i]], idents = c("Macro1", "Macro2", "Granulo", "B", "T_NK", "Mast")),
-            group.by = "sn_predictions",
-            cols = pals::cols25(),
-            # cols = xenium_objects[[i]]@misc$cluster_col,
-            size = 1
-        )
-        ggsave(plot = p1, filename = file.path("results", "xenium", "IC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
-    )
-}
+# # predictions, IC only
+# for (i in names(xenium_objects)) {
+#     try(
+#         p1 <- ImageDimPlot(
+#             xenium_objects[[i]],
+#             cells = WhichCells(xenium_objects[[i]], idents = c("Macro1", "Macro2", "Granulo", "B", "T_NK", "Mast")),
+#             group.by = "sn_predictions",
+#             cols = pals::cols25(),
+#             # cols = xenium_objects[[i]]@misc$cluster_col,
+#             size = 1
+#         )
+#         ggsave(plot = p1, filename = file.path("results", "xenium", "IC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
+#     )
+# }
 
-# predictions, IC only
+# # predictions, IC only
 
-ic_clusters <- c("Macro1", "Macro2", "Granulo", "B", "T_NK", "Mast")
-prediction_ic_col <- setNames(pals::cols25(length(ic_clusters)), ic_clusters)
+# ic_clusters <- c("Macro1", "Macro2", "Granulo", "B", "T_NK", "Mast")
+# prediction_ic_col <- setNames(pals::cols25(length(ic_clusters)), ic_clusters)
 
-for (i in names(xenium_objects)) {
-    try({
-        p1 <- ImageDimPlot(
-            xenium_objects[[i]],
-            cells = WhichCells(xenium_objects[[i]], idents = c("Macro1", "Macro2", "Granulo", "B", "T_NK", "Mast")),
-            group.by = "sn_predictions",
-            cols = prediction_ic_col,
-            size = 1
-        );
-        ggsave(plot = p1, filename = file.path("results", "xenium", "IC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
-    })
-}
+# for (i in names(xenium_objects)) {
+#     try({
+#         p1 <- ImageDimPlot(
+#             xenium_objects[[i]],
+#             cells = WhichCells(xenium_objects[[i]], idents = c("Macro1", "Macro2", "Granulo", "B", "T_NK", "Mast")),
+#             group.by = "sn_predictions",
+#             cols = prediction_ic_col,
+#             size = 1
+#         );
+#         ggsave(plot = p1, filename = file.path("results", "xenium", "IC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
+#     })
+# }
 
-# plot IC only, but those with missing clusters
-for (i in c("S22_CTRL", "S04_CIAP")) {
-    try({
-        p1 <- ImageDimPlot(
-            xenium_objects[[i]],
-            cells = WhichCells(xenium_objects[[i]], idents = c("Macro2", "Granulo", "B", "T_NK", "Mast")),
-            group.by = "sn_predictions",
-            cols = prediction_ic_col,
-            size = 1
-        );
-        ggsave(plot = p1, filename = file.path("results", "xenium", "IC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
-    })
-}
+# # plot IC only, but those with missing clusters
+# for (i in c("S22_CTRL", "S04_CIAP")) {
+#     try({
+#         p1 <- ImageDimPlot(
+#             xenium_objects[[i]],
+#             cells = WhichCells(xenium_objects[[i]], idents = c("Macro2", "Granulo", "B", "T_NK", "Mast")),
+#             group.by = "sn_predictions",
+#             cols = prediction_ic_col,
+#             size = 1
+#         );
+#         ggsave(plot = p1, filename = file.path("results", "xenium", "IC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
+#     })
+# }
 
-for (i in c("S14_CIAP")) {
-    try({
-        p1 <- ImageDimPlot(
-            xenium_objects[[i]],
-            cells = WhichCells(xenium_objects[[i]], idents = c("Macro1", "Macro2", "Granulo","Mast")),
-            group.by = "sn_predictions",
-            cols = prediction_ic_col,
-            size = 1
-        );
-        ggsave(plot = p1, filename = file.path("results", "xenium", "IC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
-    })
-}
+# for (i in c("S14_CIAP")) {
+#     try({
+#         p1 <- ImageDimPlot(
+#             xenium_objects[[i]],
+#             cells = WhichCells(xenium_objects[[i]], idents = c("Macro1", "Macro2", "Granulo","Mast")),
+#             group.by = "sn_predictions",
+#             cols = prediction_ic_col,
+#             size = 1
+#         );
+#         ggsave(plot = p1, filename = file.path("results", "xenium", "IC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
+#     })
+# }
 
-for (i in c("S24_CTRL")) {
-    try({
-        p1 <- ImageDimPlot(
-            xenium_objects[[i]],
-            cells = WhichCells(xenium_objects[[i]], idents = c("Macro2", "Granulo", "T_NK", "Mast")),
-            group.by = "sn_predictions",
-            cols = prediction_ic_col,
-            size = 1
-        );
-        ggsave(plot = p1, filename = file.path("results", "xenium", "IC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
-    })
-}
+# for (i in c("S24_CTRL")) {
+#     try({
+#         p1 <- ImageDimPlot(
+#             xenium_objects[[i]],
+#             cells = WhichCells(xenium_objects[[i]], idents = c("Macro2", "Granulo", "T_NK", "Mast")),
+#             group.by = "sn_predictions",
+#             cols = prediction_ic_col,
+#             size = 1
+#         );
+#         ggsave(plot = p1, filename = file.path("results", "xenium", "IC", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
+#     })
+# }
 
 # only T_NK
 for (i in names(xenium_objects)) {
@@ -298,9 +302,12 @@ for (i in names(xenium_objects)) {
             cells = WhichCells(xenium_objects[[i]], idents = c("T_NK")),
             group.by = "sn_predictions",
             cols = pals::cols25()[2],
-            size = 1
-        );
-        ggsave(plot = p1, filename = file.path("results", "xenium", "t_nk", paste0("seurat_predict_", i, ".png")), width = 8, height = 8)
+            size = 0.5,
+            dark.background = FALSE
+        ) +
+            theme_classic() +
+            theme(legend.title = element_blank());
+        ggsave(plot = p1, filename = file.path("results", "xenium", "t_nk", paste0("seurat_predict_", i, ".png")), width = 8, height = 8, dpi = 1200)
     })
 }
 
