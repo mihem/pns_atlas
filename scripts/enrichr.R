@@ -33,6 +33,14 @@ macro_de_top <-
                 }) |>
         setNames(c("Macro2", "Macro17", "Macro18")) 
 
+# get de of peric ----
+peric_de_top <- 
+    lapply(c("periC1", "periC2", "periC3"), 
+        FUN = function(x) {
+            read_excel(file.path("results", "de", "topmarkers_final.xlsx"), sheet = x) |>
+                dplyr::filter(avg_log2FC > 1 & p_val_adj < 0.001)
+                }) |>
+        setNames(c("periC1", "periC2", "periC3")) 
 
 # perform enrichment with macro ----
 macro_enrichr <-
@@ -48,6 +56,21 @@ lapply(
     c("Macro2", "Macro17", "Macro18"),
     FUN = function(x) {
         write_xlsx(macro_enrichr[[x]], file.path("results", "enrichr", paste0("enrichr_", x, ".xlsx")))
+    })
+
+
+peric_enrichr <-
+    lapply(c("periC1", "periC2", "periC3"),
+        FUN = function(x) {
+            enrichr(peric_de_top[[x]]$gene, dbs)
+        }
+    ) |>
+    setNames(c("periC1", "periC2", "periC3"))
+
+lapply(
+    c("periC1", "periC2", "periC3"),
+    FUN = function(x) {
+        write_xlsx(peric_enrichr[[x]], file.path("results", "enrichr", paste0("enrichr_", x, ".xlsx")))
     })
 
 # function to plot enrichment results ----
@@ -72,6 +95,14 @@ plotEnrichrFun <- function(filename, sheet, width, height) {
 # plot enrichment of macro ----
 lapply(
     c("Macro2", "Macro17", "Macro18"),
+    FUN = function(x) {
+        plotEnrichrFun(x, sheet = "GO_Biological_Process_2023", width = 6, height = 2)
+    }
+)
+
+# plot enrichment of peric ----
+lapply(
+    c("periC1", "periC2", "periC3"),
     FUN = function(x) {
         plotEnrichrFun(x, sheet = "GO_Biological_Process_2023", width = 6, height = 2)
     }
