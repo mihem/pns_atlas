@@ -205,7 +205,7 @@ lab_pnp_ctrl <- list(
     "mySC" = paste0("italic('", c("DCN", "TNXB", "COL1A1", "COL15A1", "CD53", "IL4R", "CD74"), "')"),
     "nmSC" = paste0("italic('", c("IL10RA", "IL13RA1", "CSF2RA", "TGFBI"), "')"),
     "repairSC" = paste0("italic('", c("GALR1", "TMEM47"), "')"),
-    "PC2" = paste0("italic('", c("MFAP5", "NLGN4Y", "PCDH11Y", "IFIT3", "OASL", "MX1", "CCL2", "CCL8"), "')")
+    "PC2" = paste0("italic('", c("MFAP5", "NLGN4Y", "PCDH11Y", "IFIT3", "OASL", "MX1"), "')")
 )
 
 paste0("italic('", c("DCN", "TNXB"), "')")
