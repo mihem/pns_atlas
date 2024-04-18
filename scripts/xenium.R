@@ -164,7 +164,7 @@ for (i in names(xenium_objects)) {
         cols = xenium_objects[[i]]@misc$cluster_col,
         axes = TRUE,
         dark.background = FALSE,
-        size = 0.5
+        size = 1
     ) + 
         theme_classic() + 
         theme(legend.title = element_blank())
@@ -302,7 +302,7 @@ for (i in names(xenium_objects)) {
             cells = WhichCells(xenium_objects[[i]], idents = c("T_NK")),
             group.by = "sn_predictions",
             cols = pals::cols25()[2],
-            size = 0.5,
+            size = 1.0,
             dark.background = FALSE
         ) +
             theme_classic() +
@@ -451,42 +451,36 @@ cells_predicted <-
     mutate(sample = str_replace(sample, "(S\\d+)_.*", "\\1"))  |>
     dplyr::filter(!is.na(cluster))
 
-# all
-stacked_xenium <-
+# boxplot sc
+boxplot_xenium_sc_t_nk <-
     cells_predicted |>
-    dplyr::count(cluster, condition) |>
-    ggplot(aes(x = condition, y = n, fill = cluster)) +
-    geom_col(position = "fill", color = "black") +
+    dplyr::count(cluster, sample) |>
+    pivot_wider(names_from = sample, values_from = n) |>
+    mutate(across(where(is.numeric), function(x) x / sum(x, na.rm = TRUE) * 100)) |>
+    pivot_longer(!cluster, names_to = "sample", values_to = "percent") |>
+    left_join(select(sample_lookup, sample, level2)) |>
+    rename(condition = level2) |>
+    dplyr::filter(cluster %in% c("mySC", "nmSC", "repairSC", "T_NK"))  |>
+    mutate(percent  = replace_na(percent, 0)) |>
+    mutate(condition = factor(condition, levels = sc_merge@misc$level2_order)) |>
+    ggplot(aes(x = condition, y = percent, fill = condition)) +
+    geom_boxplot() +
+    geom_point() + 
     theme_classic() +
+    facet_wrap(vars(cluster), scales = "free_y", nrow = 1) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.3)) +
     xlab("") +
-    ylab("") +
-    scale_fill_manual(values = xenium_objects[[1]]@misc$cluster_col)
+    ylab("percentage") +
+    scale_fill_manual(values = sc_merge@misc$level2_cols) +
+    theme(legend.position = "none")
 
-ggsave(file.path("results", "xenium", "abundance_xenium.pdf"),
-    plot = stacked_xenium,
+
+ggsave(file.path("results", "xenium", "abundance_xenium_sc_t_nk.pdf"),
+    plot = boxplot_xenium_sc_t_nk,
     width = 5,
-    height = 8
-)
-
-# only SC
-stacked_xenium_sc <-
-    cells_predicted |>
-    dplyr::filter(cluster %in% c("mySC", "nmSC", "repairSC")) |>
-    dplyr::count(cluster, condition) |>
-    ggplot(aes(x = condition, y = n, fill = cluster)) +
-    geom_col(position = "fill", color = "black") +
-    theme_classic() +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.3)) +
-    xlab("") +
-    ylab("") +
-    scale_fill_manual(values = xenium_objects[[1]]@misc$cluster_col)
-
-ggsave(file.path("results", "xenium", "abundance_xenium_sc.pdf"),
-    plot = stacked_xenium_sc,
-    width = 3,
     height = 3
 )
+
 
 # export prediction annotation for python analysis
 for (i in names(xenium_objects)) {
@@ -544,7 +538,7 @@ for (i in names(xenium_objects)) {
 #     height = 2.5
 # )
 
-dplyr::count(xenium_objects[["S04_CIAP"]]@meta.data, sn_predictions_group)
+dplyr::count(xenium_objects[["S04_CIAP"]]@meta.data, sn_predictions)
 # # deconvolution using spacexr
 ## comment: did not work as well as Integration with seurat, only few cells mapped
 # xenium_s11 <- LoadXenium(xenium_paths[4])
