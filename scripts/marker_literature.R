@@ -133,8 +133,8 @@ dotPlot(
   object = sc_merge_subset,
   par = "novel",
   dot_min = 0.07,
-  height = 3,
-  width = 5,
+  height = 2,
+  width = 4,
 )
 
 
@@ -146,8 +146,8 @@ dotPlot(
   object = pns_sn_sciatic_milbrandt_subset,
   par = "novel",
   dot_min = 0.07,
-  height = 3,
-  width = 5,
+  height = 2,
+  width = 4,
   ortho = "human2mouse"
 )
 
