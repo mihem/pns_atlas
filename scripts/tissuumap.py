@@ -25,12 +25,12 @@ def create_adata(i):
     predictions = pq.read_table(f"results/xenium/xenium_predictions_{name}.parquet")
     df.set_index(adata.obs_names, inplace=True)
     adata.obs = df.copy()
+    sc.pp.filter_cells(adata, min_counts = 10)
     adata.obs["sample"] = xenium_names["sample"][i]
     adata.obs["condition"] = xenium_names["level2"][i]
     adata.obsm["spatial"] = adata.obs[["x_centroid", "y_centroid"]].copy().to_numpy()
     adata.obs["sn_predictions"] = predictions["sn_predictions"]
     adata.obs["sn_predictions_group"] = predictions["sn_predictions_group"]
-    sc.pp.filter_cells(adata, min_counts = 10)
     
     return adata
 
