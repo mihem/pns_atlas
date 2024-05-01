@@ -1,4 +1,4 @@
-# libraries  ----
+# libraries required for analysis ----
 library(Seurat)
 library(SeuratWrappers)
 library(BPCells)
@@ -14,6 +14,12 @@ library(scMisc)
 library(janitor)
 library(biomaRt)
 library(readxl)
+
+# optional libraries for better coding
+library(languageserver)
+library(codegrip)
+
+install.packages("languageserver")
 
 # general settings  ----
 options(warn = 0)
