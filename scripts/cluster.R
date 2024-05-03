@@ -80,14 +80,9 @@ topmarkers <-
     }
   )
 
-  str(sc_merge@misc)
-
 names(topmarkers) <- sc_merge@misc$cluster_order
 
 # remove failed lists (because of too few cells)
 # topmarkers <- topmarkers[sapply(topmarkers, is.list)]
 
 writexl::write_xlsx(topmarkers, file.path("results", "de", "topmarkers_final.xlsx"))
-
-dplyr::count(sc_merge@meta.data, RNA_snn_res.0.7, sample) |>
-  dplyr::filter(RNA_snn_res.0.7 == "13")
