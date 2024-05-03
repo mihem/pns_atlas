@@ -141,14 +141,14 @@ ggsave(plot = umap_ic_map_split, file.path("results", "map", "ic_azimuth_rpca_sp
 
 ic_slim <- FindNeighbors(ic_slim, reduction = "rpca", dims = 1:30, assay = "RNA")
 
-for (res in seq(from = 2.2, to = 2.3, by = 0.1)) {
+for (res in seq(from = 0.2, to = 2.3, by = 0.1)) {
   ic_slim <- FindClusters(ic_slim, resolution = res)
 }
 
 str(ic_slim@meta.data)
 
 # plot clustering ---
-resolutions <- paste0("RNA_snn_res.", seq(from = 0.2, to = 2.0, by = 0.1))
+resolutions <- paste0("RNA_snn_res.", seq(from = 0.2, to = 2.3, by = 0.1))
 
 umap_list <- list()
 for (res in resolutions) {
