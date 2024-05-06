@@ -6,6 +6,8 @@
 scripts/old
 matrix/
 matrix_final/
+matrix_cerebro/
+manuscript/
 .vscode
 objects/
 raw/
