@@ -1,16 +1,16 @@
 # prepare data for cerebroApp
 
 # install my version of cerebroApp
-remotes::install_github("mihem/cerebroApp")
+remotes::install_github("mihem/cerebroAppLite")
 
 # load libraries
-library(cerebroApp)
 library(Seurat)
 library(BPCells)
 library(SeuratObject)
 library(tidyverse)
 library(conflicted)
 library(qs)
+library(cerebroAppLite)
 
 # general settings  ----
 options(warn = 0)
@@ -34,23 +34,19 @@ sc_merge_cerebro <- DietSeurat(
     dimreducs = c("umap.scvi.full")
 )
 
-# somehow the scale.data is still present
+str(sc_merge_cerebro$RNA$counts@matrix, max.level = 3)
+
+# somehow the scale.data is still present, only data required for gene expression
 sc_merge_cerebro[["RNA"]]$scale.data <- NULL
+sc_merge_cerebro[["RNA"]]$counts <- NULL
 
-# convert to in memory matrix
-sc_merge_cerebro[["RNA"]]$counts <- as(object = sc_merge_cerebro[["RNA"]]$counts, Class = "dgCMatrix")
+# write_matrix_dir(sc_merge_cerebro$RNA$data, dir = paste0("matrix_cerebro/"))
 
-# convert to v3 assay
-sc_merge_cerebro[["RNA"]] <- as(object = sc_merge_cerebro[["RNA"]], Class = "Assay")
+# # convert to in memory matrix
+# sc_merge_cerebro[["RNA"]]$counts <- as(object = sc_merge_cerebro[["RNA"]]$counts, Class = "dgCMatrix")
 
-# sanity check
-class(sc_merge_cerebro[["RNA"]])
-str(sc_merge_cerebro$RNA, max.level = 2)
-sc_merge_cerebro$RNA
-str(sc_merge_cerebro$RNA@layers$counts, max.level = 2)
-str(sc_merge_cerebro$RNA@layers$data, max.level = 2)
-head(sc_merge_cerebro$RNA@counts)
-head(sc_merge_cerebro$RNA@data)
+# # convert to v3 assay
+# sc_merge_cerebro[["RNA"]] <- as(object = sc_merge_cerebro[["RNA"]], Class = "Assay")
 
 # only keep relevant metadata
 sc_merge_cerebro@meta.data <-
@@ -78,7 +74,7 @@ sc_merge_cerebro <- getMarkerGenes(
 
 qs::qsave(sc_merge_cerebro, file = file.path("objects", "sc_merge_cerebro.qs"))
 
-cerebroApp::exportFromSeurat(
+cerebroAppLite::exportFromSeurat(
   object = sc_merge_cerebro,
   file = file.path("objects", "sc_merge_cerebro.crb"),
   experiment_name = "Sural",
@@ -89,4 +85,4 @@ cerebroApp::exportFromSeurat(
   use_delayed_array = FALSE
 )
 
-cerebroApp::launchCerebro()
+cerebroAppLite::launchCerebro()
