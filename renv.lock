@@ -2229,8 +2229,8 @@
       "RemoteHost": "api.github.com",
       "RemoteRepo": "cerebroApp",
       "RemoteUsername": "mihem",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "7584ff71c142cfb5b0a8843739ab29913868e9ad",
+      "RemoteRef": "seuratv5",
+      "RemoteSha": "7138f36a354ed3c106159d98431295060f4e32a0",
       "Requirements": [
         "DT",
         "GSVA",
@@ -2268,7 +2268,7 @@
         "utils",
         "viridis"
       ],
-      "Hash": "d2179c3ece71e3f98e51c44e5ed990d3"
+      "Hash": "593745d0692bd6ee60c000638a6c36f5"
     },
     "checkmate": {
       "Package": "checkmate",
