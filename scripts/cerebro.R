@@ -13,7 +13,7 @@ library(qs)
 library(cerebroAppLite)
 
 # general settings  ----
-options(warn = 0)
+options(warn = 0) 
 conflicts_prefer(base::setdiff)
 
 # load preprocessed data ----
@@ -24,7 +24,6 @@ sc_merge_small <- subset(sc_merge, downsample = 1000)
 
 ##export from seurat to cerebro format
 sc_merge_cerebro <- sc_merge
-sc_merge_cerebro <- sc_merge_small
 
 # remove unnecessary assays and dims
 sc_merge_cerebro <- DietSeurat(
