@@ -77,6 +77,7 @@ ggsave(
   height = 5
 )
 
+# Visualize CXCR4 expression ----
 dplot_cxcr4 <-
   DotPlot(sc_merge, features = c("CXCR4"), dot.min = 0.01) +
   viridis::scale_color_viridis(option = "viridis") +
