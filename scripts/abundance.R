@@ -1,4 +1,11 @@
-#libraries ---
+#===============================================================================
+# Cell Type Abundance Analysis
+#===============================================================================
+# Purpose: Analyze and visualize cell type abundance patterns across different
+# conditions and patient groups, including:
+#===============================================================================
+
+# Load required libraries ----
 library(Seurat)
 library(tidyverse)
 library(scMisc)
@@ -6,10 +13,8 @@ library(qs)
 library(pheatmap)
 library(speckle)
 
-# detach(package:scMisc, unload = TRUE)
-# remotes::install_github("mihem/scMisc")
-
-# load preprocessed data ----
+# Data preparation ----
+# Load preprocessed data and calculate age for each sample
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 ic <- qs::qread(file.path("objects", "ic.qs"), nthread = 4)
 
@@ -22,13 +27,15 @@ sample_lookup <-
   dplyr::select(-age_calc) |>
   mutate(level0 = if_else(level1 == "CTRL", "CTRL", "PNP"))
 
-  # abundance table
+# Basic abundance analysis ----
+# Generate abundance tables for main clusters and immune cells
 scMisc::abundanceTbl(sc_merge, "cluster", "sample")
 scMisc::abundanceTbl(sc_merge, "cluster", "level2")
 scMisc::abundanceTbl(ic, "ic_cluster", "sample")
 scMisc::abundanceTbl(ic, "ic_cluster", "level2")
 
-# stacked plots --
+# Stacked abundance plots ----
+# Visualize cell type proportions across different grouping variables
 scMisc::stackedPlot(
   object = sc_merge,
   x_axis = "sample",
@@ -70,10 +77,9 @@ scMisc::stackedPlot(
   width = 5
 )
 
-
-# propeller abundance analysis ---
-
-# PNP vs CTRL
+# Propeller differential abundance analysis ----
+# Compare cell type abundances between conditions:
+# 1. PNP vs CTRL
 propeller_PNP_CTRL <-
   scMisc::propellerCalc(
     seu_obj1 = sc_merge,
@@ -150,7 +156,7 @@ propeller_PNP_CTRL_ic |>
     height = 2.5
   )
 
-# CIDP vs CTRL
+# 2. CIDP vs CTRL
 propeller_CIDP_CTRL <-
   scMisc::propellerCalc(
     seu_obj1 = sc_merge,
@@ -219,7 +225,6 @@ scMisc::dotplotPropeller(
     height = 6
 )
 
-
 # only plot logFC > 0.5
 propeller_CIDP_CTRL_ic |>
   dplyr::filter(abs(log2ratio) > 0.5) |>
@@ -231,7 +236,7 @@ propeller_CIDP_CTRL_ic |>
     height = 3
   )
 
-#  VN vs CTRL
+# 3. VN vs CTRL
 propeller_VN_CTRL <-
     scMisc::propellerCalc(
         seu_obj1 = sc_merge,
@@ -308,7 +313,7 @@ propeller_VN_CTRL_ic |>
     height = 3
   )
 
-#  CIAP vs CTRL
+# 4. CIAP vs CTRL
 propeller_CIAP_CTRL <-
     scMisc::propellerCalc(
         seu_obj1 = sc_merge,
@@ -385,7 +390,8 @@ propeller_CIAP_CTRL_ic |>
     height = 3
   )
 
-# abundance of mrVI groups ----
+# mrVI cluster analysis ----
+# Analyze abundance patterns in relation to mrVI clusters
 mrvi_lookup <- read_csv(file.path("lookup", "mrvi_lookup.csv"))
 
 sc_merge@meta.data <-
@@ -428,7 +434,6 @@ phmap_mrvi_cluster <-
 pdf(file.path("results", "abundance", "mrvi_heatmap_abundance_cluster.pdf"), width = 5, height = 7)
 print(phmap_mrvi_cluster)
 dev.off()
-
 
 # abundance of mrVI groups in immune cells  ----
 mrvi_lookup <- read_csv(file.path("lookup", "mrvi_lookup.csv"))  
@@ -476,8 +481,9 @@ pdf(file.path("results", "abundance", "mrvi_heatmap_abundance_ic_cluster.pdf"), 
 print(phmap_mrvi_cluster_ic)
 dev.off()
 
-
-# g ratio and axon diameter boxplots ----
+# Morphological parameter analysis ----
+# Analyze g-ratio, axon diameter, and axon counts across mrVI clusters
+# Generate boxplots with statistical comparisons
 g_ratio_axon_diameter_mrvi <-
   g_ratio |>
   group_by(sample) |>
@@ -547,7 +553,8 @@ axon_count_mrvi_plot <-
   
 ggsave(file.path("results", "abundance", "boxplot_axon_count_mrvi.pdf"), plot = axon_count_mrvi_plot, width = 3, height = 3)
 
-# incat -----
+# Clinical correlation analysis ----
+# Analyze relationship between mrVI clusters and INCAT scores
 incat_mrvi <-
   sample_lookup |>
   left_join(mrvi_lookup, join_by(sample)) |>
