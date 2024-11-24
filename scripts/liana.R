@@ -1,6 +1,6 @@
-#===============================================================================
+# ===============================================================================
 # Cell-Cell Communication Analysis using LIANA
-#===============================================================================
+# ===============================================================================
 # Purpose: Analyze cell-cell communication patterns focusing on CXCL14 interactions
 # using multiple methods (natmi, connectome, logfc, sca) via the LIANA framework.
 #
@@ -9,7 +9,7 @@
 # Output:
 #   - LIANA results object (liana_results.qs)
 #   - CXCL14 interaction dotplot (cxcl14_interactions_dotplot.pdf)
-#===============================================================================
+# ===============================================================================
 
 # Load required libraries ----
 library(liana)
@@ -70,8 +70,24 @@ liana_plot_cxcl14 <-
 
 # Save results ----
 # Generate and save dotplot visualization
-ggsave(file.path("results", "liana", "cxcl14_interactions_dotplot.pdf"),
+ggsave(
+  file.path("results", "liana", "cxcl14_interactions_dotplot.pdf"),
   liana_plot_cxcl14,
   width = 15,
+  height = 5
+)
+
+dplot_cxcr4 <-
+  DotPlot(sc_merge, features = c("CXCR4"), dot.min = 0.01) +
+  viridis::scale_color_viridis(option = "viridis") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, face = "italic")) +
+  xlab(NULL) +
+  ylab(NULL) +
+  scale_size(range = c(0, 5))
+
+ggsave(
+  file.path("results", "liana", "cxcr4_dotplot.pdf"),
+  dplot_cxcr4,
+  width = 3.5,
   height = 5
 )
