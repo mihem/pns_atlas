@@ -1,4 +1,12 @@
-# analysis of axon counts
+#===============================================================================
+# Axon Count Analysis Script
+#===============================================================================
+# Purpose: Analyze and visualize axon counts in relation to clinical parameters:
+# - Process and normalize axon count data from histology
+# - Correlate axon counts with clinical parameters
+# - Analyze relationships between axon counts and cell type abundances
+# - Generate visualization plots for axon-related analyses 
+#===============================================================================
 
 # libraries  ----
 library(tidyverse)
@@ -8,6 +16,7 @@ library(BPCells)
 library(qs)
 
 # read data ----
+# Load Seurat object and clinical metadata
 sc_merge <- qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 
 sample_lookup <-
@@ -29,6 +38,8 @@ sample_lookup <-
     select(sample, level0, level2, incat, center, cmap_ulnar:ncv_sural) |>
     mutate(across(cmap_ulnar:ncv_sural, as.numeric))
 
+# process axon count data ----
+# Calculate normalized axon counts and densities per fascicle and sample
 axon_count_table <-
     readxl::read_xlsx(file.path("lookup", "axon_count_v2.xlsx")) |>
     dplyr::filter(is.na(remove)) |>
@@ -53,6 +64,7 @@ axon_count_sum <-
     mutate(level2 = factor(level2))
 
 # add normal axon counts to seurat objects ----
+# Integrate axon count data with single-cell data
 axon_count_mean <-
     axon_count_fascicle |>
     group_by(sample) |>
@@ -74,6 +86,7 @@ ic@meta.data <-
     tibble::column_to_rownames(var = "barcode")
 
 # plot normal axon counts grouped by level2 ----
+# Visualize axon count distributions across conditions
 axon_count_level2 <-
     axon_count_fascicle |>
     group_by(sample) |>
@@ -100,6 +113,7 @@ axon_count_level2 <-
 ggsave(plot = axon_count_level2, file.path("results", "histo", "level2_axon_counts_normal.pdf"), width = 2.2, height = 3)
 
 # correlating normal axons with ephysio ----
+# Analyze relationship between axon counts and nerve conduction
 cor_axon_ephysio <-
     axon_count_fascicle |>
     group_by(sample) |>
@@ -109,7 +123,6 @@ cor_axon_ephysio <-
     ) |>
     mutate(log_axon_normal = log(axon_count)) |>
     ggplot(aes(x = ncv_tibial_motoric, y = axon_count)) +
-    # ggplot(aes(x = ncv_tibial_motoric, y = log_axon_normal)) +
     geom_smooth(method = "lm") +
     geom_point() +
     theme_bw() +
@@ -117,10 +130,10 @@ cor_axon_ephysio <-
     ylab("Normal axon count")
 
 ggsave(plot = cor_axon_ephysio, file.path("results", "histo", "cor_axon_ephysio.pdf"), width = 3, height = 3)
-# ggsave(plot = cor_axon_ephysio, file.path("results", "histo", "cor_log_axon_ephysio.pdf"), width = 3, height = 3)
 
 
 # correlating axon counts with mySC ----
+# Examine correlations between axon counts and cell type abundances
 abundance_axon <-
   table(sc_merge$cluster, sc_merge$sample) |>
   as.data.frame.matrix() |>
@@ -141,21 +154,10 @@ abundance_axon_mySC <-
 
 ggsave(file.path("results", "histo", "cor_axon_mySC.pdf"), plot = abundance_axon_mySC, width = 3, height = 3)
 
-# abundance_axon_nmSC <-
-#   abundance_axon |>
-#   dplyr::filter(cell == "nmSC") |>
-#   ggplot(aes(x = log_axon_normal, y = count)) +
-#   geom_point() +
-#   geom_smooth(method = "lm") +
-#   theme_bw()
-
-# ggsave(file.path("results", "abundance", "abundance_axon_nmSC.pdf"), plot = abundance_axon_nmSC, width = 3, height = 3)
-
 abundance_axon_repairSC <-
     abundance_axon |>
     dplyr::filter(cell == "repairSC") |>
     ggplot(aes(x = log_axon_normal, y = count)) +
-    #   ggplot(aes(x = axon_normal, y = count)) +
     geom_point() +
     geom_smooth(method = "lm") +
     theme_bw() +
