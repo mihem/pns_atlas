@@ -1,6 +1,11 @@
-# enrichment analysis using enrichR
+#===============================================================================
+# Gene Set Enrichment Analysis Script
+#===============================================================================
+# Purpose: Perform gene set enrichment analysis on differentially expressed genes
+# using enrichR package across different cell populations:
+#===============================================================================
 
-#load libraries
+# load libraries ----
 library(enrichR)
 library(qs)
 library(Seurat)
