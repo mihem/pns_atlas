@@ -1,5 +1,9 @@
-# preprare Seurat object for mrvi analysis and plot mrvi results (after mrvi.py has been run)
-# libraries  ----
+#===============================================================================
+# Documented: Prepare Seurat object for mrvi analysis and plot mrvi results
+# after mrvi.py has been run
+#===============================================================================
+# Libraries ----
+# Load necessary libraries for data processing and visualization
 library(Seurat)
 library(BPCells)
 library(SeuratObject)
@@ -10,13 +14,16 @@ library(pheatmap)
 library(pals)
 library(viridis)
 
-# read preprocessed data ----
+# Read preprocessed data ----
+# Load the merged single-cell dataset
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 
-# downsample ---
+# Downsample data ----
+# Reduce dataset size for faster processing
 sc_merge_small <- subset(sc_merge, downsample = 1000)
 
-# remove unnecessary assays and dims
+# Remove unnecessary assays and dimensions ----
+# Simplify the Seurat object by keeping only relevant assays and dimensional reductions
 sc_diet <- DietSeurat(
     sc_merge_small,
     counts = TRUE,
@@ -26,28 +33,31 @@ sc_diet <- DietSeurat(
     dimreducs = c("integrated.scvi.full", "umap.scvi.full")
 )
 
-#python has problems with factors
+# Prepare data for Python ----
+# Convert cluster identifiers to character for compatibility
 sc_diet$cluster <- as.character(Idents(sc_diet))
 DimPlot(sc_diet, label = TRUE, group.by = "cluster")
 
-# convert seuratv5 to seuratv3 data
+# Convert Seurat v5 to Seurat v3 format ----
 sc_diet[["RNA3"]] <- as(object = sc_diet[["RNA"]], Class = "Assay")
 DefaultAssay(sc_diet) <- "RNA3"
 sc_diet[["RNA"]] <- NULL
 sc_diet <- RenameAssays(object = sc_diet, RNA3 = 'RNA')
 
-# convert using sceasy ----
+# Convert to AnnData format using sceasy ----
 sceasy::convertFormat(sc_diet, from = "seurat", to = "anndata", outFile = file.path("objects", "sc_diet.h5ad"))
 
 ################################################################################################################
 # after mrvi.py has binished contiue with this script
 
-# mrvvi anaylsis for all cluster combined ---
+# MRVI Analysis ----
+# Load MRVI results for all clusters combined
 mrvi_all_average <-
     read.csv(file.path("results", "mrvi", "mrvi_average_all.csv")) |>
     tibble::column_to_rownames("X")
 
-# get metadata
+# Prepare metadata ----
+# Merge sample metadata with histological measurements
 histo_lookup <-
     tibble(
         sample = sc_merge$sample,
@@ -110,6 +120,7 @@ phmap_list <-
         g_ratio = phmap_cols_gratio
     )
 
+# Generate heatmaps for MRVI data ----
 phmap_mrvi <-
     pheatmap(
         mrvi_data,
@@ -131,74 +142,7 @@ phmap_mrvi <-
         main = "All"
     )
 
+# Save heatmap as PDF ----
 pdf(file.path("results", "mrvi", "heatmap_mrvi_average_all.pdf"), width = 10, height = 10)
 print(phmap_mrvi)
 dev.off()
-
-# # for each cluster separately ---
-# mrviPlot <- function(cluster) {
-#     mrvi_input <-
-#         read.csv(file.path("results", "mrvi", paste0("mrvi_cluster_", cluster, "_average.csv"))) |>
-#         tibble::column_to_rownames("X")
-
-
-#     metadata <-
-#         read_csv(file.path("lookup", "sample_lookup.csv")) |>
-#         select(level2, INCAT, center) |>
-#         mutate(level0 = if_else(level2 == "CTRL", "CTRL", "PNP")) |>
-#         data.frame()
-
-
-
-#     # make sure that rownames and columnnames of data and metadata are the same
-#     rownames(metadata) <- colnames(mrvi_input)
-
-#     # create colors for annotations
-#     phmap_cols_level2 <- pals::cols25(length(unique(metadata$level2)))
-#     names(phmap_cols_level2) <- unique(metadata[["level2"]])
-
-#     phmap_cols_level0 <- RColorBrewer::brewer.pal(length(unique(metadata$level0)), "Set1")[1:2]
-#     names(phmap_cols_level0) <- unique(metadata[["level0"]])
-
-#     phmap_cols_INCAT <- c("white", RColorBrewer::brewer.pal(length(unique(metadata$INCAT)) - 1, "Reds"))
-#     names(phmap_cols_INCAT) <- c("-", "1", "2", "3", "4", "5", "6")
-
-#     phmap_cols_center <- RColorBrewer::brewer.pal(length(unique(metadata$center)), "Set2")
-#     names(phmap_cols_center) <- unique(metadata[["center"]])
-
-#     phmap_list <-
-#         list(
-#             level0 = phmap_cols_level0,
-#             level2 = phmap_cols_level2,
-#             INCAT = phmap_cols_INCAT,
-#             center = phmap_cols_center
-#         )
-
-#     phmap_mrvi <-
-#         pheatmap(
-#             mrvi_input,
-#             cluster_rows = TRUE,
-#             cluster_cols = TRUE,
-#             color = viridis::magma(100),
-#             cellwidth = 10,
-#             cellheight = 10,
-#             treeheight_row = 15,
-#             treeheight_col = 15,
-#             clustering_distance_rows = "euclidean",
-#             clustering_distance_cols = "euclidean",
-#             clustering_method = "ward.D2",
-#             border_color = NA,
-#             cutree_cols = 5,
-#             cutree_rows = 5,
-#             annotation_row = metadata,
-#             annotation_colors = phmap_list,
-#             main = cluster,
-#         )
-
-
-#     pdf(file.path("results", "mrvi", paste0("heatmap_mrvi_cluster_", cluster, "_average.pdf")), width = 10, height = 10)
-#     print(phmap_mrvi)
-#     dev.off()
-# }
-
-# lapply(sc_merge@misc$cluster_order, mrviPlot)
