@@ -1,7 +1,19 @@
-# libraries
+#===============================================================================
+# Differential Expression Analysis using Milo
+#===============================================================================
+# Purpose: Perform differential expression analysis on single-cell data using 
+# the Milo package, leveraging high-performance computing (HPC) resources.
+#
+# Methods: 
+# - Load preprocessed single-cell data
+# - Perform differential expression analysis using Milo
+# - Save results for further analysis
+#===============================================================================
+
+# Libraries and Setup ----
 library(miloR)
 library(miloDE)
-library(SingleCellExperiment())
+library(SingleCellExperiment)
 library(qs)
 library(tidyverse)
 library(BiocParallel)
@@ -13,34 +25,30 @@ print("Loaded libraries")
 
 my_cols_25 <- pals::cols25()
 
-# read preprocessed data ----
+# General Settings ----
+# Define number of cores for parallel processing
 ncores <- 6
 mcparam <- MulticoreParam(workers = ncores)
 register(mcparam)
 
-# read preprocessed data ----
+# Load the preprocessed Milo object ---
 milo_DE <- qs::qread("milo_DE.qs", nthread = 4)
 print("Loaded milo_DE object")
 
-# and ~72h for ~400k cells with 1 core)
+# Differential Expression Analysis ----
+# Perform differential expression analysis using Milo
+# This step may take a significant amount of time depending on the dataset size
 system.time(
   de_stat <- miloDE::de_test_neighbourhoods(
     milo_DE,
     sample_id = "sample",
-    ## design = ~0 + level2 + sex + age + center,
     design = ~ 0 + level2,
-    # design = ~ 0 + level0,
     covariates = c("level2"),
-    # covariates = c("level0"),
-    # contrasts = c("level2VN - level2CTRL"),
-    # contrasts = c("level0PNP - level0CTRL"),
     contrasts = c("level2CIDP - level2CTRL"),
-    ## subset_nhoods = stat_auc$Nhood[!is.na(stat_auc$auc)],
     output_type = "SCE",
     plot_summary_stat = TRUE,
     layout = "UMAP.SCVI.FULL",
     BPPARAM = NULL,
-    # BPPARAM = mcparam,
     verbose = TRUE,
     min_count = 10
   )
@@ -48,4 +56,6 @@ system.time(
 
 print("Done with de_test_neighbourhoods")
 
+# Save Results ----
+# Save the differential expression statistics
 qs::qsave(de_stat, file.path("milo_de_stat_vn_ctrl.qs"))
