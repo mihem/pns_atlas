@@ -1,3 +1,13 @@
+#===============================================================================
+# Clustering Analysis Script
+#===============================================================================
+# Purpose: Process single-cell RNA sequencing data for cluster analysis:
+# - Perform clustering at multiple resolutions (0.2-0.8)
+# - Generate UMAP visualizations of clustering results
+# - Identify cluster-specific marker genes
+# - Export results for downstream analysis
+#===============================================================================
+
 # libraries  ----
 library(Seurat)
 library(BPCells)
@@ -26,7 +36,7 @@ sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 
 str(sc_merge@meta.data)
 
-# find clusters ---
+# find clusters ----
 DefaultAssay(sc_merge) <- "RNA"
 
 sc_merge <- FindNeighbors(sc_merge, reduction = "integrated.scvi.full", dims = 1:30, assay = "RNA")
@@ -37,7 +47,7 @@ for (res in seq(from = 0.2, to = 0.8, by = 0.1)) {
 
 qs::qsave(sc_merge, file.path("objects", "sc_merge.qs"))
 
-# plot clustering ---
+# plot clustering ----
 umap <-
     DimPlot(sc_merge, reduction = "umap.scvi.full", pt.size = .1, raster = FALSE, alpha = 0.1, group.by = "RNA_snn_res.0.7", cols = my_cols_50, label = TRUE) +
     theme_rect() +
@@ -57,7 +67,7 @@ for (res in resolutions) {
 umap_list <- patchwork::wrap_plots(umap_list, ncol = 2)
 ggsave(plot = umap_list, file.path("results", "umap", "scvi_umap_full_resolutions.png"), width = 16, height = 30)
 
-# find markers ---
+# find markers ----
 sc_merge <- JoinLayers(sc_merge)
 
 # find markers helper function
@@ -73,7 +83,6 @@ findMarkers <- function(ident1, ident2 = NULL, object, only_pos, min_pct, logfc_
 topmarkers <-
   lapply(
     unique(sc_merge@misc$cluster_order),
-    # unique(sc_merge$RNA_snn_res.0.7),
     function(x) {
       message("Processing cluster ", x)
       try(findMarkers(ident1 = x, object = sc_merge, only_pos = TRUE, min_pct = 0.1, logfc_threshold = 0.25, assay = "RNA"))
@@ -81,8 +90,5 @@ topmarkers <-
   )
 
 names(topmarkers) <- sc_merge@misc$cluster_order
-
-# remove failed lists (because of too few cells)
-# topmarkers <- topmarkers[sapply(topmarkers, is.list)]
 
 writexl::write_xlsx(topmarkers, file.path("results", "de", "topmarkers_final.xlsx"))
