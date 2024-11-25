@@ -1,3 +1,15 @@
+#===============================================================================
+# Differential Expression Analysis (DEG) Script
+#===============================================================================
+# Purpose: Analyze differential gene expression between disease conditions:
+# - PNP vs CTRL 
+# - VN vs CTRL
+# - CIDP vs CTRL
+# - CIAP vs CTRL
+#
+# Methods: Uses pseudobulk differential expression via Libra package with edgeR
+#===============================================================================
+
 # libraries  ----
 library(Seurat)
 library(BPCells)
@@ -30,7 +42,7 @@ conflicts_prefer(base::as.data.frame)
 # load preprocessed data ----
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 
-# function to calculate pseuodbulk using Libra
+# function to calculate pseuodbulk differential expression analysis using Libra
 dePseudo <- function(seu_obj, cell_type_col, label_col) {
     seu_obj_parse <- deparse(substitute(seu_obj))
     res <- Libra::run_de(seu_obj,
@@ -61,7 +73,6 @@ AggregateExpression(nmSC, assay = "RNA", group.by = "level0", features = c("IFI4
 vn_ctrl <- subset(sc_merge, level2 %in% c("VN", "CTRL"))
 vn_ctrl$level2 <- factor(vn_ctrl$level2, levels = c("VN", "CTRL"))
 
-
 ##sanity check
 table(sc_merge$level2)
 table(vn_ctrl$level2)
@@ -81,7 +92,6 @@ table(cidp_ctrl$level2)
 # perform DE
 dePseudo(cidp_ctrl, cell_type_col = "cluster", label_col = "level2")
 
-
 # CIAP vs CTRL pseudoublk ----
 ciap_ctrl <- subset(sc_merge, level2 %in% c("CIAP", "CTRL"))
 ciap_ctrl$level2 <- factor(ciap_ctrl$level2, levels = c("CIAP", "CTRL"))
@@ -93,6 +103,7 @@ table(ciap_ctrl$level2)
 # perform DE
 dePseudo(ciap_ctrl, cell_type_col = "cluster", label_col = "level2")
 
+# deSig() filters significant DEGs based on thresholds:
 deSig <- function(name) {
     sheets <- readxl::excel_sheets(path = file.path("results", "de", paste0(name, ".xlsx")))
     de <-
@@ -157,7 +168,6 @@ plotDE("pnp_ctrl_pseudobulk", title = "PNP vs CTRL")
 # volcano plot
 volcanoPlot <- function(filename, sheet, FCcutoff = 2, selectLab = NULL, drawConnectors = TRUE, condition1, condition2) {
     input <- readxl::read_excel(file.path("results", "de", paste0(filename, ".xlsx")), sheet = sheet)
-    # input <- dplyr::filter(input, abs(avg_logFC) > 1)
     if (nrow(input) != 0) {
         volcano <- EnhancedVolcano::EnhancedVolcano(
             data.frame(input),
@@ -189,15 +199,12 @@ volcanoPlot <- function(filename, sheet, FCcutoff = 2, selectLab = NULL, drawCon
                 "p-val", "p-val + logFC"
             ),
             legendPosition = "right",
-            # legendPosition = "none"
         )
-        # png(file.path("results", "de", paste0(filename, "_", sheet, ".png")), width = 10, height = 12, units = "cm", res = 300)
         pdf(file.path("results", "de", paste0(filename, "_", sheet, ".pdf")), width = 8, height = 6)
         print(volcano)
         dev.off()
     }
 }
-# lab_blood <- list("actCD4" = c("NKG7", "GNLY", "GZMB", "KLDR1", "CCL5", "HLA-DRB1", "HLA-DRB5", "HLA-DRA", "LTB", "CCR7"), "naiveBc" = c("FOS", "JUNB", "FCER1G", "IFITM3"))
 
 cluster_de <- c("repairSC", "mySC", "nmSC", "PC2")
 
@@ -265,69 +272,3 @@ lapply(
         )
     }
 )
-
-# # using a linear model to adjust for sex and age is probably too conservative
-# sample_lookup <- 
-#   readr::read_csv(file.path("lookup", "sample_lookup.csv")) |>
-#   janitor::clean_names() |>
-#   mutate(age_calc = lubridate::time_length(difftime(nerve_date, birth_date), "years")) |>
-#   mutate(age_calc = floor(age_calc)) |>
-#   mutate(age = coalesce(age_calc, age)) |>
-#   dplyr::select(-age_calc)
-
-# sc_merge@misc$cluster_order
-# runLimma(seurat_object = vn_ctrl, cluster = "mySC", condition1 = "VN", condition2 = "CTRL")
-
-# runLimma <- function(seurat_object, cluster, condition1, condition2) {
-#     pseudobulk_data <- Libra::to_pseudobulk(seurat_object,
-#         cell_type_col = "cluster",
-#         label_col = "level2",
-#         min_cells = 10,
-#         min_features = 3,
-#         replicate_col = "sample"
-#     )
-
-#     dge <- edgeR::DGEList(counts = pseudobulk_data[[cluster]], group = colnames(pseudobulk_data[[cluster]]))
-#     count_check <- edgeR::cpm(dge) > 1
-#     keep <- which(rowSums(count_check) > 2)
-#     dge <- dge[keep, ]
-#     dge <- edgeR::calcNormFactors(dge, method = "TMM")
-#     meta_limma <-
-#         tibble(sample = str_extract(colnames(dge), pattern = "[^:]+")) |>
-#         dplyr::left_join(sample_lookup, by = "sample") |>
-#         dplyr::distinct(sample, .keep_all = TRUE)
-#     designMat <- model.matrix(~ 0 + level2 + sex + age, data = meta_limma)
-#     # designMat <- model.matrix(~ 0 + cohort + age + sex,  data = meta_limma)
-#     my_contrasts <- glue::glue("level2{condition1}-level2{condition2}")
-#     my_args <- list(my_contrasts, levels = designMat)
-#     my_contrasts <- do.call(limma::makeContrasts, my_args)
-#     dge_voom <- limma::voomWithQualityWeights(dge, designMat, plot = FALSE)
-
-#     dge_voom <- dge_voom |>
-#         limma::lmFit(design = designMat, block = NULL) |>
-#         limma::contrasts.fit(my_contrasts) |>
-#         limma::eBayes(robust = TRUE)
-
-#     topgenes_sig <- limma::topTable(dge_voom, n = Inf, adjust.method = "BH") |>
-#         dplyr::filter(adj.P.Val < 0.05) |>
-#         tibble::rownames_to_column("gene") |>
-#         tibble::tibble() |>
-#         dplyr::arrange(desc(logFC)) |>
-#         dplyr::rename(
-#             avg_log2FC = logFC,
-#             p_val_adj = adj.P.Val
-#         )
-
-#     readr::write_csv(topgenes_sig, file.path("results", "de", glue::glue("de_{condition1}_{condition2}_{cluster}_sig.csv")))
-
-#     topgenes_all <- limma::topTable(dge_voom, n = Inf, adjust.method = "BH") |>
-#         tibble::rownames_to_column("gene") |>
-#         tibble::tibble() |>
-#         dplyr::arrange(desc(logFC)) |>
-#         dplyr::rename(
-#             avg_log2FC = logFC,
-#             p_val_adj = adj.P.Val
-#         )
-
-#     readr::write_csv(topgenes_all, file.path("results", "de", glue::glue("de_{condition1}_{condition2}_{cluster}_all.csv")))
-# }
