@@ -1,4 +1,12 @@
-# plot descriptive statistics
+#===============================================================================
+# Demographics Analysis Script 
+#===============================================================================
+# Purpose: Analyze and visualize patient characteristics across disease groups:
+# - Age distribution
+# - Nerve conduction velocity (NCV) 
+# - INCAT disability scores
+# - Sex distribution
+#===============================================================================
 
 # libraries ---
 library(tidyverse)
@@ -6,7 +14,6 @@ library(pals)
 
 # load preprocessed data ----
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
-
 
 sample_lookup <-
     read_csv(file.path("lookup", "sample_lookup.csv")) |>
@@ -16,7 +23,7 @@ sample_lookup <-
         cmap_tibial_motoric = cmap_tibial_in_m_v,
         f_latency_tibial = min_f_latency_tibial_in_ms,
         ncv_peroneal_motoric = ncv_peroneal_motoric_in_m_s,
-        cmap_peroneal_motoric = cmap_peroneal_in_m_v,
+        cmap_peroneal_motoric = cmap_peroneal_motoric_in_m_v,
         ncv_ulnar_motoric = ncv_ulnar_motoric_in_m_s,
         cmap_ulnar = cmap_ulnar_in_m_v,
         f_latency_ulnar = min_f_latency_ulnar_in_ms,
@@ -32,7 +39,9 @@ sample_lookup <-
     mutate(level2 = factor(level2, levels = sc_merge@misc$level2_order)) |>
     mutate(incat = as.numeric(incat))
 
-# plot age ----
+# Age Analysis ----
+# Compare age distribution between disease groups using boxplots
+# Statistical testing performed with scMisc::compStat()
 age_plot <-
     sample_lookup |>
     ggplot(aes(x = level2, y = age, fill = level2)) +
@@ -56,7 +65,8 @@ age_stats <- scMisc:::compStat(x_var = "age", group = "level2", data = sample_lo
 
 ggsave(file.path("results", "demographics", "boxplot_age.pdf"), plot = age_plot, width = 5, height = 5)
 
-# plot ncv_tibial_motoric ----
+# NCV Analysis   ---
+# Compare tibial nerve motor conduction velocity between groups
 ncv_tibial_motoric_plot <-
     sample_lookup |>
     dplyr::filter(!is.na(ncv_tibial_motoric)) |>
@@ -81,7 +91,9 @@ ncv_tibial_motoric_stats <- scMisc:::compStat(x_var = "ncv_tibial_motoric", grou
 
 ggsave(file.path("results", "demographics", "boxplot_ncv_tibial_motoric.pdf"), plot = ncv_tibial_motoric_plot, width = 5, height = 5)
 
-# plot incat ----
+# INCAT Score Analysis ---
+# Compare disability scores between disease groups 
+# Scale fixed from 0-6 for consistent visualization
 incat_plot <-
     sample_lookup |>
     dplyr::filter(!is.na(incat)) |>
@@ -107,7 +119,8 @@ incat_stats <- scMisc:::compStat(x_var = "incat", group = "level2", data = sampl
 
 ggsave(file.path("results", "demographics", "boxplot_incat.pdf"), plot = incat_plot, width = 5, height = 5)
 
-# plot sex ----
+# Sex Distribution ----
+# Visualize male/female distribution across disease groups
 sex_plot <- 
     sample_lookup |>
     ggplot(aes(x = level2, fill = sex)) +
@@ -119,6 +132,3 @@ sex_plot <-
     ggtitle("sex")
 
 ggsave(file.path("results", "demographics", "boxplot_sex.pdf"), plot = sex_plot, width = 5, height = 5)
-
-
-
