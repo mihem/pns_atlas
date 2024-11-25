@@ -1,5 +1,5 @@
 #===============================================================================
-# Cellular Network Analysis (CNA) Script
+# Covarying neighborhood Analysis (CNA) Script
 #===============================================================================
 # Purpose: Analyze cellular networks and associations in single-cell data:
 # - Correlate cell states with disease conditions (PNP vs CTRL)
