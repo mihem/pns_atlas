@@ -1,4 +1,21 @@
-# libraries  ----
+#===============================================================================
+# Data Integration Script
+#===============================================================================
+# Purpose: Integrate single-cell data across samples and map to reference datasets
+#
+# Key Analysis Steps:
+# 1. Data integration using scVI
+# 2. Initial analysis on sketched subset for efficiency
+# 3. Project integration to full dataset
+# 4. Reference mapping to multiple datasets:
+#    - PNS atlas (Milbrandt)
+#    - EC atlas
+#    - Suter sciatic nerve atlas (P1/P60)
+#    - BBB/vascular references
+#    - ROSMAP dataset
+#===============================================================================
+
+# Load libraries and set up environment ----
 library(Seurat)
 library(BPCells)
 library(SeuratObject)
@@ -23,14 +40,15 @@ conflicts_prefer(base::setdiff)
 my_cols_25 <- pals::cols25()
 my_cols_50 <- unname(Polychrome::createPalette(50, pals::cols25()))
 
-# load preprocessed data ----
+# Load and normalize data ----
 sc_merge_pre <- qs::qread(file.path("objects", "sc_merge_pre.qs"), nthread = 4)
 
 # normalize ----
 sc_merge <- NormalizeData(sc_merge_pre, verbose = TRUE, normalization.method = "LogNormalize", scale.factor = 10000)
 sc_merge <- FindVariableFeatures(sc_merge, selection.method = "vst", nfeatures = 2000)
 
-# sktech data  ----
+# Sketch data for initial analysis ----
+# Create efficient subset using LeverageScore sampling
 sc_merge <- SketchData(object = sc_merge, ncells = 5000, method = "LeverageScore", sketched.assay = "sketch")
 
 ## DefaultAssay(sc_merge) <- "RNA"
@@ -42,7 +60,8 @@ sc_merge <-
   ScaleData() |>
   RunPCA()
 
-# integrate data ---
+# Integrate data using scVI ----
+# Note: Requires scvi-tools installation in conda env
 # comment: requires scvi installation, problematic with radian (which forces a specific conda env), and with scvi-tools 1.0.2
 set.seed(123)
 sc_merge <- IntegrateLayers(
@@ -67,7 +86,56 @@ ggsave(plot = umap_group_center_sketch, file.path("results", "umap", "scvi_umap_
 
 qs::qsave(sc_merge, file.path("objects", "sc_merge.qs"))
 
-# seurat map to reference datasets ----
+# Map to reference datasets ----
+# Helper functions for mapping
+convertRownames <- function(seu_object) {
+  lookup <- homologene::mouse2human(rownames(seu_object), db = homologene::homologeneData2)
+  new_rownames <- lookup$humanGene[match(rownames(seu_object), lookup$mouseGene)]
+  rownames(seu_object@assays$RNA@counts) <- new_rownames
+  rownames(seu_object@assays$RNA@data) <- new_rownames
+  # rownames(seu_object@assays$RNA@scale.data) <- new_rownames
+  #remove columns with NA
+  features_keep <- rownames(seu_object)[!is.na(rownames(seu_object))]
+  obj_new <- subset(seu_object, features = features_keep)
+  rownames(obj_new@assays$RNA@meta.features) <- rownames(obj_new)
+  return(obj_new)
+}
+
+mapSeurat <- function(ref, query) {
+  reference_list <- list(ref = ref, query = query)
+  features <- SelectIntegrationFeatures(object.list = reference_list)
+  anchors <- FindTransferAnchors(
+    reference = reference_list$ref,
+    query = reference_list$query,
+    normalization.method = "LogNormalize",
+    features = features
+  )
+  predictions <- TransferData(anchorset = anchors, refdata = reference_list$ref$cluster)
+  return(predictions)
+}
+
+storePred <- function(predictions, label_col, score_col, seu_obj) {
+  predictions_prep <-
+    predictions |>
+    tibble::rownames_to_column("barcode") |>
+    dplyr::select(predicted.id, prediction.score.max, barcode) |>
+    dplyr::mutate(predicted.id = ifelse(prediction.score.max < 0.3, "unknown", predicted.id)) |>
+    tibble::as_tibble() |>
+    dplyr::rename(
+      {{ label_col }} := predicted.id,
+      {{ score_col }} := prediction.score.max
+    )
+
+  seu_obj@meta.data <-
+    seu_obj@meta.data |>
+    tibble::rownames_to_column("barcode") |>
+    dplyr::left_join(predictions_prep, by = "barcode") |>
+    tibble::column_to_rownames(var = "barcode")
+
+  return(seu_obj)
+}
+
+# Load and prepare reference datasets ----
 pns_sn_sciatic_milbrandt <- qs::qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/pns_atlas_milbrandt/pns_sn_sciatic_GSE182098.qs", nthreads = 4)
 DimPlot(pns_sn_sciatic_milbrandt, label = TRUE)
 dplyr::count(pns_sn_sciatic_milbrandt@meta.data, cluster)
@@ -109,20 +177,7 @@ human_suter_p60 <- convertRownames(suter_p60)
 human_suter_p1 <- convertRownames(suter_p1)
 human_suter_merge <- convertRownames(suter_merge)
 
-# function to map project query on ref and make predictions based on Seurat integration
-mapSeurat <- function(ref, query) {
-  reference_list <- list(ref = ref, query = query)
-  features <- SelectIntegrationFeatures(object.list = reference_list)
-  anchors <- FindTransferAnchors(
-    reference = reference_list$ref,
-    query = reference_list$query,
-    normalization.method = "LogNormalize",
-    features = features
-  )
-  predictions <- TransferData(anchorset = anchors, refdata = reference_list$ref$cluster)
-  return(predictions)
-}
-
+# Perform reference mapping ----
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"))
 sc_merge[["sketch"]] <- JoinLayers(sc_merge[["sketch"]])
 
@@ -202,7 +257,7 @@ pred_plot_ec_atlas_sketch <-
 
 ggsave(plot = pred_plot_ec_atlas_sketch, file.path("results", "map", "map_ec_atlas_sketch.png"), width = 8, height = 8)
 
-# integrate the full dataset ----
+# Project sketched integration onto full dataset ---
 DefaultAssay(sc_merge) <- "sketch"
 sc_merge[["sketch"]] <- split(sc_merge[["sketch"]], f = sc_merge$sample)
 
@@ -241,7 +296,8 @@ sc_merge <- RunUMAP(
 DefaultAssay(sc_merge) <- "RNA"
 qs::qsave(sc_merge, file.path("objects", "sc_merge.qs"))
 
-# plot umap and predictions on full dataset ---
+# Generate visualizations ----
+# Plot UMAPs and prediction results
 umap_group_sample <-
   DimPlot(sc_merge, reduction = "umap.scvi.full", pt.size = .1, raster = FALSE, alpha = 0.1, group.by = "sample", cols = my_cols_50) +
   theme_rect() 
@@ -267,7 +323,6 @@ pred_plot_milbrandt_full <-
   ggtitle("Yim et al.")
 
 ggsave(plot = pred_plot_milbrandt_full, file.path("results", "map", "map_milbrandt_full.png"), width = 8, height = 8)
-ggsave(plot = pred_plot_milbrandt_full, file.path("results", "map", "map_milbrandt_full_nolabel.png"), width = 8, height = 8)
 
 pred_plot_suter_p1_full <-
  DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "suter_p1_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE) +
@@ -284,14 +339,13 @@ pred_plot_suter_p60_full <-
   ggtitle("Gerber et al. p60")
 
 ggsave(plot = pred_plot_suter_p60_full, file.path("results", "map", "map_suter_p60_full.png"), width = 8, height = 8)
-ggsave(plot = pred_plot_suter_p60_full, file.path("results", "map", "map_suter_p60_full_nolabel.png"), width = 8, height = 8)
 
 pred_plot_suter_merge_full <-
  DimPlot(sc_merge, reduction = "umap.scvi.full", group.by = "suter_merge_label_full", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE) +
   theme_rect() 
 ggsave(plot = pred_plot_suter_merge_full, file.path("results", "map", "map_suter_merge_full.png"), width = 8, height = 8)
 
-# this can only be done after cluster.R is done
+# this can only be run after cluster.R was run
 ec <- subset(sc_merge, subset = RNA_snn_res.0.7 %in% c("7", "10", "11", "19"))
 
 pred_plot_ec_atlas_full <-
@@ -331,5 +385,4 @@ pred_plot_rosmap <-
   ggtitle("ROSMAP vascular cells")
 
 ggsave(plot = pred_plot_rosmap, file.path("results", "map", "map_rosmap_full.png"), width = 4, height = 4)
-ggsave(plot = pred_plot_rosmap, file.path("results", "map", "map_rosmap_full_nolabel.png"), width = 4, height = 4)
 
