@@ -1,3 +1,13 @@
+#===============================================================================
+# Cellular Network Analysis (CNA) Script
+#===============================================================================
+# Purpose: Analyze cellular networks and associations in single-cell data:
+# - Correlate cell states with disease conditions (PNP vs CTRL)
+# - Analyze relationships with clinical metrics (INCAT, NCV)
+# - Study morphological correlations (axon counts, g-ratio)
+# - Generate correlation visualizations for all analyses
+#===============================================================================
+
 # libraries ---
 library(tidyverse)
 library(ggthemes)
@@ -10,15 +20,22 @@ library(scales)
 library(readxl)
 
 # load preprocessed data ----
+# Load main single-cell data and immune cell subset
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 ic <- qs::qread(file.path("objects", "ic.qs"), nthread = 4)
 
 # general settings  ----
+# Configure visualization and analysis parameters
 conflicts_prefer(base::setdiff)
 my_cols_25 <- pals::cols25()
 my_cols_50 <- unname(Polychrome::createPalette(50, pals::cols25()))
 
 # correlation with disease ---
+# Analyze disease state correlations:
+# 1. Create binary disease indicator (PNP vs CTRL)
+# 2. Generate numeric encodings for covariates
+# 3. Perform association analysis with demographic adjustments
+# 4. Create and save visualization plots
 sc_merge$pnp <- as.numeric(sc_merge$level2 != "CTRL")
 sc_merge$sex_numeric <- as.numeric(sc_merge$sex == "male")
 sc_merge$center_numeric <- as.numeric(factor(sc_merge$center))
@@ -27,12 +44,10 @@ sc_merge$center_numeric <- as.numeric(factor(sc_merge$center))
 obj <- association.Seurat(
     seurat_object = sc_merge, 
     test_var = 'pnp', 
-    # test_var = 'incat_numeric', 
     samplem_key = 'sample', 
     graph_use = 'RNA_nn', 
     verbose = TRUE,
     batches = NULL, ## no batch variables to include, only works with matched design https://github.com/immunogenomics/cna/issues/11
-    # covs = NULL ## no covariates to include  
     covs = c("sex_numeric", "age")
 )
 
@@ -48,9 +63,6 @@ cor_pnp_plot <-
         raster = FALSE,
         alpha = 0.2
     ) +
-    # viridis::scale_color_viridis(option = "inferno") +
-    # scale_color_gradient2_tableau() +
-    # scale_color_distiller(type = "div", palette = "RdBu", direction = -1) +
     scale_colour_gradient2(
         low = "#2166AC",
         mid = "white",
@@ -67,7 +79,6 @@ cor_pnp_plot <-
     )
 
 ggsave(plot = cor_pnp_plot, file.path("results", "cna", "cna_pnp_sex_age.png"), width = 10, height = 10)
-ggsave(plot = cor_pnp_plot, file.path("results", "cna", "cna_pnp_sex_age.pdf"), width = 10, height = 10)
 
 # immune cells
 ic$pnp <- as.numeric(ic$level2 != "CTRL")
@@ -81,8 +92,7 @@ obj <- association.Seurat(
     graph_use = 'RNA_nn', 
     verbose = TRUE,
     batches = NULL, ## no batch variables to include, only works with matched design https://github.com/immunogenomics/cna/issues/11
-    covs = NULL
-    # covs = c("sex_numeric", "age")
+    covs = c("sex_numeric", "age")
 )
 
 cor_pnp_plot <-
@@ -112,9 +122,13 @@ cor_pnp_plot <-
     )
 
 ggsave(plot = cor_pnp_plot, file.path("results", "cna", "cna_pnp_ic_sex_age.png"), width = 10, height = 10)
-ggsave(plot = cor_pnp_plot, file.path("results", "cna", "cna_pnp_ic.png"), width = 10, height = 10)
 
 # correlation with incat ----
+# Analyze INCAT score correlations:
+# 1. Subset to PNP patients only
+# 2. Convert INCAT scores to numeric values
+# 3. Perform association analysis with clinical covariates
+# 4. Generate visualization plots
 sc_merge$pnp <- as.numeric(sc_merge$level2 != "CTRL")
 
 sc_merge_pnp <- subset(sc_merge, subset = level2 %in% c("CTRL"), invert = TRUE)
@@ -129,7 +143,7 @@ obj <- association.Seurat(
     graph_use = 'RNA_nn', 
     verbose = TRUE,
     batches = NULL , ## no batch variables to include
-    covs = c("sex_numeric", "age") ## no covariates to include 
+    covs = c("sex_numeric", "age")
 )
 
 cor_incat_plot <-
@@ -157,13 +171,13 @@ cor_incat_plot <-
         title = "INCAT", color = "Correlation", x = "UMAP1", y= "UMAP2"
     ) 
 
-ggsave(plot = cor_incat_plot, file.path("results", "cna", "cna_incat.png"), width = 10, height = 10)
 ggsave(plot = cor_incat_plot, file.path("results", "cna", "cna_incat_sex_age.pdf"), width = 10, height = 10)
-ggsave(plot = cor_incat_plot, file.path("results", "cna", "cna_incat_sex_age.png"), width = 10, height = 10)
-ggsave(plot = cor_incat_plot, file.path("results", "cna", "cna_incat_sex_age_center.png"), width = 10, height = 10)
 
 # correlation with axon count ----
-# ratio to small problematic because of zeros
+# Process and analyze axon counting data:
+# 1. Load and clean clinical measurements
+# 2. Perform correlation analysis
+# 3. Generate visualization plots
 sample_lookup <-
     read_csv(file.path("lookup", "sample_lookup.csv")) |>
     janitor::clean_names() |>
@@ -195,8 +209,7 @@ obj <- association.Seurat(
     graph_use = 'RNA_nn', 
     verbose = TRUE,
     batches = NULL , ## no batch variables to include
-    covs = NULL ## no covariates to include 
-    # covs = c("sex_numeric", "age") 
+    covs = c("sex_numeric", "age") 
 )
 
 cor_axon_normal_plot <-
@@ -224,10 +237,14 @@ cor_axon_normal_plot <-
         title = "Normal axons", color = "Correlation"
     )
 
-ggsave(plot = cor_axon_normal_plot, file.path("results", "cna", "cna_normal_axon.png"), width = 10, height = 10)
 ggsave(plot = cor_axon_normal_plot, file.path("results", "cna", "cna_normal_axon_sex_age.png"), width = 10, height = 10)
 
 # correlation with ncv ----
+# Analyze nerve conduction velocity correlations:
+# 1. Process NCV measurements
+# 2. Remove samples with missing data
+# 3. Perform association analysis
+# 4. Generate visualization plots
 sample_lookup_ncv <- 
     read_csv(file.path("lookup", "sample_lookup.csv")) |>
     janitor::clean_names() |>
@@ -255,7 +272,7 @@ obj <- association.Seurat(
     graph_use = 'RNA_nn', 
     verbose = TRUE,
     batches = NULL , ## no batch variables to include
-    covs = c("sex_numeric", "age", "center_numeric") ## no covariates to include 
+    covs = c("sex_numeric", "age", "center_numeric")
 )
 
 cor_ncv_plot <-
@@ -286,6 +303,10 @@ cor_ncv_plot <-
 ggsave(plot = cor_ncv_plot, file.path("results", "cna", "cna_ncv_tibial_motoric_cov.png"), width = 10, height = 10)
 
 # correlation with g ratio ----
+# Analyze g-ratio correlations:
+# 1. Merge g-ratio data with cell metadata
+# 2. Perform association analysis
+# 3. Generate visualization plots
 sc_merge@meta.data <-
     sc_merge@meta.data |>
     tibble::rownames_to_column("barcode") |>
@@ -307,7 +328,7 @@ obj <- association.Seurat(
     graph_use = 'RNA_nn', 
     verbose = TRUE,
     batches = NULL, ## no batch variables to include
-    covs = c("sex_numeric", "age") ## no covariates to include 
+    covs = c("sex_numeric", "age") 
 )
 
 cor_gratio_plot <-
@@ -315,7 +336,6 @@ cor_gratio_plot <-
         obj,
         reduction = "umap.scvi.full",
         features = c("cna_ncorrs"),
-        # features = c("cna_ncorrs_fdr10"),
         pt.size = 0.1,
         order = FALSE,
         coord.fixed = TRUE,
@@ -338,9 +358,12 @@ cor_gratio_plot <-
     )
 
 ggsave(plot = cor_gratio_plot, file.path("results", "cna", "cna_gratio_sex_age.png"), width = 10, height = 10)
-ggsave(plot = cor_gratio_plot, file.path("results", "cna", "cna_gratio_sex_age.pdf"), width = 10, height = 10)
 
 # correlation with axon diameter ----
+# Analyze axon diameter correlations:
+# 1. Use existing merged data
+# 2. Perform association analysis
+# 3. Generate visualization plots
 obj <- association.Seurat(
     seurat_object = sc_merge, 
     test_var = "axon_diameter", 
@@ -348,8 +371,7 @@ obj <- association.Seurat(
     graph_use = 'RNA_nn', 
     verbose = TRUE,
     batches = NULL, ## no batch variables to include
-    # covs = NULL
-    covs = c("sex_numeric", "age") ## no covariates to include 
+    covs = c("sex_numeric", "age") 
 )
 
 cor_axon_diameter_plot <-
@@ -357,7 +379,6 @@ cor_axon_diameter_plot <-
         obj,
         reduction = "umap.scvi.full",
         features = c("cna_ncorrs"),
-        # features = c("cna_ncorrs_fdr10"),
         pt.size = 0.1,
         order = FALSE,
         coord.fixed = TRUE,
