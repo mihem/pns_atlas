@@ -1,3 +1,17 @@
+#===============================================================================
+# Preprocessing Single-Cell Data
+#===============================================================================
+# Purpose: Preprocess single-cell RNA sequencing data for downstream analysis.
+#
+# Methods: 
+# - Load raw data
+# - Perform quality control and filtering
+# - Normalize and scale data
+# - Identify highly variable features
+# - Perform dimensionality reduction
+# - Save the preprocessed data for further analysis
+#===============================================================================
+
 # libraries required for analysis ----
 library(Seurat)
 library(SeuratWrappers)
