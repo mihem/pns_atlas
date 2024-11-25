@@ -1,3 +1,14 @@
+#===============================================================================
+# Cell Type Annotation Script
+#===============================================================================
+# Purpose: Annotate cell clusters and generate visualization plots, including:
+# - Loading and applying cluster annotations from external files
+# - Setting up custom visualization parameters
+# - Generating UMAP plots with different groupings
+# - Creating feature plots for marker genes
+# - Generating dot plots for cell type markers
+#===============================================================================
+
 # libraries  ----
 library(Seurat)
 library(BPCells)
@@ -27,6 +38,7 @@ markers_pns <- read_csv("/home/mischko/Documents/beruf/forschung/markers/markers
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 
 # annotate clusters ----
+# Apply cluster annotations from external file and set up visualization parameters
 Idents(sc_merge) <- sc_merge$RNA_snn_res.0.7
 
 annotations <- readxl::read_xlsx(file.path("lookup", "cluster_annotation.xlsx")) |>
@@ -54,7 +66,7 @@ Idents(sc_merge) <- sc_merge$cluster
 
 DefaultAssay(sc_merge) <- "RNA"
 
-# final annotated UMAP plot by cluster
+# Generate main UMAP visualization with cluster annotations
 umap <-
     DimPlot(sc_merge, reduction = "umap.scvi.full", pt.size = .1, raster = FALSE, alpha = 0.1, group.by = "cluster", cols = sc_merge@misc$cluster_col, label = FALSE) +
     theme_rect() +
@@ -99,7 +111,7 @@ lapply(unique(markers_pns$cell_source),
   reduction = "umap.scvi.full"
 )
 
-# dot plots ---
+# dot plots ----
 DefaultAssay(sc_merge) <- "RNA"
 
 dotPlot(
@@ -131,7 +143,7 @@ dotPlot(
   width = 15
 )
 
-# dotplot for ec only
+# specialized dot plots for specific cell types ----
 ec <- subset(sc_merge, subset = RNA_snn_res.0.7 %in% c("7", "10", "11", "19"))
 
 lapply(
