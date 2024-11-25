@@ -1,6 +1,15 @@
-# comparison with milbrandt paper https://www.nature.com/articles/s41593-021-01005-1
+#===============================================================================
+# Marker Gene Analysis and Cross-Dataset Comparison Script
+#===============================================================================
+# Purpose: Compare marker genes across multiple peripheral nerve datasets:
+# - Our dataset (sc_merge)
+# - Milbrandt sciatic nerve atlas
+# - Suter P60 dataset
+# - Carr mesenchymal dataset
+# - Wolbert healthy dataset
+#===============================================================================
 
-# libraries  ----
+# Libraries and Setup ----
 library(Seurat)
 library(BPCells)
 library(SeuratObject)
@@ -36,8 +45,7 @@ str(InjUninjMesenchymalCombined_sCVdL)
 janitor::make_clean_names(names(topmarkers_suter))
 
 
-# markers ----
-# find markers function
+#' Find Marker Genes for Cell Type Comparison
 findMarkers <- function(ident1, ident2 = NULL, object, only_pos, min_pct, logfc_threshold, assay = assay) {
   result <- Seurat::FindMarkers(object, ident.1 = ident1, ident.2 = ident2, min.pct = min_pct, logfc.threshold = logfc_threshold, only.pos = only_pos, assay = assay) |>
     tibble::rownames_to_column("gene") |>
@@ -47,6 +55,8 @@ findMarkers <- function(ident1, ident2 = NULL, object, only_pos, min_pct, logfc_
   return(result)
 }
 
+# Marker Analysis Per Dataset ----
+# Calculate markers for each cluster across datasets
 topmarkers <-
   lapply(
     unique(sc_merge@misc$cluster_order),
@@ -66,6 +76,8 @@ topmarkers <-
     ) |>
     setNames(sc_merge@misc$cluster_order)
 
+# Reference Dataset Markers ----
+# Calculate markers for Milbrandt, Suter, and Wolbert datasets
 topmarkers_milbrandt <-
     lapply(
         unique(pns_sn_sciatic_milbrandt$cluster),
@@ -105,7 +117,8 @@ topmarkers_wolbert <-
 
 write_xlsx(topmarkers_wolbert, file.path("results", "de", "topmarkers_wolbert.xlsx"))
 
-# make names consistent
+# Reference Integration ----
+# Make cluster names consistent and merge reference data
 names(topmarkers_milbrandt)[names(topmarkers_milbrandt) == "EnFibro"] <- "endoC"
 names(topmarkers_milbrandt)[names(topmarkers_milbrandt) == "EpC"] <- "epiC"
 names(topmarkers_milbrandt)[names(topmarkers_milbrandt) == "PnC"] <- "periC"
@@ -120,7 +133,7 @@ topmarkers[["periC"]] <- findMarkers(
     assay = "RNA"
 )
 
-# dotplot comparison
+# Create comparative visualizations ----
 sc_merge_subset <- subset(sc_merge, subset = cluster %in% c("mySC", "nmSC", "periC1", "periC2", "periC3"))
 
 # rename periC1, periC2, periC3 to periC
@@ -137,7 +150,6 @@ dotPlot(
   width = 4,
 )
 
-
 pns_sn_sciatic_milbrandt_subset <- subset(pns_sn_sciatic_milbrandt, subset = cluster %in% c("mySC", "nmSC", "PnC"))
 Idents(pns_sn_sciatic_milbrandt_subset) <- factor(pns_sn_sciatic_milbrandt_subset$cluster, levels = c("mySC", "nmSC", "PnC"))
 
@@ -150,39 +162,3 @@ dotPlot(
   width = 4,
   ortho = "human2mouse"
 )
-
-# vennPlot <- function(cluster) {
-#     top_rodent <- topmarkers_milbrandt[[cluster]]$gene |>
-#         homologene::mouse2human(db = homologene::homologeneData2) |>
-#         # dplyr::slice(1:25) |>
-#         pull(humanGene)
-#     top_human <- topmarkers[[cluster]]$gene[1:25]
-#     # top_human <- topmarkers[[cluster]]$gene
-#     # top_human <- markers_xenium$transcript[markers_xenium$cluster == cluster]
-#     plot <- ggvenn(
-#         list(
-#             rodent = top_rodent,
-#             human = top_human
-#         ),
-#         fill_color = brewer.pal(name = "Set2", n = 3),
-#         show_elements = TRUE,
-#         # show_elements = FALSE,
-#         label_sep = "\n",
-#         text_size = 1,
-#     )
-#     ggsave(file.path("results", "venn", paste0(cluster, "_milbrandt_long.pdf")),
-#         width = 5, height = 5,
-#         plot = plot
-#     )
-# }
-
-# lapply(
-#     c("mySC", "nmSC", "endoC", "epiC", "periC"),
-#     FUN = vennPlot
-# )
-
-# vennPlot("mySC")
-# vennPlot("nmSC")
-# vennPlot("periC")
-
-
