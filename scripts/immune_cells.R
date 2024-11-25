@@ -1,6 +1,18 @@
-# subset immune cells and characterize them in more depth
+#===============================================================================
+# Immune Cell Analysis Script
+#===============================================================================
+# Purpose: Characterize and annotate immune cell populations from snRNA-seq data
+#
+# Key Analysis Steps:
+# 1. Subset immune cells from main dataset
+# 2. Reference mapping using multiple references:
+# 3. Integration and dimensional reduction
+# 4. Clustering optimization
+# 5. Manual annotation based on markers and reference mapping
+#
+#===============================================================================
 
-# libraries  ----
+# Load required libraries and set up environment ----
 library(Seurat)
 library(BPCells)
 library(SeuratObject)
@@ -13,9 +25,6 @@ library(Azimuth)
 library(SeuratData)
 library(SeuratWrappers)
 
-# devtools::install_github("mihem/scMisc")
-# detach(package:scMisc, unload = TRUE)
-
 # general settings  ----
 options(warn = 0)
 options(Seurat.object.assay.version = "v5")
@@ -25,18 +34,18 @@ conflicts_prefer(base::setdiff)
 my_cols_25 <- pals::cols25()
 my_cols_50 <- unname(Polychrome::createPalette(50, pals::cols25()))
 
+# Load and subset immune cell populations ----
 # load preprocessed data ----
 ic <- qread(file.path("objects", "ic.qs"), nthread = 4)
-sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 
-# subset immune cells ----
+# subset immune cells and recluster ----
+# Extract immune cell clusters and recluster
 ic <- subset(sc_merge, cluster %in% c("Macro1", "Macro2", "Granulo", "B", "T_NK", "Mast"))
-
 ic$cluster <- droplevels(ic$cluster)
 
-DimPlot(ic, reduction = "umap.scvi.full", group.by = "cluster", raster = FALSE, pt.size = .1, alpha = .1, label = TRUE)
-
-# run Azimuth ---
+# Reference mapping with Azimuth PBMC reference ----
+# run Azimuth mapping to references ----
+# Map to PBMC reference 
 ic_azimuth <- RunAzimuth(query = ic, reference = "pbmcref", assay = "RNA")
 qsave(ic_azimuth, file.path("objects", "ic_azimuth.qs"))
 
@@ -64,8 +73,7 @@ pred_plot_ic_lev2 <-
 
 ggsave(plot = pred_plot_ic_lev2, file.path("results", "map", "map_ic_lev2.png"), width = 15, height = 10)
 
-
-# remove unnecessary layers and assays ----
+# Optimize data for integration ----
 ic_slim <- DietSeurat(
   ic,
   assay = c("RNA"),
@@ -77,7 +85,7 @@ ic_slim$RNA$counts <- as(object = ic_slim$RNA$counts, Class = "dgCMatrix")
 ic_slim$RNA$data <- as(object = ic_slim$RNA$data, Class = "dgCMatrix")
 ic_slim[["RNA"]]$scale.data <- NULL
 
-# integrate ----
+# Perform multi-modal integration ----
 ic_slim[["RNA"]] <- split(
   x = ic_slim[["RNA"]],
   f = ic_slim$sample)
@@ -139,6 +147,7 @@ umap_ic_map_split <-
 
 ggsave(plot = umap_ic_map_split, file.path("results", "map", "ic_azimuth_rpca_split.png"), width = 40, height = 8)
 
+# Optimize clustering resolution ----
 ic_slim <- FindNeighbors(ic_slim, reduction = "rpca", dims = 1:30, assay = "RNA")
 
 for (res in seq(from = 0.2, to = 2.3, by = 0.1)) {
@@ -171,8 +180,7 @@ library(clustree)
 clustree <- clustree(ic_slim, prefix = "RNA_snn_res.")
 ggsave(plot = clustree, file.path("results", "umap", "ic_clustree.png"), width = 15, height = 15)
 
-
-# feature plots ----
+# Visualize key marker genes with feature plots ----
 endo_epi_macs <-
   FeaturePlot(
     ic,
@@ -216,7 +224,6 @@ b_igh <-
     xlab("UMAP1") &
     ylab("UMAP2")
 ggsave(file.path("results", "featureplot", "ic_bc_igh.png"), b_igh, width = 8, height = 16)
-ggsave(file.path("results", "featureplot", "ic_bc_igh.pdf"), b_igh, width = 8, height = 16)
 
 # dotplots ---
 b_plasma <- subset(ic, subset = ic_cluster %in% c("Plasma", "B"))
@@ -232,7 +239,6 @@ dp_b_plasma <-
   ylab("")
 
 ggsave(plot = dp_b_plasma, file.path("results", "dotplot", "dp_ic_bc_igh.pdf"), width = 4.5, height = 1.5)
-ggsave(plot = dp_b_plasma, file.path("results", "dotplot", "dp_ic_bc_igh_legend.pdf"), width = 4.5, height = 5)
 
 dotPlot(
   path = file.path("lookup", "markers.csv"),
@@ -285,11 +291,9 @@ topmarkers_ic <-
 
 names(topmarkers_ic) <- ic@misc$ic_cluster_order
 
-# remove failed lists (because of too few cells)
-# topmarkers_ic <- topmarkers_ic[sapply(topmarkers_ic, is.list)]
-
 writexl::write_xlsx(topmarkers_ic, file.path("results", "de", "topmarkers_ic.xlsx"))
 
+# Additional reference mapping ----
 # map to tabula sapiens blood ----
 ts_blood <- qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/tabula_sapiens/ts_blood.qs", nthread = 4)
 ts_bm <- qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/tabula_sapiens/ts_bm.qs", nthread = 4)
@@ -346,7 +350,6 @@ pred_plot_ts_bm <-
  DimPlot(ic_slim, reduction = "umap.rpca", group.by = "ts_bm_label", raster = FALSE, pt.size = .1, alpha = .1, cols = my_cols_25, label = TRUE) +
   theme_rect() 
 ggsave(plot = pred_plot_ts_bm, file.path("results", "map", "map_ic_ts_bm.png"), width = 20, height = 7)
-
 
 # run Azimuth bone marrow ---
 options(timeout = 600)
@@ -440,7 +443,9 @@ pred_plot_azimuth_lung_level3 <-
   theme_rect() 
 ggsave(plot = pred_plot_azimuth_lung_level3, file.path("results", "map", "map_ic_azimuth_lung_level3.png"), width = 20, height = 7)
 
+# Final cluster annotation ----
 # annotate immune cell clusters ----
+# Manual annotation based on marker genes and reference mapping
 Idents(ic_slim) <- ic_slim$RNA_snn_res.2.3
 
 annotations <- readxl::read_xlsx(file.path("lookup", "ic_cluster_annotation.xlsx")) |>
@@ -472,7 +477,6 @@ umap_ic <-
     ylab("UMAP2")
 
 ggsave(plot = umap_ic, file.path("results", "umap", "ic_rpca_annotated.png"), width = 8, height = 7)
-ggsave(plot = umap_ic, file.path("results", "umap", "ic_rpca_annotated.pdf"), width = 8, height = 7)
 
-# save object ---
+# Save final annotated object ----
 qs::qsave(ic, file.path("objects", "ic.qs"))
