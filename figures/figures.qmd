@@ -1,0 +1,49 @@
+---
+title: "Figures"
+format: 
+    html:
+     embed-resources: true
+---
+
+# Load libraries
+
+```{r}
+#| output: false
+library(scMisc)
+library(Seurat)
+library(ggplot2)
+library(qs)
+```
+
+
+# Load Seurat file
+
+```{r}
+options(timeout = 3600)
+if (!file.exists("umap_figure.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "umap_figure.qs"
+    )
+}
+
+```
+
+# Figure 1
+
+```{r}
+umap_figure <- qread("umap_figure.qs")
+DimPlot(
+    umap_figure,
+    reduction = "umap.scvi.full",
+    pt.size = .1,
+    raster = FALSE,
+    alpha = 0.1,
+    cols = umap_figure@misc$cluster_col,
+    label = TRUE
+) +
+    NoLegend() +
+    theme_rect() +
+    xlab("UMAP_1") +
+    ylab("UMAP_2")
+```
