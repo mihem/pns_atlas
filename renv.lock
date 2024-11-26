@@ -428,6 +428,33 @@
       ],
       "Hash": "3918e6b40d27984ca4a99c73b92406c3"
     },
+    "ComplexHeatmap": {
+      "Package": "ComplexHeatmap",
+      "Version": "2.18.0",
+      "Source": "Bioconductor",
+      "Requirements": [
+        "GetoptLong",
+        "GlobalOptions",
+        "IRanges",
+        "R",
+        "RColorBrewer",
+        "circlize",
+        "clue",
+        "codetools",
+        "colorspace",
+        "digest",
+        "doParallel",
+        "foreach",
+        "grDevices",
+        "graphics",
+        "grid",
+        "matrixStats",
+        "methods",
+        "png",
+        "stats"
+      ],
+      "Hash": "fd8d03c43e175afce12c1012711a05cc"
+    },
     "DBI": {
       "Package": "DBI",
       "Version": "1.2.0",
@@ -765,6 +792,32 @@
       ],
       "Hash": "7e0c1399af35369312d9c399454374e8"
     },
+    "GetoptLong": {
+      "Package": "GetoptLong",
+      "Version": "1.0.5",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "GlobalOptions",
+        "R",
+        "crayon",
+        "methods",
+        "rjson"
+      ],
+      "Hash": "61fac01c73abf03ac72e88dc3952c1e3"
+    },
+    "GlobalOptions": {
+      "Package": "GlobalOptions",
+      "Version": "0.1.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "methods",
+        "utils"
+      ],
+      "Hash": "c3f7b221e60c28f5f3533d74c6fef024"
+    },
     "HDF5Array": {
       "Package": "HDF5Array",
       "Version": "1.30.0",
@@ -933,6 +986,57 @@
         "stats"
       ],
       "Hash": "0776bf7526869e0286b0463cb72fb211"
+    },
+    "OmnipathR": {
+      "Package": "OmnipathR",
+      "Version": "3.15.1",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "saezlab",
+      "RemoteRepo": "OmnipathR",
+      "RemoteRef": "master",
+      "RemoteSha": "4ffd9ec5b0c0ef5b941e2e3276391b2cb35b4711",
+      "Requirements": [
+        "R",
+        "R.utils",
+        "RSQLite",
+        "XML",
+        "checkmate",
+        "crayon",
+        "curl",
+        "digest",
+        "dplyr",
+        "httr",
+        "igraph",
+        "jsonlite",
+        "later",
+        "logger",
+        "lubridate",
+        "magrittr",
+        "progress",
+        "purrr",
+        "rappdirs",
+        "readr",
+        "readxl",
+        "rlang",
+        "rmarkdown",
+        "rvest",
+        "stats",
+        "stringi",
+        "stringr",
+        "tibble",
+        "tidyr",
+        "tidyselect",
+        "tools",
+        "utils",
+        "vctrs",
+        "withr",
+        "xml2",
+        "yaml",
+        "zip"
+      ],
+      "Hash": "bc59e4ed1e75e4f6fe44c2f654726315"
     },
     "Polychrome": {
       "Package": "Polychrome",
@@ -1333,39 +1437,6 @@
       ],
       "Hash": "1716e201f81ced0f456dd5ec85fe20f8"
     },
-    "SPIAT": {
-      "Package": "SPIAT",
-      "Version": "1.4.1",
-      "Source": "Bioconductor",
-      "Requirements": [
-        "R",
-        "RANN",
-        "SpatialExperiment",
-        "SummarizedExperiment",
-        "apcluster",
-        "dbscan",
-        "dittoSeq",
-        "dplyr",
-        "ggplot2",
-        "grDevices",
-        "gridExtra",
-        "gtools",
-        "methods",
-        "mmand",
-        "pracma",
-        "raster",
-        "reshape2",
-        "rlang",
-        "sp",
-        "spatstat.explore",
-        "spatstat.geom",
-        "stats",
-        "tibble",
-        "utils",
-        "vroom"
-      ],
-      "Hash": "a77e24a177f2d58249de3ef6daf4d10d"
-    },
     "SQUAREM": {
       "Package": "SQUAREM",
       "Version": "2021.1",
@@ -1656,24 +1727,6 @@
       ],
       "Hash": "2042cd9759cc89a453c4aefef0ce9aae"
     },
-    "SpatialExperiment": {
-      "Package": "SpatialExperiment",
-      "Version": "1.12.0",
-      "Source": "Bioconductor",
-      "Requirements": [
-        "BiocFileCache",
-        "BiocGenerics",
-        "S4Vectors",
-        "SingleCellExperiment",
-        "SummarizedExperiment",
-        "grDevices",
-        "magick",
-        "methods",
-        "rjson",
-        "utils"
-      ],
-      "Hash": "df55f81c526995211170f86c5d35a19d"
-    },
     "SummarizedExperiment": {
       "Package": "SummarizedExperiment",
       "Version": "1.32.0",
@@ -1838,22 +1891,6 @@
       ],
       "Hash": "74a64813f17b492da9c6afda6b128e3d"
     },
-    "apcluster": {
-      "Package": "apcluster",
-      "Version": "1.4.11",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "Matrix",
-        "R",
-        "Rcpp",
-        "grDevices",
-        "graphics",
-        "methods",
-        "stats"
-      ],
-      "Hash": "fafe8a992eab30cdac7c88d0c25aa1e7"
-    },
     "ape": {
       "Package": "ape",
       "Version": "5.8",
@@ -1947,6 +1984,44 @@
         "R"
       ],
       "Hash": "543776ae6848fde2f48ff3816d0628bc"
+    },
+    "basilisk": {
+      "Package": "basilisk",
+      "Version": "1.19.0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "LTLA",
+      "RemoteRepo": "basilisk",
+      "RemoteRef": "devel",
+      "RemoteSha": "7e940de862c0ed765ee1cf768e3c9d5f2e946b0d",
+      "Requirements": [
+        "basilisk.utils",
+        "dir.expiry",
+        "methods",
+        "parallel",
+        "reticulate",
+        "utils"
+      ],
+      "Hash": "7b5ebc6f21b5eedf0649e8e1c5ef770d"
+    },
+    "basilisk.utils": {
+      "Package": "basilisk.utils",
+      "Version": "1.19.0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "LTLA",
+      "RemoteRepo": "basilisk.utils",
+      "RemoteRef": "devel",
+      "RemoteSha": "f596ce05fb07b15cce559027f3a7a36a493d829d",
+      "Requirements": [
+        "dir.expiry",
+        "methods",
+        "tools",
+        "utils"
+      ],
+      "Hash": "473398312541f961c00e1c8f7354dc4d"
     },
     "beachmat": {
       "Package": "beachmat",
@@ -2283,6 +2358,25 @@
       ],
       "Hash": "c01cab1cb0f9125211a6fc99d540e315"
     },
+    "circlize": {
+      "Package": "circlize",
+      "Version": "0.4.16",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "GlobalOptions",
+        "R",
+        "colorspace",
+        "grDevices",
+        "graphics",
+        "grid",
+        "methods",
+        "shape",
+        "stats",
+        "utils"
+      ],
+      "Hash": "bf366c80e2b55a5383b4af8fa2a10b74"
+    },
     "class": {
       "Package": "class",
       "Version": "7.3-22",
@@ -2348,6 +2442,20 @@
         "vctrs"
       ],
       "Hash": "3d8a84cdf9f6f8564531c49b70f3833d"
+    },
+    "clue": {
+      "Package": "clue",
+      "Version": "0.3-66",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "cluster",
+        "graphics",
+        "methods",
+        "stats"
+      ],
+      "Hash": "3604501a29faffcd155ae84c1872eaf3"
     },
     "cluster": {
       "Package": "cluster",
@@ -2622,18 +2730,6 @@
       ],
       "Hash": "59351f28a81f0742720b85363c4fdd61"
     },
-    "dbscan": {
-      "Package": "dbscan",
-      "Version": "1.1-12",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "Rcpp",
-        "graphics",
-        "stats"
-      ],
-      "Hash": "7f069f590906941ff4bb801ecedabff0"
-    },
     "deldir": {
       "Package": "deldir",
       "Version": "2.0-2",
@@ -2725,29 +2821,29 @@
       ],
       "Hash": "7ede2ee9ea8d3edbf1ca84c1e333ad1a"
     },
-    "dittoSeq": {
-      "Package": "dittoSeq",
-      "Version": "1.14.2",
+    "dir.expiry": {
+      "Package": "dir.expiry",
+      "Version": "1.10.0",
       "Source": "Bioconductor",
-      "Repository": "Bioconductor 3.18",
       "Requirements": [
-        "S4Vectors",
-        "SingleCellExperiment",
-        "SummarizedExperiment",
-        "colorspace",
-        "cowplot",
-        "ggplot2",
-        "ggrepel",
-        "ggridges",
-        "grDevices",
-        "gridExtra",
-        "methods",
-        "pheatmap",
-        "reshape2",
-        "stats",
+        "filelock",
         "utils"
       ],
-      "Hash": "1fc325dfc4c4b803f1dfc6ee23f8f5d8"
+      "Hash": "d4412704cb3bf84c5f03fe2ac03c236f"
+    },
+    "doParallel": {
+      "Package": "doParallel",
+      "Version": "1.0.17",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "foreach",
+        "iterators",
+        "parallel",
+        "utils"
+      ],
+      "Hash": "451e5edf411987991ab6a5410c45011f"
     },
     "dotCall64": {
       "Package": "dotCall64",
@@ -3294,7 +3390,7 @@
     },
     "ggplot2": {
       "Package": "ggplot2",
-      "Version": "3.4.4",
+      "Version": "3.5.1",
       "Source": "Repository",
       "Repository": "RSPM",
       "Requirements": [
@@ -3315,7 +3411,7 @@
         "vctrs",
         "withr"
       ],
-      "Hash": "313d31eff2274ecf4c1d3581db7241f9"
+      "Hash": "44c6a2f8202d5b7e878ea274b1092426"
     },
     "ggpubr": {
       "Package": "ggpubr",
@@ -4152,6 +4248,45 @@
       ],
       "Hash": "b21c4ae2bb7935504c42bcdf749c04e6"
     },
+    "liana": {
+      "Package": "liana",
+      "Version": "0.1.14",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "saezlab",
+      "RemoteRepo": "liana",
+      "RemoteRef": "master",
+      "RemoteSha": "6cab46c54234f861ea176c3de77c4b8aa45ecb3d",
+      "Remotes": "sqjin/CellChat, saezlab/OmnipathR, saezlab/decoupleR, LTLA/basilisk.utils, LTLA/basilisk",
+      "Requirements": [
+        "ComplexHeatmap",
+        "OmnipathR",
+        "R",
+        "RColorBrewer",
+        "SeuratObject",
+        "SingleCellExperiment",
+        "basilisk",
+        "basilisk.utils",
+        "dplyr",
+        "ggplot2",
+        "magrittr",
+        "methods",
+        "purrr",
+        "readr",
+        "reticulate",
+        "rlang",
+        "scater",
+        "scran",
+        "scuttle",
+        "stringr",
+        "tibble",
+        "tidyr",
+        "tidyselect",
+        "utils"
+      ],
+      "Hash": "71626bc80ea3435cc5eb1948f9ee3905"
+    },
     "lifecycle": {
       "Package": "lifecycle",
       "Version": "1.0.4",
@@ -4277,6 +4412,17 @@
       ],
       "Hash": "3434988413fbabfdb0fcd6067d7e1aa4"
     },
+    "logger": {
+      "Package": "logger",
+      "Version": "0.4.0",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "utils"
+      ],
+      "Hash": "f25d781d5bc7757e08cf38c741a5ad1c"
+    },
     "lubridate": {
       "Package": "lubridate",
       "Version": "1.9.3",
@@ -4289,18 +4435,6 @@
         "timechange"
       ],
       "Hash": "680ad542fbcf801442c83a6ac5a2126c"
-    },
-    "magick": {
-      "Package": "magick",
-      "Version": "2.8.3",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "Rcpp",
-        "curl",
-        "magrittr"
-      ],
-      "Hash": "3f6bcbb8a0c1c9365b2f02d5d04ad7bc"
     },
     "magrittr": {
       "Package": "magrittr",
@@ -4492,17 +4626,6 @@
         "Rcpp"
       ],
       "Hash": "f48238f8d4740426ca12f53f27d004dd"
-    },
-    "mmand": {
-      "Package": "mmand",
-      "Version": "1.6.3",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "Rcpp",
-        "methods"
-      ],
-      "Hash": "a664382008e4bfd701e7dc8816a6b660"
     },
     "modelr": {
       "Package": "modelr",
@@ -5171,20 +5294,6 @@
         "R"
       ],
       "Hash": "5e3c5dc0b071b21fa128676560dbe94d"
-    },
-    "raster": {
-      "Package": "raster",
-      "Version": "3.6-26",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "Rcpp",
-        "methods",
-        "sp",
-        "terra"
-      ],
-      "Hash": "7d6eda494f34a644420ac1bfd2a8023a"
     },
     "rbibutils": {
       "Package": "rbibutils",
@@ -6447,18 +6556,6 @@
       "Repository": "RSPM",
       "Hash": "25cfab6cf405c15bccf7e69ec39df090"
     },
-    "terra": {
-      "Package": "terra",
-      "Version": "1.7-71",
-      "Source": "Repository",
-      "Repository": "RSPM",
-      "Requirements": [
-        "R",
-        "Rcpp",
-        "methods"
-      ],
-      "Hash": "e8611881ab70a4fb7a1f629b31e6fcff"
-    },
     "tester": {
       "Package": "tester",
       "Version": "0.1.7",
@@ -6959,6 +7056,13 @@
         "vctrs"
       ],
       "Hash": "935418860629e50d2a2c495ea0a05221"
+    },
+    "zip": {
+      "Package": "zip",
+      "Version": "2.3.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "fcc4bd8e6da2d2011eb64a5e5cc685ab"
     },
     "zlibbioc": {
       "Package": "zlibbioc",
