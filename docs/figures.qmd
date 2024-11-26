@@ -1,4 +1,7 @@
 ---
+project:
+    type: website
+    output-dir: docs
 title: "Figures"
 format: 
     html:
