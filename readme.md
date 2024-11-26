@@ -8,4 +8,7 @@ renv::restore()
 ```
 
 All scripts can be found in the scripts folder.
+
+A quarto report to reproduce the figures can be found here: [Reproducing the figures](https://mihem.github.io/pns_atlas/)
+
 If you have any questions, please contact us via [mheming.de](https://www.mheming.de/).
