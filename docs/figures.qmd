@@ -3,9 +3,6 @@ project:
     type: website
     output-dir: docs
 title: "Figures"
-format: 
-    html:
-     embed-resources: true
 ---
 
 # Load libraries
