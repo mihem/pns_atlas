@@ -47,3 +47,10 @@ DimPlot(
     xlab("UMAP_1") +
     ylab("UMAP_2")
 ```
+
+## Session info
+
+
+```{r}
+sessionInfo()
+```
