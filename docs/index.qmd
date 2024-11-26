@@ -1,11 +1,11 @@
 ---
-title: "Figures"
+title: "Reproducing the figures"
 format: 
     html:
         embed-resources: true
 ---
 
-# Load libraries
+## Load libraries
 
 ```{r}
 #| output: false
@@ -16,7 +16,7 @@ library(qs)
 ```
 
 
-# Load Seurat file
+## Get UMAP data
 
 ```{r}
 options(timeout = 3600)
@@ -29,7 +29,7 @@ if (!file.exists("umap_figure.qs")) {
 
 ```
 
-# Figure 1
+## Figure 1
 
 ```{r}
 umap_figure <- qread("umap_figure.qs")
