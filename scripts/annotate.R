@@ -189,25 +189,3 @@ lapply(
     )
   }
 )
-
-# prepare seurat object for reproducibility
-umap_figure <- DietSeurat(
-    sc_merge,
-    counts = TRUE,
-    data = FALSE,
-    scale.data = FALSE,
-    assays = "RNA",
-    dimreducs = c("umap.scvi.full")
-)
-
-umap_figure$RNA$counts <- NULL
-umap_figure$RNA$data <- NULL
-umap_figure$RNA$scale.data <- Matrix::Matrix(
-  0,
-  nrow = nrow(umap_figure$RNA),
-  ncol = ncol(umap_figure$RNA)
-)
-
-umap_figure@meta.data <- data.frame()
-
-qs::qsave(umap_figure, file.path("figures", "umap_figure.qs"))
