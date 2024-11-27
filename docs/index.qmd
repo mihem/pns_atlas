@@ -13,6 +13,7 @@ library(scMisc)
 library(Seurat)
 library(ggplot2)
 library(qs)
+library(sessioninfo)
 ```
 
 
@@ -52,5 +53,5 @@ DimPlot(
 
 
 ```{r}
-sessionInfo()
+session_info()
 ```
