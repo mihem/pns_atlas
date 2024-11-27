@@ -17,8 +17,10 @@ library(sessioninfo)
 ```
 
 
-## Get UMAP data
+## Figure 1
+**UMAP of all cells (Figure 1B)**
 
+Download data
 ```{r}
 options(timeout = 3600)
 if (!file.exists("umap_figure.qs")) {
@@ -27,21 +29,19 @@ if (!file.exists("umap_figure.qs")) {
         "umap_figure.qs"
     )
 }
-
 ```
 
-## Figure 1
-
+Load data and plot
 ```{r}
 umap_figure <- qread("umap_figure.qs")
 DimPlot(
     umap_figure,
     reduction = "umap.scvi.full",
     pt.size = .1,
-    raster = FALSE,
-    alpha = 0.1,
+    alpha = .1,
     cols = umap_figure@misc$cluster_col,
-    label = TRUE
+    label = TRUE,
+    raster = FALSE
 ) +
     NoLegend() +
     theme_rect() +
@@ -49,8 +49,41 @@ DimPlot(
     ylab("UMAP_2")
 ```
 
-## Session info
+## Figure 2
 
+**UMAP immune cells (Figure 2A)**
+
+Download data.
+
+```{r}
+options(timeout = 3600)
+if (!file.exists("ic_umap_figure.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "ic_umap_figure.qs"
+    )
+}
+```
+
+Load data and plot.
+```{r}
+ic_umap_figure <- qread("ic_umap_figure.qs")
+    DimPlot(
+        ic_umap_figure,
+        reduction = "umap.rpca",
+        pt.size = .1,
+        alpha = .3,
+        cols = ic_umap_figure@misc$ic_cluster_col,
+        label = TRUE,
+        raster = FALSE
+    ) +
+    theme_rect() +
+    NoLegend() +
+    xlab("UMAP1") +
+    ylab("UMAP2")
+```
+
+## Session info
 
 ```{r}
 session_info()
