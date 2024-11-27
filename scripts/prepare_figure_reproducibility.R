@@ -30,8 +30,9 @@ umap_figure$RNA$scale.data <- Matrix::Matrix(
   ncol = ncol(umap_figure$RNA)
 )
 
-# Clear metadata to anonymize the data
 umap_figure@meta.data <- data.frame()
+umap_figure@commands <- list()
+umap_figure@tools <- list()
 
 # Save the processed Seurat object to a file
 qs::qsave(umap_figure, file.path("docs", "umap_figure.qs"))
@@ -45,7 +46,7 @@ ic_figure <- DietSeurat(
     data = FALSE,
     scale.data = FALSE,
     assays = "RNA",
-    dimreducs = c("ic.scvi.full")
+    dimreducs = c("umap.rpca")
 )
 
 # Remove unnecessary data to further reduce the object size
