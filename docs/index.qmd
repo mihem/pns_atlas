@@ -18,7 +18,7 @@ library(sessioninfo)
 
 ## Figure 1
 
-Download and read the data.
+**UMAP of all cells (Figure 1B)**
 ```{r}
 options(timeout = 3600)
 if (!file.exists("umap_figure.qs")) {
@@ -28,10 +28,6 @@ if (!file.exists("umap_figure.qs")) {
     )
 }
 umap_figure <- qread("umap_figure.qs")
-```
-
-**UMAP of all cells (Figure 1B)**
-```{r}
 DimPlot(
     umap_figure,
     reduction = "umap.scvi.full",
@@ -52,8 +48,7 @@ DimPlot(
 
 ## Figure 2
 
-
-Download and read the data.
+**UMAP immune cells (Figure 2A)**
 
 ```{r}
 if (!file.exists("ic_figure.qs")) {
@@ -63,11 +58,6 @@ if (!file.exists("ic_figure.qs")) {
     )
 }
 ic_figure <- qread("ic_figure.qs")
-```
-
-**UMAP immune cells (Figure 2A)**
-
-```{r}
 DimPlot(
     ic_figure,
     reduction = "umap.rpca",
@@ -109,6 +99,33 @@ FeaturePlot(
 
 ```
 
+**Enrichment of gene ontology terms in  Macro 18 (Figure 2C)**
+
+```{r}
+#| fig-height: 3
+if (!file.exists("enrichr_macro18.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "b_plasma_figure.qs"
+    )
+}
+enrichr_macro18 <- qread("enrichr_macro18.qs")
+enrichr_macro18  |>
+        dplyr::slice_min(order_by = Adjusted.P.value, n = 10, with_ties = FALSE) |>
+        tidyr::separate(Overlap, into = c("overlap1", "overlap2")) |> # separate overlap in two columns
+        dplyr::mutate(Term = gsub(x = Term, pattern = "\\s\\(.+\\)", replacement = "")) |>
+        dplyr::mutate(overlap = as.numeric(overlap1) / as.numeric(overlap2)) |> # calculcate overlap
+        ggplot(aes(y = reorder(Term, -log10(Adjusted.P.value)), x = -log10(Adjusted.P.value))) +
+        geom_col(fill = scales::hue_pal()(5)[1]) +
+        labs(
+            x = "-Log10 Adjusted P value",
+            y = ""
+        ) +
+        theme_classic() +
+        theme(legend.position = "none")
+```
+
+**Dot plot IGH chain genes (Figure 2E)**
 ```{r}
 if (!file.exists("ic_figure.qs")) {
     download.file(
@@ -117,20 +134,18 @@ if (!file.exists("ic_figure.qs")) {
     )
 }
 b_plasma_figure <- qread("b_plasma_figure.qs")
-```
-
-```{r}
-#| fig.height: 2.5
 DotPlot(
     b_plasma_figure,
     features = c("IGHM", "IGHD", "IGHG1", "IGHG2", "IGHG3", "IGHG4", "IGHA1", "IGHA2"),
-    scale = FALSE
+    scale = FALSE,
+    dot.scale = 10
 ) +
     viridis::scale_color_viridis(option = "viridis") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, face = "italic")) +
     xlab("") +
     ylab("") 
 ```
+
 
 ## Session info
 

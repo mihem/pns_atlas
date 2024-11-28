@@ -98,8 +98,5 @@ b_plasma_figure@tools <- list()
 
 qsave(b_plasma_figure, file.path("docs", "b_plasma_figure.qs"))
 
-
-
-scMisc::lss()
-str(ic_figure, max.level = 2)
-print(object.size(ic_figure@tools), units = "Mb")
+enrichr_macro18 <- readxl::read_excel(file.path("results", "enrichr", "enrichr_Macro18.xlsx"), sheet = "GO_Biological_Process_2023")
+qsave(enrichr_macro18, file.path("docs", "enrichr_macro18.qs"))
