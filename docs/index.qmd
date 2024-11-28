@@ -56,7 +56,6 @@ DimPlot(
 Download and read the data.
 
 ```{r}
-options(timeout = 3600)
 if (!file.exists("ic_figure.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -111,17 +110,26 @@ FeaturePlot(
 ```
 
 ```{r}
-b_plasma <- subset(ic_figure, subset %in% c("Plasma", "B"))
+if (!file.exists("ic_figure.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "b_plasma_figure.qs"
+    )
+}
+b_plasma_figure <- qread("b_plasma_figure.qs")
+```
 
-dp_b_plasma <-
-  DotPlot(b_plasma,
+```{r}
+#| fig.height: 2.5
+DotPlot(
+    b_plasma_figure,
     features = c("IGHM", "IGHD", "IGHG1", "IGHG2", "IGHG3", "IGHG4", "IGHA1", "IGHA2"),
     scale = FALSE
-  ) +
-  viridis::scale_color_viridis(option = "viridis") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, face = "italic")) +
-  xlab("") +
-  ylab("")
+) +
+    viridis::scale_color_viridis(option = "viridis") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, face = "italic")) +
+    xlab("") +
+    ylab("") 
 ```
 
 ## Session info

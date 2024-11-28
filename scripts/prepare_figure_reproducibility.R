@@ -1,8 +1,8 @@
-#===============================================================================
+# ===============================================================================
 # Figure Reproducibility Preparation Script
-#===============================================================================
-# Purpose: Prepare Seurat object for the qmd file (reproducibility the figures)
-#===============================================================================
+# ===============================================================================
+# Purpose: Prepare Seurat object for qmd file (reproducibility the figures)
+# ===============================================================================
 
 # Load necessary libraries
 library(Seurat)
@@ -25,9 +25,18 @@ umap_figure <- DietSeurat(
 umap_figure$RNA$counts <- NULL
 umap_figure$RNA$data <- NULL
 umap_figure$RNA$scale.data <- Matrix::Matrix(
-  0,
-  nrow = nrow(umap_figure$RNA),
-  ncol = ncol(umap_figure$RNA)
+    0,
+    nrow = nrow(umap_figure$RNA),
+    ncol = ncol(umap_figure$RNA)
+)
+
+# Remove unnecessary data to further reduce the object size
+umap_figure$RNA$counts <- NULL
+umap_figure$RNA$data <- NULL
+umap_figure$RNA$scale.data <- Matrix::Matrix(
+    0,
+    nrow = nrow(umap_figure$RNA),
+    ncol = ncol(umap_figure$RNA)
 )
 
 umap_figure@meta.data <- data.frame()
@@ -53,6 +62,10 @@ ic_figure <- DietSeurat(
 ic_figure$RNA$counts <- NULL
 ic_figure$RNA$scale.data <- NULL
 
+# Remove unnecessary data to further reduce the object size
+ic_figure$RNA$counts <- NULL
+ic_figure$RNA$scale.data <- NULL
+
 ic_figure@meta.data <- data.frame()
 ic_figure@commands <- list()
 ic_figure@tools <- list()
@@ -60,8 +73,33 @@ ic_figure@tools <- list()
 qsave(ic_figure, file.path("docs", "ic_figure.qs"))
 ic_figure <- qread(file.path("docs", "ic_figure.qs"))
 
+b_plasma <- subset(ic, idents = c("Plasma", "B"))
+
+b_plasma_figure <- DietSeurat(
+    b_plasma,
+    counts = TRUE,
+    data = FALSE,
+    scale.data = FALSE,
+    assays = "RNA",
+    dimreducs = NULL
+)
+
+b_plasma_figure@meta.data <-
+    b_plasma_figure@meta.data |>
+    dplyr::select(ic_cluster)
+
+str(b_plasma_figure@meta.data$ic_cluster)
+
+
+b_plasma_figure$RNA$counts <- NULL
+b_plasma_figure$RNA$scale.data <- NULL
+b_plasma_figure@commands <- list()
+b_plasma_figure@tools <- list()
+
+qsave(b_plasma_figure, file.path("docs", "b_plasma_figure.qs"))
+
+
+
 scMisc::lss()
 str(ic_figure, max.level = 2)
 print(object.size(ic_figure@tools), units = "Mb")
-
-
