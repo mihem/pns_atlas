@@ -40,7 +40,7 @@ qs::qsave(umap_figure, file.path("docs", "umap_figure.qs"))
 # Figure 2 ----
 ic <- qs::qread(file.path("objects", "ic.qs"), nthread = 4)
 
-ic_umap_figure <- DietSeurat(
+ic_figure <- DietSeurat(
     ic,
     counts = TRUE,
     data = FALSE,
@@ -50,22 +50,18 @@ ic_umap_figure <- DietSeurat(
 )
 
 # Remove unnecessary data to further reduce the object size
-ic_umap_figure$RNA$counts <- NULL
-ic_umap_figure$RNA$data <- NULL
-ic_umap_figure$RNA$scale.data <- Matrix::Matrix(
-  0,
-  nrow = nrow(ic_umap_figure$RNA),
-  ncol = ncol(ic_umap_figure$RNA)
-)
+ic_figure$RNA$counts <- NULL
+ic_figure$RNA$scale.data <- NULL
 
-ic_umap_figure@meta.data <- data.frame()
-ic_umap_figure@commands <- list()
-ic_umap_figure@tools <- list()
+ic_figure@meta.data <- data.frame()
+ic_figure@commands <- list()
+ic_figure@tools <- list()
 
-qsave(ic_umap_figure, file.path("docs", "ic_umap_figure.qs"))
+qsave(ic_figure, file.path("docs", "ic_figure.qs"))
+ic_figure <- qread(file.path("docs", "ic_figure.qs"))
 
 scMisc::lss()
-str(ic_umap_figure, max.level = 2)
-print(object.size(ic_umap_figure@tools), units = "Mb")
+str(ic_figure, max.level = 2)
+print(object.size(ic_figure@tools), units = "Mb")
 
 

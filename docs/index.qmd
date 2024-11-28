@@ -9,7 +9,6 @@ format:
 
 ```{r}
 #| output: false
-library(scMisc)
 library(Seurat)
 library(ggplot2)
 library(qs)
@@ -18,9 +17,8 @@ library(sessioninfo)
 
 
 ## Figure 1
-**UMAP of all cells (Figure 1B)**
 
-Download data
+Download and read the data.
 ```{r}
 options(timeout = 3600)
 if (!file.exists("umap_figure.qs")) {
@@ -29,11 +27,11 @@ if (!file.exists("umap_figure.qs")) {
         "umap_figure.qs"
     )
 }
+umap_figure <- qread("umap_figure.qs")
 ```
 
-Load data and plot
+**UMAP of all cells (Figure 1B)**
 ```{r}
-umap_figure <- qread("umap_figure.qs")
 DimPlot(
     umap_figure,
     reduction = "umap.scvi.full",
@@ -44,43 +42,86 @@ DimPlot(
     raster = FALSE
 ) +
     NoLegend() +
-    theme_rect() +
+    theme(
+        axis.text = element_blank(),
+        axis.ticks = element_blank()
+    ) +
     xlab("UMAP_1") +
     ylab("UMAP_2")
 ```
 
 ## Figure 2
 
-**UMAP immune cells (Figure 2A)**
 
-Download data.
+Download and read the data.
 
 ```{r}
 options(timeout = 3600)
-if (!file.exists("ic_umap_figure.qs")) {
+if (!file.exists("ic_figure.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
-        "ic_umap_figure.qs"
+        "ic_figure.qs"
     )
 }
+ic_figure <- qread("ic_figure.qs")
 ```
 
-Load data and plot.
+**UMAP immune cells (Figure 2A)**
+
 ```{r}
-ic_umap_figure <- qread("ic_umap_figure.qs")
-    DimPlot(
-        ic_umap_figure,
-        reduction = "umap.rpca",
-        pt.size = .1,
-        alpha = .3,
-        cols = ic_umap_figure@misc$ic_cluster_col,
-        label = TRUE,
-        raster = FALSE
+DimPlot(
+    ic_figure,
+    reduction = "umap.rpca",
+    pt.size = .1,
+    alpha = .3,
+    cols = ic_figure@misc$ic_cluster_col,
+    label = TRUE,
+    raster = FALSE
+) +
+    theme(
+        axis.text = element_blank(),
+        axis.ticks = element_blank()
     ) +
-    theme_rect() +
     NoLegend() +
     xlab("UMAP1") +
     ylab("UMAP2")
+```
+
+**Feature plots immune cells (Figure 2B)**
+
+```{r}
+FeaturePlot(
+    ic_figure,
+    features = c("MS4A7", "CX3CR1", "TREM2", "LYVE1", "FOLR2", "TIMD4"),
+    reduction = "umap.rpca",
+    pt.size = 0.1,
+    raster = FALSE,
+    coord.fixed = TRUE,
+    cols = c("#F0F0F0", "#CB181D"),
+    order = TRUE,
+    ncol = 3
+) &
+    theme(
+        axis.text = element_blank(),
+        axis.ticks = element_blank()
+    ) &
+    xlab("UMAP1") &
+    ylab("UMAP2")
+
+```
+
+```{r}
+b_plasma <- subset(ic_figure, subset %in% c("Plasma", "B"))
+
+dp_b_plasma <-
+  DotPlot(b_plasma,
+    features = c("IGHM", "IGHD", "IGHG1", "IGHG2", "IGHG3", "IGHG4", "IGHA1", "IGHA2"),
+    scale = FALSE
+  ) +
+  viridis::scale_color_viridis(option = "viridis") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, face = "italic")) +
+  xlab("") +
+  ylab("")
 ```
 
 ## Session info
