@@ -267,6 +267,15 @@ dotPlot(
   width = 12
 ) 
 
+dotPlot(
+  path = file.path("lookup", "markers.csv"),
+  object = ic,
+  par = "Macro18",
+  dot_min = 0.01,
+  height = 7.5,
+  width = 20
+) 
+
 # find markers ---
 ic_slim <- JoinLayers(ic_slim)
 
