@@ -1,14 +1,14 @@
-#===============================================================================
+# ===============================================================================
 # Differential Expression Analysis (DEG) Script
-#===============================================================================
+# ===============================================================================
 # Purpose: Analyze differential gene expression between disease conditions:
-# - PNP vs CTRL 
+# - PNP vs CTRL
 # - VN vs CTRL
 # - CIDP vs CTRL
 # - CIAP vs CTRL
 #
 # Methods: Uses pseudobulk differential expression via Libra package with edgeR
-#===============================================================================
+# ===============================================================================
 
 # libraries  ----
 library(Seurat)
@@ -73,7 +73,7 @@ AggregateExpression(nmSC, assay = "RNA", group.by = "level0", features = c("IFI4
 vn_ctrl <- subset(sc_merge, level2 %in% c("VN", "CTRL"))
 vn_ctrl$level2 <- factor(vn_ctrl$level2, levels = c("VN", "CTRL"))
 
-##sanity check
+## sanity check
 table(sc_merge$level2)
 table(vn_ctrl$level2)
 AggregateExpression(vn_ctrl, assay = "RNA", group.by = "level2", features = c("F2RL3", "CXCL14", "XIST", "TSIX"))
@@ -272,3 +272,56 @@ lapply(
         )
     }
 )
+
+# function to compare gene expression between conditions using VlnPlot -----
+compareGeneExpression <- function(seu_obj, gene, seu_obj_name) {
+    plot <- VlnPlot(
+        seu_obj,
+        features = gene,
+        group.by = "level2",
+        cols = seu_obj@misc$level2_cols,
+        pt.size = 0
+    ) +
+        NoLegend() + 
+        xlab("") + 
+        ylab("") + 
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    ggsave(
+        plot = plot,
+        filename = file.path("results", "de", paste0(seu_obj_name, "_", gene, ".pdf")),
+        width = 3,
+        height = 3
+    )
+}
+
+# compare CXCL14 expression in pericytes between conditions
+pericytes <- subset(
+    sc_merge,
+    cluster %in% c("periC1", "periC2", "periC3") &
+        level2 %in% c("CTRL", "CIDP", "VN", "CIAP")
+)
+pericytes$level2 <- factor(pericytes$level2, levels = c("CTRL", "CIDP", "VN", "CIAP"))
+compareGeneExpression(pericytes, "CXCL14", "pericytes")
+
+# compare GRIK3 and PRIMA1 expression in nmSC between conditions
+nmSC <- subset(
+    sc_merge,
+    cluster %in% c("nmSC") &
+        level2 %in% c("CTRL", "CIDP", "VN", "CIAP")
+)
+nmSC$level2 <- factor(nmSC$level2, levels = c("CTRL", "CIDP", "VN", "CIAP"))
+
+lapply(
+    c("GRIK3", "PRIMA1"),
+    function(gene) compareGeneExpression(nmSC, gene, "nmSC")
+)
+
+# compare MLIP expression in mySC between conditions
+mySC <- subset(
+    sc_merge,
+    cluster %in% c("mySC") &
+        level2 %in% c("CTRL", "CIDP", "VN", "CIAP")
+)
+mySC$level2 <- factor(mySC$level2, levels = c("CTRL", "CIDP", "VN", "CIAP"))
+compareGeneExpression(mySC, "MLIP", "mySC")
+
