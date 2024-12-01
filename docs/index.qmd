@@ -11,6 +11,7 @@ format:
 #| output: false
 library(Seurat)
 library(ggplot2)
+library(forcats)
 library(qs)
 library(sessioninfo)
 ```
@@ -110,19 +111,19 @@ if (!file.exists("enrichr_macro18.qs")) {
     )
 }
 enrichr_macro18 <- qread("enrichr_macro18.qs")
-enrichr_macro18  |>
-        dplyr::slice_min(order_by = Adjusted.P.value, n = 10, with_ties = FALSE) |>
-        tidyr::separate(Overlap, into = c("overlap1", "overlap2")) |> # separate overlap in two columns
-        dplyr::mutate(Term = gsub(x = Term, pattern = "\\s\\(.+\\)", replacement = "")) |>
-        dplyr::mutate(overlap = as.numeric(overlap1) / as.numeric(overlap2)) |> # calculcate overlap
-        ggplot(aes(y = reorder(Term, -log10(Adjusted.P.value)), x = -log10(Adjusted.P.value))) +
-        geom_col(fill = scales::hue_pal()(5)[1]) +
-        labs(
-            x = "-Log10 Adjusted P value",
-            y = ""
-        ) +
-        theme_classic() +
-        theme(legend.position = "none")
+enrichr_macro18 |>
+    dplyr::slice_min(order_by = Adjusted.P.value, n = 10, with_ties = FALSE) |>
+    tidyr::separate(Overlap, into = c("overlap1", "overlap2")) |> # separate overlap in two columns
+    dplyr::mutate(Term = gsub(x = Term, pattern = "\\s\\(.+\\)", replacement = "")) |>
+    dplyr::mutate(overlap = as.numeric(overlap1) / as.numeric(overlap2)) |> # calculcate overlap
+    ggplot(aes(y = reorder(Term, -log10(Adjusted.P.value)), x = -log10(Adjusted.P.value))) +
+    geom_col(fill = scales::hue_pal()(5)[1]) +
+    labs(
+        x = "-Log10 Adjusted P value",
+        y = ""
+    ) +
+    theme_classic() +
+    theme(legend.position = "none")
 ```
 
 **Dot plot IGH chain genes (Figure 2E)**
@@ -143,9 +144,46 @@ DotPlot(
     viridis::scale_color_viridis(option = "viridis") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, face = "italic")) +
     xlab("") +
-    ylab("") 
+    ylab("")
 ```
 
+## Figure 3
+
+**Abundance of clusters (Figure 3A)**
+```{r}
+#| fig-width: 3
+#| fig-height: 3
+if (!file.exists("propeller_PNP_CTRL.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "propeller_PNP_CTRL.qs"
+    )
+}
+if (!file.exists("propeller_PNP_CTRL.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "propeller_PNP_CTRL_ic.qs"
+    )
+}
+propeller_PNP_CTRL <- qread("propeller_PNP_CTRL.qs")
+propeller_PNP_CTRL_ic <- qread("propeller_PNP_CTRL_ic.qs")
+
+dotplotPropeller <- function(data, color) {
+    ggplot(data, aes(x = log2ratio, y = fct_reorder(cluster, log2ratio), color = cluster)) +
+        geom_point(size = 5) +
+        theme_classic() +
+        geom_vline(
+            xintercept = 0, color = "red",
+            linetype = "solid"
+        ) +
+        scale_color_manual(values = color) +
+        xlab("Log2 fold change") +
+        ylab(NULL) +
+        theme(legend.position = "none")
+}
+dotplotPropeller(propeller_PNP_CTRL, color = umap_figure@misc$cluster_col)
+dotplotPropeller(propeller_PNP_CTRL_ic, color = ic_figure@misc$ic_cluster_col)
+```
 
 ## Session info
 
