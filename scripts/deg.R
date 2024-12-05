@@ -294,14 +294,14 @@ compareGeneExpression <- function(seu_obj, gene, seu_obj_name) {
     )
 }
 
-# compare CXCL14 expression in pericytes between conditions
-pericytes <- subset(
+# compare CXCL14 expression in perneurial cells between conditions
+perineurial <- subset(
     sc_merge,
     cluster %in% c("periC1", "periC2", "periC3") &
         level2 %in% c("CTRL", "CIDP", "VN", "CIAP")
 )
-pericytes$level2 <- factor(pericytes$level2, levels = c("CTRL", "CIDP", "VN", "CIAP"))
-compareGeneExpression(pericytes, "CXCL14", "pericytes")
+perineurial$level2 <- factor(perineurial$level2, levels = c("CTRL", "CIDP", "VN", "CIAP"))
+compareGeneExpression(perineurial, "CXCL14", "perineurial")
 
 # compare GRIK3 and PRIMA1 expression in nmSC between conditions
 nmSC <- subset(
