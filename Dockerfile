@@ -1,8 +1,4 @@
-# Use the Ubuntu 24.04 (Noble) with R 4.3.1
-#FROM rstudio/r-base:4.3.1-noble
-# FROM rstudio/r-base@sha256:3a6681b4d76e4966027a076f54299315d45bba11e9f07dee3fac1d71d906c117
-
-# 4.3.1 with ubuntu 22.02 jammy
+# Use R 4.3.1 with ubuntu 22.02 jammy
 # https://hub.docker.com/layers/rstudio/r-base/4.3.1-jammy/images/sha256-82c069a26ec53b50226f68c7d3e2271e60aff857207c5f9784355d660a10f3ef?context=explore
 FROM rstudio/r-base@sha256:82c069a26ec53b50226f68c7d3e2271e60aff857207c5f9784355d660a10f3ef 
 
