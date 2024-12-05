@@ -9,7 +9,7 @@ To ensure reproducibility, we used the *renv* package. To restore the environmen
 renv::restore()
 ```
 
-If you have trouble with restoring the environment via *renv*, or want to also use the same operating system,
+If you have trouble restoring the environment via *renv*, or if you want to be on the safe side regarding reproducibility,
 you can also use the *Docker* image.
 
 ```bash
