@@ -9,6 +9,13 @@ To ensure reproducibility, we used the *renv* package. To restore the environmen
 renv::restore()
 ```
 
+If you have trouble with restoring the environment via *renv*, or want to also use the same operating system,
+you can also use the *Docker* image.
+
+```bash
+docker pull mihem/pns_atlas:v1.0
+```
+
 To reproduce the figures, we created a self-contained quarto report: [Reproducing the figures](https://mihem.github.io/pns_atlas/)
 
 ## Questions?
