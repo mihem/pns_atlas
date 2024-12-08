@@ -594,7 +594,6 @@ plot_predicted_samc <- function(seu_obj, output_path) {
 }
 
 # plot predicted SAMC
-Idents(ic) <- ic$stroke_label
 plot_predicted_samc(ic, file.path("results", "map", "samc_predicted.png"))
 
 Idents(ic) <- ic$ic_cluster
