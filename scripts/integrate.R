@@ -156,20 +156,6 @@ ts_ec_small <- qs::qread("/home/mischko/Documents/beruf/forschung/scRNA_referenc
 bbb_vascular <- qs::qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/bbb/bbb_vascular.qs")
 rosmap <- qs::qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/bbb/rosmap.qs")
 
-# convert to rownames to orthologue
-convertRownames <- function(seu_object) {
-  lookup <- homologene::mouse2human(rownames(seu_object), db = homologene::homologeneData2)
-  new_rownames <- lookup$humanGene[match(rownames(seu_object), lookup$mouseGene)]
-  rownames(seu_object@assays$RNA@counts) <- new_rownames
-  rownames(seu_object@assays$RNA@data) <- new_rownames
-  # rownames(seu_object@assays$RNA@scale.data) <- new_rownames
-  #remove columns with NA
-  features_keep <- rownames(seu_object)[!is.na(rownames(seu_object))]
-  obj_new <- subset(seu_object, features = features_keep)
-  rownames(obj_new@assays$RNA@meta.features) <- rownames(obj_new)
-  return(obj_new)
-}
-
 # prepare reference
 human_pns_sciatic_milbrandt <- convertRownames(pns_sn_sciatic_milbrandt)
 human_ec_atlas <- convertRownames(ec_atlas)
