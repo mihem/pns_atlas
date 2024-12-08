@@ -523,6 +523,8 @@ ic <- AddModuleScore(
   name = "SAMC"
 )
 
+qs::qsave(ic, file.path("objects", "ic.qs"))
+
 # better name
 ic$SAMC <- ic$SAMC1
 ic$SAMC1 <- NULL
@@ -544,3 +546,55 @@ fplot_samc <-
     ylab("UMAP2")
 
 ggsave(file.path("results", "module", "ic_samc.png"), fplot_samc, width = 8, height = 6)
+
+# map SAMC from stroke to immune cells
+# use functions from  integrate.R
+stroke_human <- convertRownames(stroke)
+predictions_stroke <- mapSeurat(ref = stroke_human, query = ic)
+ic <- storePred(predictions_stroke, label_col = "stroke_label", score_col = "stroke_score", seu_obj = ic)
+
+# plot predicted SAMC
+Idents(ic) <- ic$stroke_label
+
+# Function to plot predicted SAMC
+plot_predicted_samc <- function(seu_obj, output_path) {
+  # Create a data frame with alpha values, color values, and UMAP coordinates
+  umap_coords <- Embeddings(seu_obj, "umap.rpca")
+  alpha_values <- ifelse(seu_obj$stroke_label == "SAMC", 0.5, 0.001)
+  color_values <- ifelse(seu_obj$stroke_label == "SAMC", "SAMC", "Other")
+  color_map <- setNames(c("red", "grey"), c("SAMC", "Other"))
+  plot_df <- data.frame(
+    cell = rownames(umap_coords),
+    UMAP1 = umap_coords[, 1],
+    UMAP2 = umap_coords[, 2],
+    alpha = alpha_values,
+    color = color_values
+  )
+
+  # Create custom ggplot
+  samc_predicted <- ggplot(
+    plot_df,
+    aes(x = UMAP1, y = UMAP2, alpha = alpha, color = color)
+  ) +
+    geom_point(size = 0.1) +
+    scale_color_manual(values = color_map) + # Simplified color scale
+    theme_minimal() +
+    theme(
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      panel.grid = element_blank(),
+      panel.border = element_rect(color = "black", fill = NA, size = 1.0),
+      panel.background = element_rect(fill = "white", color = NA), 
+      plot.background = element_rect(fill = "white", color = NA),
+      legend.position = "none"
+    ) +
+    ggtitle("Predicted SAMC") 
+
+  ggsave(output_path, samc_predicted, width = 4, height = 4)
+}
+
+# plot predicted SAMC
+Idents(ic) <- ic$stroke_label
+plot_predicted_samc(ic, file.path("results", "map", "samc_predicted.png"))
+
+qsave(ic, file.path("objects", "ic.qs"))
