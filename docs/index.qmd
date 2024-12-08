@@ -168,6 +168,7 @@ if (!file.exists("propeller_PNP_CTRL.qs")) {
 propeller_PNP_CTRL <- qread("propeller_PNP_CTRL.qs")
 propeller_PNP_CTRL_ic <- qread("propeller_PNP_CTRL_ic.qs")
 
+# function to plot custom dotplot
 dotplotPropeller <- function(data, color) {
     ggplot(data, aes(x = log2ratio, y = fct_reorder(cluster, log2ratio), color = cluster)) +
         geom_point(size = 5) +
@@ -184,6 +185,50 @@ dotplotPropeller <- function(data, color) {
 dotplotPropeller(propeller_PNP_CTRL, color = umap_figure@misc$cluster_col)
 dotplotPropeller(propeller_PNP_CTRL_ic, color = ic_figure@misc$ic_cluster_col)
 ```
+
+**Covarying Neighborhood Analysis (Figure 3B)**
+
+```{r}
+if (!file.exists("cna_pnp_gratio_figure.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "cna_pnp_gratio_figure.qs"
+    )
+}
+cna_pnp_gratio_figure <- qread("cna_pnp_gratio_figure.qs")
+
+# function to plot CNA feature plot
+fplotCNA <-  function(object, feature, title) {
+    FeaturePlot(
+        object,
+        reduction = "umap.scvi.full",
+        features = feature,
+        pt.size = 0.1,
+        order = FALSE,
+        coord.fixed = TRUE,
+        raster = FALSE,
+        alpha = 0.2
+    ) +
+    scale_colour_gradient2(
+        low = "#2166AC",
+        mid = "white",
+        high = "#B2182B",
+        midpoint = 0,
+    ) +
+    theme(
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.border = element_rect(color = "black", linewidth = 1, fill = NA)
+    ) +
+    labs(
+        title = title, color = "Correlation", x = "UMAP1", y= "UMAP2"
+    )
+}
+
+fplotCNA(cna_pnp_gratio_figure, "cna_ncorrs_pnp", title = "PNP")
+fplotCNA(cna_pnp_gratio_figure, "cna_ncorrs_gratio", title = "g-ratio")
+``` 
+
 
 ## Session info
 

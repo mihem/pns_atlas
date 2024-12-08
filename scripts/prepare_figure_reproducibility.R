@@ -133,3 +133,57 @@ propeller_PNP_CTRL_ic <-
     dplyr::filter(abs(log2ratio) > 0.5)
 
 qsave(propeller_PNP_CTRL_ic, file.path("docs", "propeller_PNP_CTRL_ic.qs"))
+
+# Figure 3B CNA  ----
+# PNP
+sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
+sc_merge$pnp <- as.numeric(sc_merge$level2 != "CTRL")
+sc_merge$sex_numeric <- as.numeric(sc_merge$sex == "male")
+sc_merge$center_numeric <- as.numeric(factor(sc_merge$center))
+
+cna_pnp <- association.Seurat(
+    seurat_object = sc_merge, 
+    test_var = 'pnp', 
+    samplem_key = 'sample', 
+    graph_use = 'RNA_nn', 
+    verbose = TRUE,
+    batches = NULL, ## no batch variables to include, only works with matched design https://github.com/immunogenomics/cna/issues/11
+    covs = c("sex_numeric", "age")
+)
+cna_pnp$cna_ncorrs_pnp <- cna_pnp$cna_ncorrs
+
+# g ratio
+cna_gratio <- association.Seurat(
+    seurat_object = sc_merge, 
+    test_var = "g_ratio", 
+    samplem_key = 'sample', 
+    graph_use = 'RNA_nn', 
+    verbose = TRUE,
+    batches = NULL, ## no batch variables to include
+    covs = c("sex_numeric", "age") 
+)
+
+cna_pnp$cna_ncorrs_gratio <- cna_gratio$cna_ncorrs
+
+# Remove unnecessary data to further reduce the object size
+cna_pnp_gratio_figure <- DietSeurat(
+    cna_pnp,
+    counts = TRUE,
+    data = FALSE,
+    scale.data = FALSE,
+    assays = "RNA",
+    dimreducs = c("umap.scvi.full")
+)
+
+cna_pnp_gratio_figure$RNA$counts <- NULL
+cna_pnp_gratio_figure$RNA$scale.data <- NULL
+cna_pnp_gratio_figure@commands <- list()
+cna_pnp_gratio_figure@tools <- list()
+cna_pnp_gratio_figure@meta.data <-
+    cna_pnp_gratio_figure@meta.data |>
+    tibble::rownames_to_column("barcode") |>
+    dplyr::select(barcode, cna_ncorrs_pnp, cna_ncorrs_gratio) |>
+    tibble::column_to_rownames("barcode")
+
+qsave(cna_pnp_gratio_figure, file.path("docs", "cna_pnp_gratio_figure.qs"))
+
