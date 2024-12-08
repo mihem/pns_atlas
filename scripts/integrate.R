@@ -178,27 +178,6 @@ predictions_suter_merge <- mapSeurat(ref = human_suter_merge, query = sc_merge)
 predictions_bbb <- mapSeurat(ref = bbb_vascular, query = sc_merge)
 predictions_rosmap <- mapSeurat(ref = rosmap, query = sc_merge)
 
-#function to store predictions in seurat object
-storePred <- function(predictions, label_col, score_col, seu_obj) {
-  predictions_prep <-
-    predictions |>
-    tibble::rownames_to_column("barcode") |>
-    dplyr::select(predicted.id, prediction.score.max, barcode) |>
-    dplyr::mutate(predicted.id = ifelse(prediction.score.max < 0.3, "unknown", predicted.id)) |>
-    tibble::as_tibble() |>
-    dplyr::rename(
-      {{ label_col }} := predicted.id,
-      {{ score_col }} := prediction.score.max
-    )
-
-  seu_obj@meta.data <-
-    seu_obj@meta.data |>
-    tibble::rownames_to_column("barcode") |>
-    dplyr::left_join(predictions_prep, by = "barcode") |>
-    tibble::column_to_rownames(var = "barcode")
-
-  return(seu_obj)
-}
 
 sc_merge <- storePred(predictions_milbrandt, label_col = "milbrandt_sciatic_label", score_col = "milbrandt_sciatic_score", seu_obj = sc_merge)
 sc_merge <- storePred(predictions_ec, label_col = "ec_atlas_label", score_col = "ec_atlas_score", seu_obj = sc_merge)
