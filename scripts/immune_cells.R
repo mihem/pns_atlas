@@ -584,11 +584,11 @@ plot_predicted_samc <- function(seu_obj, output_path) {
       axis.ticks = element_blank(),
       panel.grid = element_blank(),
       panel.border = element_rect(color = "black", fill = NA, size = 1.0),
-      panel.background = element_rect(fill = "white", color = NA), 
+      panel.background = element_rect(fill = "white", color = NA),
       plot.background = element_rect(fill = "white", color = NA),
       legend.position = "none"
     ) +
-    ggtitle("Predicted SAMC") 
+    ggtitle("Predicted SAMC")
 
   ggsave(output_path, samc_predicted, width = 4, height = 4)
 }
@@ -597,4 +597,40 @@ plot_predicted_samc <- function(seu_obj, output_path) {
 Idents(ic) <- ic$stroke_label
 plot_predicted_samc(ic, file.path("results", "map", "samc_predicted.png"))
 
+Idents(ic) <- ic$ic_cluster
 qsave(ic, file.path("objects", "ic.qs"))
+
+# featureplot of SAMC markers
+ic_samc_markers_fplot <-
+  FeaturePlot(
+    ic,
+    features = c("SPP1", "APOE", "LPL", "FABP5", "GPNMB"),
+    reduction = "umap.rpca",
+    cols = c("#F0F0F0", "#CB181D"),
+    pt.size = 0.1,
+    raster = FALSE,
+    coord.fixed = TRUE,
+    order = TRUE
+  ) &
+    theme(
+      axis.text = element_blank(),
+      axis.ticks = element_blank(),
+      panel.border = element_rect(color = "black", fill = NA, size = 1.0)
+    ) &
+    xlab("UMAP1") &
+    ylab("UMAP2")
+
+ggsave(file.path("results", "featureplot", "ic_samc_markers.png"), ic_samc_markers_fplot, width = 8, height = 12)
+
+
+# dotplot of SAMC markers
+Idents(ic) <- ic$ic_cluster
+dotPlot(
+  path = file.path("lookup", "markers.csv"),
+  object = ic,
+  par = "SAMC",
+  dot_min = 0.01,
+  height = 6,
+  width = 4.5
+)
+
