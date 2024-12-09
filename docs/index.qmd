@@ -9,10 +9,12 @@ format:
 
 ```{r}
 #| output: false
+library(qs)
 library(Seurat)
 library(ggplot2)
+library(dplyr)
 library(forcats)
-library(qs)
+library(miloDE)
 library(sessioninfo)
 ```
 
@@ -52,6 +54,7 @@ DimPlot(
 **UMAP immune cells (Figure 2A)**
 
 ```{r}
+options(timeout = 3600)
 if (!file.exists("ic_figure.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -104,6 +107,7 @@ FeaturePlot(
 
 ```{r}
 #| fig-height: 3
+options(timeout = 3600)
 if (!file.exists("enrichr_macro18.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -128,6 +132,7 @@ enrichr_macro18 |>
 
 **Dot plot IGH chain genes (Figure 2E)**
 ```{r}
+options(timeout = 3600)
 if (!file.exists("ic_figure.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -153,6 +158,7 @@ DotPlot(
 ```{r}
 #| fig-width: 3
 #| fig-height: 3
+options(timeout = 3600)
 if (!file.exists("propeller_PNP_CTRL.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -189,6 +195,7 @@ dotplotPropeller(propeller_PNP_CTRL_ic, color = ic_figure@misc$ic_cluster_col)
 **Covarying Neighborhood Analysis (Figure 3B)**
 
 ```{r}
+options(timeout = 3600)
 if (!file.exists("cna_pnp_gratio_figure.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -236,6 +243,55 @@ fplotCNA(cna_incat_figure, "cna_ncorrs", title = "INCAT")
 fplotCNA(cna_pnp_gratio_figure, "cna_ncorrs_gratio", title = "g-ratio")
 ``` 
 
+**Number of DEGs (Figure 3C)**
+
+```{r}
+options(timeout = 3600)
+if (!file.exists("pnp_ctrl_pseudobulk_de.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "pnp_ctrl_pseudobulk_de.qs"
+    )
+}
+pnp_ctrl_pseudobulk <- qread("pnp_ctrl_pseudobulk_de.qs")
+pnp_ctrl_pseudobulk |>
+    mutate(cluster = fct_reorder(cluster, n)) |>
+    ggplot(aes(x = cluster, y = n, fill = cluster)) +
+    geom_col() +
+    coord_flip() +
+    scale_fill_manual(values = umap_figure@misc$cluster_col) +
+    theme_classic() +
+    theme(legend.position = "none") +
+    labs(
+        x = "",
+        y = "",
+        title = "PNP vs CTRL"
+    )
+```
+
+**MiloDE DEGs (Figure 3D)**
+
+```{r}
+#| fig-width: 5
+options(timeout = 3600)
+if (!file.exists("milo_figure.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "milo_figure.qs"
+    )
+}
+milo_figure <- qread("milo_figure.qs")
+plot_milo_by_single_metric(
+  milo_figure$obj,
+  milo_figure$stat,
+  colour_by = "n_DE_genes",
+  layout = "UMAP.SCVI.FULL",
+  size_range = c(0.5, 5),
+  edge_width = c(0.1, 1.0), 
+  edge_weight.thres = 10
+) +
+  viridis::scale_fill_viridis(name = "# DE genes", option = "inferno")
+```
 
 ## Session info
 

@@ -7,6 +7,9 @@
 # Load necessary libraries
 library(Seurat)
 library(qs)
+library(tidyverse)
+library(miloDE)
+library(SingleCellExperiment)
 
 # Figure 1 ----
 # Prepare Seurat object for reproducibility
@@ -223,3 +226,63 @@ cna_incat_figure@meta.data <-
     tibble::column_to_rownames("barcode")
 
 qsave(cna_incat_figure, file.path("docs", "cna_incat_figure.qs"))
+
+# Figure 3C ----
+sheets <- readxl::excel_sheets(path = file.path("results", "de", "pnp_ctrl_pseudobulk.xlsx"))
+cl_sig <-
+        lapply(
+            sheets,
+            function(sheet) {
+                readxl::read_xlsx(path = file.path("results", "de", "pnp_ctrl_pseudobulk.xlsx"), sheet = sheet) |>
+                    dplyr::filter(p_val_adj < 0.05) |>
+                    nrow()
+            }
+        )
+result <- tibble(
+        cluster = sheets,
+        n = unlist(cl_sig),
+    )
+
+qs::qsave(result, file.path("docs", "pnp_ctrl_pseudobulk_de.qs"))
+
+# Figure 3D ----
+milo_DE <- qs::qread(file.path("objects", "milo_DE.qs"), nthread = 4)
+
+# Print size of each slot in the Milo object
+slots <- slotNames(milo_DE)
+for(slot in slots) {
+    size <- object.size(slot(milo_DE, slot))
+    print(sprintf("Slot %s: %s", slot, format(size, units = "auto")))
+}
+
+de_stat <- qs::qread(file.path("objects", "milo_de_stat_pnp_ctrl.qs"), nthread = 6)
+stat_de_magnitude <- rank_neighbourhoods_by_DE_magnitude(de_stat)
+
+milo_DE <- milo_DE_backup
+milo_DE_backup <- milo_DE
+
+# Remove unnecessary data to reduce the object size
+empty_matrix <- Matrix::Matrix(0, 
+                             nrow = nrow(milo_DE), 
+                             ncol = ncol(milo_DE), 
+                             sparse = TRUE)
+rownames(empty_matrix) <- rownames(milo_DE)
+colnames(empty_matrix) <- colnames(milo_DE)
+
+for(i in assayNames(milo_DE)) {
+    assay(milo_DE, i) <- empty_matrix
+}
+
+colData(milo_DE) <- NULL
+milo_DE@graph <- list()
+reducedDims(milo_DE) <- reducedDims(milo_DE)["UMAP.SCVI.FULL"]
+
+# Print the size of the object
+print(object.size(milo_DE), units = "Gb")
+
+milo_figure <- list(
+    obj = milo_DE,
+    stat = stat_de_magnitude
+)
+
+qsave(milo_figure, file.path("docs", "milo_figure.qs"))
