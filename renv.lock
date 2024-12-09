@@ -68,6 +68,13 @@
       ],
       "Hash": "759acec0b1522c1a85c6ba703d4c0ec5"
     },
+    "AsioHeaders": {
+      "Package": "AsioHeaders",
+      "Version": "1.22.1-2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Hash": "85bf3bd8fa58da21a22d84fd4f4ef0a8"
+    },
     "Augur": {
       "Package": "Augur",
       "Version": "1.0.3",
@@ -3947,6 +3954,19 @@
       ],
       "Hash": "04291cc45198225444a397606810ac37"
     },
+    "httpgd": {
+      "Package": "httpgd",
+      "Version": "2.0.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "AsioHeaders",
+        "R",
+        "cpp11",
+        "unigd"
+      ],
+      "Hash": "1db3dea2788722f773ca2ccecd242a5d"
+    },
     "httpuv": {
       "Package": "httpuv",
       "Version": "1.6.13",
@@ -6801,6 +6821,18 @@
         "cpp11"
       ],
       "Hash": "f561504ec2897f4d46f0c7657e488ae1"
+    },
+    "unigd": {
+      "Package": "unigd",
+      "Version": "0.1.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "cpp11",
+        "systemfonts"
+      ],
+      "Hash": "00864724adac92ad5b901710870c16f1"
     },
     "units": {
       "Package": "units",

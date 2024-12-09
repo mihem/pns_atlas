@@ -30,6 +30,7 @@ library(biomaRt)
 library(readxl)
 
 # optional libraries for better coding
+library(httpgd)
 library(languageserver)
 library(codegrip)
 
