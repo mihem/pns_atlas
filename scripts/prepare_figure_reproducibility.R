@@ -187,3 +187,39 @@ cna_pnp_gratio_figure@meta.data <-
 
 qsave(cna_pnp_gratio_figure, file.path("docs", "cna_pnp_gratio_figure.qs"))
 
+# Prepare cna_incat
+sc_merge_pnp <- subset(sc_merge, subset = level2 %in% c("CTRL"), invert = TRUE)
+sc_merge_pnp$incat_numeric <- as.numeric(sc_merge_pnp$incat)
+sc_merge$sex_numeric <- as.numeric(sc_merge$sex == "male")
+
+cna_incat <- association.Seurat(
+    seurat_object = sc_merge_pnp, 
+    test_var = 'incat_numeric', 
+    samplem_key = 'sample', 
+    graph_use = 'RNA_nn', 
+    verbose = TRUE,
+    batches = NULL, 
+    covs = c("sex_numeric", "age")
+)
+
+# Remove unnecessary data to further reduce the object size
+cna_incat_figure <- DietSeurat(
+    cna_incat,
+    counts = TRUE,
+    data = FALSE,
+    scale.data = FALSE,
+    assays = "RNA",
+    dimreducs = c("umap.scvi.full")
+)
+
+cna_incat_figure$RNA$counts <- NULL
+cna_incat_figure$RNA$scale.data <- NULL
+cna_incat_figure@commands <- list()
+cna_incat_figure@tools <- list()
+cna_incat_figure@meta.data <-
+    cna_incat_figure@meta.data |>
+    tibble::rownames_to_column("barcode") |>
+    dplyr::select(barcode, cna_ncorrs) |>
+    tibble::column_to_rownames("barcode")
+
+qsave(cna_incat_figure, file.path("docs", "cna_incat_figure.qs"))

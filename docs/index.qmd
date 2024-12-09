@@ -195,7 +195,14 @@ if (!file.exists("cna_pnp_gratio_figure.qs")) {
         "cna_pnp_gratio_figure.qs"
     )
 }
+if (!file.exists("cna_incat_figure.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "cna_incat_figure.qs"
+    )
+}
 cna_pnp_gratio_figure <- qread("cna_pnp_gratio_figure.qs")
+cna_incat_figure <- qread("cna_incat_figure.qs")
 
 # function to plot CNA feature plot
 fplotCNA <-  function(object, feature, title) {
@@ -218,7 +225,6 @@ fplotCNA <-  function(object, feature, title) {
     theme(
         axis.text = element_blank(),
         axis.ticks = element_blank(),
-        panel.border = element_rect(color = "black", linewidth = 1, fill = NA)
     ) +
     labs(
         title = title, color = "Correlation", x = "UMAP1", y= "UMAP2"
@@ -226,6 +232,7 @@ fplotCNA <-  function(object, feature, title) {
 }
 
 fplotCNA(cna_pnp_gratio_figure, "cna_ncorrs_pnp", title = "PNP")
+fplotCNA(cna_incat_figure, "cna_ncorrs", title = "INCAT")
 fplotCNA(cna_pnp_gratio_figure, "cna_ncorrs_gratio", title = "g-ratio")
 ``` 
 
