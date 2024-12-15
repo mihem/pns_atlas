@@ -286,3 +286,28 @@ milo_figure <- list(
 )
 
 qsave(milo_figure, file.path("docs", "milo_figure.qs"))
+
+# Figure 3E ----
+# calculate DE PNP vs Ctrl for each cluster
+dePseudo <- function(seu_obj, cell_type_col, label_col) {
+    res <- Libra::run_de(seu_obj,
+        replicate_col = "sample",
+        cell_type_col = cell_type_col,
+        label_col = label_col,
+        min_cells = 3,
+        min_reps = 2,
+        min_feature = 0,
+        de_family = "pseudobulk",
+        de_method = "edgeR",
+        de_type = "LRT",
+        n_threads = 6
+    )
+    res <- arrange(res, cell_type, desc(avg_logFC))
+    res_split <- split(res, res$cell_type)
+    return(res_split)
+}
+
+de_pseudo_pnp_ctrl <- dePseudo(sc_merge, cell_type_col = "cluster", label_col = "level0")
+qsave(de_pseudo_pnp_ctrl, file.path("docs", "de_pseudo_pnp_ctrl.qs"))
+
+qsave(de_pseudo_pnp_ctrl, file.path("docs", "de_pseudo_pnp_ctrl.qs"))
