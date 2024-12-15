@@ -215,8 +215,6 @@ lab_pnp_ctrl <- list(
     "PC2" = paste0("italic('", c("MFAP5", "NLGN4Y", "PCDH11Y", "IFIT3", "OASL", "MX1"), "')")
 )
 
-paste0("italic('", c("DCN", "TNXB"), "')")
-
 # PNP vs CTRL
 lapply(
     cluster_de,
