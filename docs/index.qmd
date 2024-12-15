@@ -293,6 +293,80 @@ plot_milo_by_single_metric(
   viridis::scale_fill_viridis(name = "# DE genes", option = "inferno")
 ```
 
+**Pseudobulk DE PNP vs CTRL (Figure 3E)**
+```{r}
+options(timeout = 3600)
+if (!file.exists("de_pseudo_pnp_ctrl.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "de_pseudo_pnp_ctrl.qs"
+    )
+}
+de_pseudo_pnp_ctrl <- qread("de_pseudo_pnp_ctrl.qs")
+
+# volcano plot function
+volcanoPlot <- function(cluster, input, FCcutoff = 2, selectLab = NULL, drawConnectors = TRUE, condition1, condition2) {
+    input <- input[[cluster]]
+    volcano <- EnhancedVolcano::EnhancedVolcano(
+        data.frame(input),
+        lab = paste0("italic('", input[["gene"]], "')"),
+        x = "avg_logFC",
+        y = "p_val_adj",
+        xlim = c(min(input[["avg_logFC"]], max(input[["avg_logFC"]]))),
+        ylim = c(0, max(-log10(input[["p_val_adj"]]))),
+        pCutoff = 0.1,
+        FCcutoff = FCcutoff,
+        axisLabSize = 15,
+        pointSize = 2,
+        labSize = 5,
+        subtitle = NULL,
+        caption = NULL,
+        border = "full",
+        gridlines.major = FALSE,
+        gridlines.minor = FALSE,
+        drawConnectors = drawConnectors,
+        lengthConnectors = unit(0.0001, "npc"),
+        title = paste(condition1, "vs", condition2, "in ", cluster),
+        boxedLabels = TRUE,
+        selectLab = selectLab,
+        xlab = bquote(~ Log[2] ~ "fold change"),
+        ylab = bquote(~ -Log[10] ~ "adjusted p-value"),
+        parseLabels = TRUE,
+        legendLabels = c(
+            "NS", "logFC",
+            "p-val", "p-val + logFC"
+        ),
+        legendPosition = "right",
+    )
+}
+
+# define clusters of interest
+cluster_de <- c("mySC", "nmSC", "repairSC", "PC2")
+
+# define genes of interests
+lab_pnp_ctrl <- list(
+    "mySC" = paste0("italic('", c("DCN", "TNXB", "COL1A1", "COL15A1", "CD53", "IL4R", "CD74"), "')"),
+    "nmSC" = paste0("italic('", c("IL10RA", "IL13RA1", "CSF2RA", "TGFBI"), "')"),
+    "repairSC" = paste0("italic('", c("GALR1", "TMEM47"), "')"),
+    "PC2" = paste0("italic('", c("MFAP5", "NLGN4Y", "PCDH11Y", "IFIT3", "OASL", "MX1"), "')")
+)
+
+# plot volcano plots of selected clusters
+lapply(
+    cluster_de,
+    function(cluster) {
+        volcanoPlot(
+            cluster = cluster,
+            input = de_pseudo_pnp_ctrl,
+            FCcutoff = 2,
+            condition1 = "PNP",
+            condition2 = "CTRL",
+            selectLab = lab_pnp_ctrl[[cluster]]
+        )
+    }
+)
+```
+
 ## Session info
 
 ```{r}
