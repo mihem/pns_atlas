@@ -50,7 +50,7 @@ scMisc::stackedPlot(
   object = sc_merge,
   x_axis = "level2",
   y_axis = "cluster",
-  x_order = unique(sc_merge$level2),
+  x_order = sc_merge@misc$level2_order,
   y_order = sc_merge@misc$cluster_order,
   color = sc_merge@misc$cluster_col,
   width = 5
