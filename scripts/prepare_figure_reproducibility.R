@@ -104,7 +104,7 @@ qsave(b_plasma_figure, file.path("docs", "b_plasma_figure.qs"))
 enrichr_macro18 <- readxl::read_excel(file.path("results", "enrichr", "enrichr_Macro18.xlsx"), sheet = "GO_Biological_Process_2023")
 qsave(enrichr_macro18, file.path("docs", "enrichr_macro18.qs"))
 
-# Figure 3 ----
+# Figure 3 A ----
 propeller_PNP_CTRL <-
     scMisc::propellerCalc(
         seu_obj1 = sc_merge,
@@ -311,3 +311,45 @@ de_pseudo_pnp_ctrl <- dePseudo(sc_merge, cell_type_col = "cluster", label_col = 
 qsave(de_pseudo_pnp_ctrl, file.path("docs", "de_pseudo_pnp_ctrl.qs"))
 
 qsave(de_pseudo_pnp_ctrl, file.path("docs", "de_pseudo_pnp_ctrl.qs"))
+
+# Figure 4A ----
+
+preStackedPlot <-  function(object, x_axis, y_axis, x_order, y_order) {
+    result_wide <- mutate(rownames_to_column(as.data.frame.matrix(table(object@meta.data[[y_axis]], 
+        object@meta.data[[x_axis]])), "cell"), across(where(is.numeric), 
+        function(x) x/sum(x) * 100))
+    result_long <- dplyr::filter(mutate(mutate(pivot_longer(result_wide, 
+        !cell, names_to = "type", values_to = "count"), cell = factor(cell, 
+        levels = y_order)), type = factor(type, levels = x_order)), 
+        count != 0)
+        return(result_long)
+}
+
+abundance_main_clusters <-
+    preStackedPlot(
+        object = sc_merge,
+        x_axis = "level2",
+        y_axis = "cluster",
+        x_order = sc_merge@misc$level2_order,
+        y_order = sc_merge@misc$cluster_order
+    )
+
+qsave(abundance_main_clusters, file.path("docs", "abundance_main_clusters.qs"))
+
+abundance_main_clusters |>
+    ggplot() +
+    geom_col(
+        aes(x = type, y = count, fill = cell),
+        color = "black",
+        size = 0.1,
+        position = "fill"
+    ) +
+    scale_fill_manual(values = umap_figure@misc$cluster_col) +
+    guides(fill = guide_legend(title = NULL)) +
+    theme_classic() +
+    ylab("Proportion of cells") +
+    xlab("") +
+    theme(axis.text.x = element_text(
+        angle = 90,
+        hjust = 1, vjust = 0.3
+    ))
