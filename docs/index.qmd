@@ -16,6 +16,8 @@ library(dplyr)
 library(forcats)
 library(miloDE)
 library(sessioninfo)
+library(EnhancedVolcano)
+library(scMisc)
 ```
 
 
@@ -365,6 +367,40 @@ lapply(
         )
     }
 )
+```
+
+## Figure 4
+
+**Abundance of clusters per PNP subtype (Figure 4A)**
+
+```{r}
+#| fig-width: 4
+options(timeout = 3600)
+if (!file.exists("abundance_main_clusters.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "abundanance_main_clusters.qs"
+    )
+}
+abundance_main_clusters <- qread("abundance_main_clusters.qs")
+
+abundance_main_clusters |>
+    ggplot() +
+    geom_col(
+        aes(x = type, y = count, fill = cell),
+        color = "black",
+        linewidth = 0.1,
+        position = "fill"
+    ) +
+    scale_fill_manual(values = umap_figure@misc$cluster_col) +
+    guides(fill = guide_legend(title = NULL)) +
+    theme_classic() +
+    ylab("Proportion of cells") +
+    xlab("") +
+    theme(axis.text.x = element_text(
+        angle = 90,
+        hjust = 1, vjust = 0.3
+    ))
 ```
 
 ## Session info
