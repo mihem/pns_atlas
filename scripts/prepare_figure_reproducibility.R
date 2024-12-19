@@ -245,7 +245,7 @@ result <- tibble(
 
 qs::qsave(result, file.path("docs", "pnp_ctrl_pseudobulk_de.qs"))
 
-# Figure 3D ----
+# Figure 3D and 4G ----
 milo_DE <- qs::qread(file.path("objects", "milo_DE.qs"), nthread = 4)
 
 # Print size of each slot in the Milo object
@@ -254,12 +254,6 @@ for(slot in slots) {
     size <- object.size(slot(milo_DE, slot))
     print(sprintf("Slot %s: %s", slot, format(size, units = "auto")))
 }
-
-de_stat <- qs::qread(file.path("objects", "milo_de_stat_pnp_ctrl.qs"), nthread = 6)
-stat_de_magnitude <- rank_neighbourhoods_by_DE_magnitude(de_stat)
-
-milo_DE <- milo_DE_backup
-milo_DE_backup <- milo_DE
 
 # Remove unnecessary data to reduce the object size
 empty_matrix <- Matrix::Matrix(0, 
@@ -280,10 +274,28 @@ reducedDims(milo_DE) <- reducedDims(milo_DE)["UMAP.SCVI.FULL"]
 # Print the size of the object
 print(object.size(milo_DE), units = "Gb")
 
+de_stat <-
+    lapply(
+        c("pnp", "vn", "cidp", "ciap"),
+        function(condition) {
+            qs::qread(file.path("objects", paste0("milo_de_stat_", condition, "_ctrl.qs")))
+        }
+    )
+
+stat_de_magnitude <- 
+    lapply(
+        de_stat,
+        rank_neighbourhoods_by_DE_magnitude
+    )
+names(stat_de_magnitude) <- c("pnp", "vn", "cidp", "ciap")
+
 milo_figure <- list(
     obj = milo_DE,
     stat = stat_de_magnitude
 )
+
+print(object.size(milo_figure$obj), units = "GB")
+print(object.size(milo_figure$stat), units = "GB")
 
 qsave(milo_figure, file.path("docs", "milo_figure.qs"))
 
