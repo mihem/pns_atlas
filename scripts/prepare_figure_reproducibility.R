@@ -338,41 +338,7 @@ qsave(abundance_main_clusters, file.path("docs", "abundance_main_clusters.qs"))
 
 # Figure 4B ----
 
-## CIDP vs CTRL
-propeller_CIDP_CTRL <-
-  scMisc::propellerCalc(
-    seu_obj1 = sc_merge,
-    condition1 = "CIDP",
-    condition2 = "CTRL",
-    cluster_col = "cluster",
-    meta_col = "level2",
-    lookup = sample_lookup,
-    sample_col = "sample",
-    formula = "~0 + level2",
-    min_cells = 30
-  ) |>
-    dplyr::filter(abs(log2ratio) > 0.5)
-
-qsave(propeller_CIDP_CTRL, file.path("docs", "propeller_CIDP_CTRL.qs"))
-
-## VN vs CTRL
-propeller_VN_CTRL <-
-  scMisc::propellerCalc(
-    seu_obj1 = sc_merge,
-    condition1 = "VN",
-    condition2 = "CTRL",
-    cluster_col = "cluster",
-    meta_col = "level2",
-    lookup = sample_lookup,
-    sample_col = "sample",
-    formula = "~0 + level2",
-    min_cells = 30
-  ) |>
-    dplyr::filter(abs(log2ratio) > 0.5)
-
-qsave(propeller_VN_CTRL, file.path("docs", "propeller_VN_CTRL.qs"))
-
-dotplotPropeller(propeller_VN_CTRL, color = umap_figure@misc$cluster_col)
+## PNP subtype main clusters
 
 propeller_PNP_subtypes_main <- 
     lapply(
@@ -395,7 +361,3 @@ propeller_PNP_subtypes_main <-
 
 names(propeller_PNP_subtypes_main) <- c("CIDP", "CIAP", "VN")
 qsave(propeller_PNP_subtypes_main, file.path("docs", "propeller_PNP_subtypes_main.qs"))
-
-
-invisible(lapply(1:3, print)) # Prints numbers, but invisibly returns a list of NULLs
-walk(1:3, print) # Prints numbers, returns 1:3 invisibly
