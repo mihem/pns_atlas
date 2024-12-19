@@ -336,20 +336,66 @@ abundance_main_clusters <-
 
 qsave(abundance_main_clusters, file.path("docs", "abundance_main_clusters.qs"))
 
-abundance_main_clusters |>
-    ggplot() +
-    geom_col(
-        aes(x = type, y = count, fill = cell),
-        color = "black",
-        size = 0.1,
-        position = "fill"
-    ) +
-    scale_fill_manual(values = umap_figure@misc$cluster_col) +
-    guides(fill = guide_legend(title = NULL)) +
-    theme_classic() +
-    ylab("Proportion of cells") +
-    xlab("") +
-    theme(axis.text.x = element_text(
-        angle = 90,
-        hjust = 1, vjust = 0.3
-    ))
+# Figure 4B ----
+
+## CIDP vs CTRL
+propeller_CIDP_CTRL <-
+  scMisc::propellerCalc(
+    seu_obj1 = sc_merge,
+    condition1 = "CIDP",
+    condition2 = "CTRL",
+    cluster_col = "cluster",
+    meta_col = "level2",
+    lookup = sample_lookup,
+    sample_col = "sample",
+    formula = "~0 + level2",
+    min_cells = 30
+  ) |>
+    dplyr::filter(abs(log2ratio) > 0.5)
+
+qsave(propeller_CIDP_CTRL, file.path("docs", "propeller_CIDP_CTRL.qs"))
+
+## VN vs CTRL
+propeller_VN_CTRL <-
+  scMisc::propellerCalc(
+    seu_obj1 = sc_merge,
+    condition1 = "VN",
+    condition2 = "CTRL",
+    cluster_col = "cluster",
+    meta_col = "level2",
+    lookup = sample_lookup,
+    sample_col = "sample",
+    formula = "~0 + level2",
+    min_cells = 30
+  ) |>
+    dplyr::filter(abs(log2ratio) > 0.5)
+
+qsave(propeller_VN_CTRL, file.path("docs", "propeller_VN_CTRL.qs"))
+
+dotplotPropeller(propeller_VN_CTRL, color = umap_figure@misc$cluster_col)
+
+propeller_PNP_subtypes_main <- 
+    lapply(
+    c("CIDP", "CIAP", "VN"),
+    function(condition) {
+        scMisc::propellerCalc(
+            seu_obj1 = sc_merge,
+            condition1 = condition,
+            condition2 = "CTRL",
+            cluster_col = "cluster",
+            meta_col = "level2",
+            lookup = sample_lookup,
+            sample_col = "sample",
+            formula = "~0 + level2",
+            min_cells = 30
+        ) |>
+            dplyr::filter(abs(log2ratio) > 0.5)
+    }
+)
+
+names(propeller_PNP_subtypes_main) <- c("CIDP", "CIAP", "VN")
+qsave(propeller_PNP_subtypes_main, file.path("docs", "propeller_PNP_subtypes_main.qs"))
+
+
+invisible(lapply(1:3, print)) # Prints numbers, but invisibly returns a list of NULLs
+walk(1:3, print) # Prints numbers, returns 1:3 invisibly
