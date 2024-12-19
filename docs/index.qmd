@@ -291,7 +291,8 @@ plot_milo_by_single_metric(
   edge_width = c(0.1, 1.0), 
   edge_weight.thres = 10
 ) +
-  viridis::scale_fill_viridis(name = "# DE genes", option = "inferno")
+  viridis::scale_fill_viridis(name = "# DE genes", option = "inferno") + 
+  ggtitle("PNP vs CTRL")
 ```
 
 **Pseudobulk DE PNP vs CTRL (Figure 3E)**
@@ -440,6 +441,53 @@ purrr::walk(
 )
 
 ```
+
+**Manual PTPRC quantification of Xenium images (Figure 4C)**
+
+```{r}
+#| fig-width: 3
+#| fig-height: 3
+options(timeout = 3600)
+if (!file.exists("manual_xenium_quantification.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "manual_xenium_quantification.qs"
+    )
+}
+
+manual_xenium_quantification <- qread("manual_xenium_quantification.qs")
+plotQuanti <- function(y_value, title) {
+    plot <- 
+    manual_xenium_quantification |>
+        ggplot(aes(x = level2, y = .data[[y_value]], fill = level2)) +
+        geom_boxplot() +
+        geom_jitter(height = 0, width = 0.1) +
+        scale_fill_manual(values = umap_figure@misc$level2_cols) +
+        guides(fill = guide_legend(title = NULL)) +
+        theme_classic() +
+        xlab("") +
+        ylab("PTPRC density") +
+        ggtitle(title) +
+        theme(
+            legend.position = "none",
+            axis.text.x = element_text(
+                angle = 90,
+                hjust = 1,
+                vjust = 0.3,
+            )
+        )
+        print(plot)
+}
+
+purrr::walk2(
+    c("endoPTPRC_density_sum", "epiPTPRC_density"),
+    c("endoneurial", "epineurial"),  
+    function(y_value, title) {
+        plotQuanti(y_value = y_value, title = title)
+    }
+)
+```
+
 
 ## Session info
 
