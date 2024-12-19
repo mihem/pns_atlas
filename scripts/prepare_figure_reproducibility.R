@@ -382,4 +382,44 @@ propeller_PNP_subtypes_ic <-
 )
 
 names(propeller_PNP_subtypes_main) <- c("CIDP", "CIAP", "VN")
-qsave(propeller_PNP_subtypes_main, file.path("docs", "propeller_PNP_subtypes_ic.qs"))
+qsave(propeller_PNP_subtypes_main, file.path("docs", "propeller_PNP_subtypes_main.qs"))
+
+# Figure 4F ----
+quanti <-
+    read_csv(file.path("lookup", "xenium_manual_quantification.csv"))|>
+    pivot_longer(!sample, names_to = "name", values_to = "value") |>
+    separate_wider_delim(name, delim = "_", names = c("variable", "area"))
+
+quanti_stats <-
+    quanti |>
+    dplyr::filter(area != "all") |>
+    group_by(sample, variable) |>
+    summarize(
+        mean = mean(value, na.rm = TRUE),
+        sum = sum(value, na.rm = TRUE)
+    ) |>
+    pivot_longer(c(mean, sum), names_to = "name", values_to = "value") |>
+    unite("variable", variable, name)
+
+quanti_result <-
+    quanti |>
+    dplyr::filter(area == "all") |>
+    select(sample, variable, value) |>
+    bind_rows(quanti_stats)  |>
+    arrange(sample) |>
+    pivot_wider(names_from = variable, values_from = value) |>
+    left_join(select(sample_lookup, sample, level2), join_by(sample)) |>
+    mutate(level2 = factor(level2, levels = sc_merge@misc$level2_order)) |>
+    mutate(epiarea = nervearea - endoarea_sum) |>
+    mutate(epiPTPRC = nervePTPRC - endoPTPRC_sum) |>
+    mutate(epiMS4A1 = nerveMS4A1 - endoMS4A1_sum) |>
+    mutate(epiCD3E = nerveCD3E - endoCD3E_sum) |>
+    mutate(epiPTPRC_density = epiPTPRC / epiarea) |>
+    mutate(epiMS4A1_density = epiMS4A1 / epiarea) |>
+    mutate(epiCD3E_density = epiCD3E / epiarea) |>
+    mutate(endoPTPRC_density_sum = endoPTPRC_sum / endoarea_sum) |>
+    mutate(endoMS4A1_density_sum = endoMS4A1_sum / endoarea_sum) |>
+    mutate(endoCD3E_density_sum = endoCD3E_sum / endoarea_sum)
+
+qsave(quanti_result, file.path("docs", "manual_xenium_quantification.qs"))
+
