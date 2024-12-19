@@ -270,7 +270,7 @@ pnp_ctrl_pseudobulk |>
     )
 ```
 
-**MiloDE DEGs (Figure 3D)**
+**MiloDE DEGs PNP vs CTRL (Figure 3D)**
 
 ```{r}
 #| fig-width: 5
@@ -281,18 +281,25 @@ if (!file.exists("milo_figure.qs")) {
         "milo_figure.qs"
     )
 }
+
 milo_figure <- qread("milo_figure.qs")
-plot_milo_by_single_metric(
-  milo_figure$obj,
-  milo_figure$stat,
-  colour_by = "n_DE_genes",
-  layout = "UMAP.SCVI.FULL",
-  size_range = c(0.5, 5),
-  edge_width = c(0.1, 1.0), 
-  edge_weight.thres = 10
-) +
-  viridis::scale_fill_viridis(name = "# DE genes", option = "inferno") + 
-  ggtitle("PNP vs CTRL")
+plotMiloDE <- function(condition, title) {
+    plot <- 
+    plot_milo_by_single_metric(
+        milo_figure$obj,
+        milo_figure$stat[[condition]],
+        colour_by = "n_DE_genes",
+        layout = "UMAP.SCVI.FULL",
+        size_range = c(0.5, 5),
+        edge_width = c(0.1, 1.0),
+        edge_weight.thres = 10
+    ) +
+    viridis::scale_fill_viridis(name = "# DE genes", option = "inferno") +
+    ggtitle(title)
+    print(plot)
+}
+
+plotMiloDE("pnp", "PNP vs CTRL")
 ```
 
 **Pseudobulk DE PNP vs CTRL (Figure 3E)**
@@ -403,7 +410,7 @@ abundance_main_clusters |>
     ))
 ```
 
-**Propeller abundance of PNP subtypes (Figure 4B)**
+**Propeller abundance of PNP subtypes main cluster (Figure 4B)**
 
 ```{r}
 #| fig-width: 3
@@ -428,6 +435,20 @@ purrr::walk(
     }
 )
 
+
+```
+
+**Propeller abundance of PNP subtypes immune cluster (Figure 4C)**
+```{r}
+#| fig-width: 3
+#| fig-height: 3
+options(timeout = 3600)
+if (!file.exists("propeller_PNP_subtypes_ic.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "propeller_PNP_subtypes_ic.qs"
+    )
+}
 propeller_PNP_subtypes_ic <- qread("propeller_PNP_subtypes_ic.qs")
 purrr::walk(
     c("VN", "CIDP", "CIAP"),
@@ -439,10 +460,9 @@ purrr::walk(
         ))
     }
 )
-
 ```
 
-**Manual PTPRC quantification of Xenium images (Figure 4C)**
+**Manual PTPRC quantif (Figure 4F)**
 
 ```{r}
 #| fig-width: 3
@@ -488,6 +508,18 @@ purrr::walk2(
 )
 ```
 
+**MiloDE DEGs PNP subtypes(Figure 4G)**
+
+```{r}
+#| fig-width: 5
+purrr::walk2(
+    c("vn", "cidp", "ciap"),
+    c("VN vs CTRL", "CIDP vs CTRL", "CIAP vs CTRL"),
+    function(condition, title) {
+        plotMiloDE(condition, title)
+    }
+)
+```
 
 ## Session info
 
