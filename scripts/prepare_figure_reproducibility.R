@@ -339,7 +339,6 @@ qsave(abundance_main_clusters, file.path("docs", "abundance_main_clusters.qs"))
 # Figure 4B ----
 
 ## PNP subtype main clusters
-
 propeller_PNP_subtypes_main <- 
     lapply(
     c("CIDP", "CIAP", "VN"),
@@ -361,3 +360,26 @@ propeller_PNP_subtypes_main <-
 
 names(propeller_PNP_subtypes_main) <- c("CIDP", "CIAP", "VN")
 qsave(propeller_PNP_subtypes_main, file.path("docs", "propeller_PNP_subtypes_main.qs"))
+
+## PNP subtype immune cell clusters
+propeller_PNP_subtypes_ic <- 
+    lapply(
+    c("CIDP", "CIAP", "VN"),
+    function(condition) {
+        scMisc::propellerCalc(
+            seu_obj1 = ic,
+            condition1 = condition,
+            condition2 = "CTRL",
+            cluster_col = "cluster",
+            meta_col = "level2",
+            lookup = sample_lookup,
+            sample_col = "sample",
+            formula = "~0 + level2",
+            min_cells = 30
+        ) |>
+            dplyr::filter(abs(log2ratio) > 0.5)
+    }
+)
+
+names(propeller_PNP_subtypes_main) <- c("CIDP", "CIAP", "VN")
+qsave(propeller_PNP_subtypes_main, file.path("docs", "propeller_PNP_subtypes_ic.qs"))
