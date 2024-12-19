@@ -414,18 +414,31 @@ if (!file.exists("propeller_PNP_subtypes_main.qs")) {
         "propeller_PNP_subtypes_main.qs"
     )
 }
-abundance_main_clusters <- qread("propeller_PNP_subtypes_main.qs")
 
+propeller_PNP_subtypes_main <- qread("propeller_PNP_subtypes_main.qs")
 purrr::walk(
     c("VN", "CIDP", "CIAP"),
     function(condition) {
         print(dotplotPropeller(
-            abundance_main_clusters[[condition]],
+            propeller_PNP_subtypes_main[[condition]],
             color = umap_figure@misc$cluster_col,
-            title = paste0("CTRL vs ", condition, " main clusters")
+            title = paste0("CTRL vs ", condition, " main")
         ))
     }
 )
+
+propeller_PNP_subtypes_ic <- qread("propeller_PNP_subtypes_ic.qs")
+purrr::walk(
+    c("VN", "CIDP", "CIAP"),
+    function(condition) {
+        print(dotplotPropeller(
+            propeller_PNP_subtypes_ic[[condition]],
+            color = umap_figure@misc$cluster_col,
+            title = paste0("CTRL vs ", condition, " immune")
+        ))
+    }
+)
+
 ```
 
 ## Session info
