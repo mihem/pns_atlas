@@ -435,3 +435,33 @@ quanti_result <-
 
 qsave(quanti_result, file.path("docs", "manual_xenium_quantification.qs"))
 
+# Supplementary Figure 1 ----
+sample_lookup <-
+    read_csv(file.path("lookup", "sample_lookup.csv")) |>
+    janitor::clean_names() |>
+    dplyr::rename(
+        ncv_tibial_motoric = ncv_tibial_motoric_in_m_s,
+        cmap_tibial_motoric = cmap_tibial_in_m_v,
+        f_latency_tibial = min_f_latency_tibial_in_ms,
+        ncv_peroneal_motoric = ncv_peroneal_motoric_in_m_s,
+        ncv_ulnar_motoric = ncv_ulnar_motoric_in_m_s,
+        cmap_ulnar = cmap_ulnar_in_m_v,
+        f_latency_ulnar = min_f_latency_ulnar_in_ms,
+        snap_sural = snap_sural_in_m_v,
+        ncv_sural = ncv_sural_in_m_s
+    ) |>
+    mutate(age_calc = lubridate::time_length(difftime(nerve_date, birth_date), "years")) |>
+    mutate(age_calc = floor(age_calc)) |>
+    mutate(age = coalesce(age_calc, age)) |>
+    dplyr::select(-age_calc) |>
+    mutate(level0 = if_else(level1 == "CTRL", "CTRL", "PNP")) |>
+    mutate(across(cmap_ulnar:ncv_sural, as.numeric)) |>
+    mutate(level2 = factor(level2, levels = sc_merge@misc$level2_order)) |>
+    mutate(incat = as.numeric(incat))
+
+demographics <-
+    sample_lookup |>
+    dplyr::select(sample, age, sex, level2, incat, ncv_tibial_motoric)
+
+
+qs::qsave(demographics, file.path("docs", "demographics.qs"))
