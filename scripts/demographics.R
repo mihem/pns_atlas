@@ -23,7 +23,6 @@ sample_lookup <-
         cmap_tibial_motoric = cmap_tibial_in_m_v,
         f_latency_tibial = min_f_latency_tibial_in_ms,
         ncv_peroneal_motoric = ncv_peroneal_motoric_in_m_s,
-        cmap_peroneal_motoric = cmap_peroneal_motoric_in_m_v,
         ncv_ulnar_motoric = ncv_ulnar_motoric_in_m_s,
         cmap_ulnar = cmap_ulnar_in_m_v,
         f_latency_ulnar = min_f_latency_ulnar_in_ms,
