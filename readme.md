@@ -18,7 +18,7 @@ docker pull mihem/pns_atlas:v1.0
 
 To reproduce the figures, we created a self-contained quarto report: [Reproducing the figures](https://mihem.github.io/pns_atlas/). 
 
-Steps to reproduce all figures:
+**Steps to reproduce all figures:**
 1. Download `docs/index.qmd`.
 2. Pull the docker image or restore the environment via *renv* as explained above.
 3. Run the following command in the terminal:
