@@ -16,7 +16,11 @@ you can also use the *Docker* image.
 docker pull mihem/pns_atlas:v1.0
 ```
 
-To reproduce the figures, we created a self-contained quarto report: [Reproducing the figures](https://mihem.github.io/pns_atlas/)
+To reproduce the figures, we created a self-contained quarto report: [Reproducing the figures](https://mihem.github.io/pns_atlas/). If you want to reproduce all figures, download [docs/index.qmd](https://raw.githubusercontent.com/mihem/pns_atlas/main/docs/index.qmd) and run the following command in the Docker container:
+
+```bash
+quarto render index.qmd
+```
 
 ## Questions?
 If you have any questions, please contact us via [mheming.de](https://www.mheming.de/).
