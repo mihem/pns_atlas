@@ -3,6 +3,8 @@ title: "Reproducing the figures of the manuscript"
 format: 
     html:
         embed-resources: true
+execute:
+    cache: true
 ---
 
 ## Load libraries
@@ -15,6 +17,7 @@ library(tidyverse)
 library(miloDE)
 library(sessioninfo)
 library(EnhancedVolcano)
+library(pals)
 library(scMisc)
 ```
 
@@ -520,6 +523,56 @@ purrr::walk2(
     }
 )
 ```
+
+## Supplementary Figure 1
+
+**Demographics plot (Figure S1A)**
+
+```{r}
+#| fig-width: 3
+#| fig-height: 3
+options(timeout = 3600)
+if (!file.exists("demographics.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "demographics.qs"
+    )
+}
+
+demographics <- qread("demographics.qs")
+
+plotDemographics <- function(var) {
+    plot <- demographics |>
+        dplyr::filter(!is.na(.data[[var]])) |>
+        ggplot(aes(x = level2, y = .data[[var]], fill = level2)) +
+        geom_boxplot() +
+        geom_point() +
+        theme_bw() +
+        scale_fill_manual(values = umap_figure@misc$level2_cols) +
+        xlab("") +
+        ylab("") +
+        ggtitle(var) +
+        theme(legend.position = "none")
+    print(plot)
+}
+
+purrr::walk(c("age", "ncv_tibial_motoric", "incat"), plotDemographics)
+
+```
+
+```{r}
+#| fig-width: 4
+#| fig-height: 3
+demographics |>
+    ggplot(aes(x = level2, fill = sex)) +
+    geom_bar() + 
+    theme_bw() +
+    scale_fill_manual(values = pals::cols25(2)) +
+    xlab("") +
+    ylab("") +
+    ggtitle("sex")
+```
+
 
 ## Session info
 
