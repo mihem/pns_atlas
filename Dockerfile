@@ -27,9 +27,13 @@ COPY .gitignore .gitignore
 # Persist the renv library and cache directories across builds
 # VOLUME /root/.local/share/renv/cache /root/.local/share/renv/library
 
-ENV RENV_PATHS_LIBRARY renv/library
+ENV RENV_PATHS_LIBRARY=renv/library
 
 # Restore the R environment
 RUN R -e "renv::restore()"
 
+ARG QUARTO_VERSION="1.6.39"
+RUN curl -o quarto-linux-amd64.deb -L https://github.com/quarto-dev/quarto-cli/releases/download/v${QUARTO_VERSION}/quarto-${QUARTO_VERSION}-linux-amd64.deb
+RUN dpkg -i quarto-linux-amd64.deb || apt-get install -f -y
+RUN rm quarto-linux-amd64.deb
 
