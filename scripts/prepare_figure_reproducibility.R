@@ -527,15 +527,16 @@ dotplot_data <-
         dot.min = 0.01,
     )
 
-DotPlotModified(
-    data.plot = dotplot_data,
-    dot.scale = 10,
-    scale.by = "size"
-) +
-    viridis::scale_color_viridis(option = "viridis") +
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, face = "italic")) +
-    xlab("") +
-    ylab("")
+## Supplementary Figure 2B
+enrichr_clusters <- c("periC1", "periC2", "periC3")
+names(enrichr_clusters) <- c("periC1", "periC2", "periC3")
 
-    
+enrichr_periC <- 
+    lapply(
+        enrichr_clusters,
+        function(condition) {
+            readxl::read_excel(file.path("results", "enrichr", paste0("enrichr_", condition, ".xlsx")), sheet = "GO_Biological_Process_2023")
+        }
+    )
 
+qsave(enrichr_periC, file.path("docs", "enrichr_periC.qs"))
