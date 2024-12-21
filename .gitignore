@@ -18,4 +18,6 @@ scripts/download.sh
 tissuumap/
 omnipathr-log/
 histo/
+docker_run.sh
+docs/index_cache
 
