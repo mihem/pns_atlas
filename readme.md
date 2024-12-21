@@ -16,7 +16,7 @@ If you have trouble restoring the environment via *renv*, or if you want to be o
 you can also use the *Docker* image.
 
 ```bash
-docker pull mihem/pns_atlas:v1.0
+docker pull mihem/pns_atlas:v2.0
 ```
 
 **Figures**
