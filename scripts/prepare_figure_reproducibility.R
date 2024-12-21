@@ -26,14 +26,12 @@ umap_figure <- DietSeurat(
 
 # Remove unnecessary data to further reduce the object size
 umap_figure$RNA$counts <- NULL
-# umap_figure$RNA$data <- NULL
-umap_figure$RNA$scale.data <- NULL
-
-# umap_figure$RNA$scale.data <- Matrix::Matrix(
-#     0,
-#     nrow = nrow(umap_figure$RNA),
-#     ncol = ncol(umap_figure$RNA)
-# )
+umap_figure$RNA$data <- NULL
+umap_figure$RNA$scale.data <- Matrix::Matrix(
+    0,
+    nrow = nrow(umap_figure$RNA),
+    ncol = ncol(umap_figure$RNA)
+)
 
 umap_figure@meta.data <- 
     umap_figure@meta.data |>
@@ -66,7 +64,7 @@ umap_figure@misc$sample_cols <- my_cols_50[1:37]
 
 # store markers in Seurat object
 markers_dotplot <- read_csv(file.path("lookup", "markers.csv")) |>
-    select(dotplot_short) |>
+    select(dotplot_jolien) |>
     drop_na() |>
     pull()
 
@@ -505,4 +503,39 @@ abundance_main_clusters_sample <-
 
 qsave(abundance_main_clusters_sample, file.path("docs", "abundance_main_clusters_sample.qs"))
 
+umap_figure <- qs::qread(file.path("docs", "umap_figure.qs"))
+
+test2 <- as(umap_figure$RNA$data, "dgCMatrix")
+
+# load modified Seurat data
+source(file.path("scripts", "dotplot_data.R"))
+
+DotPlot(
+    sc_merge,
+    features = umap_figure@misc$markers_dotplot,
+    dot.scale = 10,
+    scale.by = "size",
+    dot.min = 0.01
+)
+
+Idents(sc_merge) <- factor(sc_merge$cluster, levels = rev(sc_merge@misc$cluster_order))
+
+dotplot_data <-
+    DotPlotData(
+        object = sc_merge,
+        features = umap_figure@misc$markers_dotplot,
+        dot.min = 0.01,
+    )
+
+DotPlotModified(
+    data.plot = dotplot_data,
+    dot.scale = 10,
+    scale.by = "size"
+) +
+    viridis::scale_color_viridis(option = "viridis") +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, face = "italic")) +
+    xlab("") +
+    ylab("")
+
+    
 
