@@ -763,6 +763,73 @@ purrr::walk2(
     plotEnrichr
 )
 ```
+
+```{r}
+#| fig-width: 4
+#| fig-height: 4
+plotUMAP <- function(group, title) {
+    plot <- 
+    DimPlot(
+        umap_figure,
+        reduction = "umap.scvi.full",
+        group.by = group,
+        raster = FALSE,
+        pt.size = .1,
+        alpha = .1,
+        cols = umap_figure@misc$sample_cols,
+        label = TRUE
+    ) +
+    theme(
+        axis.text = element_blank(),
+        axis.ticks = element_blank()
+    ) +
+    xlab("UMAP_1") +
+    ylab("UMAP_2") +
+    NoLegend() + 
+    ggtitle(title)
+    print(plot)
+}
+
+purrr::walk2(
+    c("milbrandt_sciatic_label_full", "suter_p60_label_full"),
+    c("Yim et al. sciatic nerve", "Gerber et al. p60"),
+    plotUMAP
+)
+```
+
+```{r}
+#| fig-width: 4
+#| fig-height: 4
+options(timeout = 3600)
+if (!file.exists("ec_rosmap.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "ec_rosmap.qd"
+    )
+}
+ec_rosmap <- qread("ec_rosmap.qs")
+DimPlot(
+    ec_rosmap,
+    reduction = "umap.scvi.full",
+    group.by = "rosmap_label",
+    raster = FALSE,
+    pt.size = .1,
+    alpha = .1,
+    cols = ec_rosmap@misc$sample_cols,
+    label = TRUE
+) +
+    NoLegend() +
+    xlim(-12, -5) +
+    ylim(2, 10) +
+    xlab("UMAP_1") +
+    ylab("UMAP_2") +
+    ggtitle("ROSMAP vascular cells") +
+    theme(
+        axis.text = element_blank(),
+        axis.ticks = element_blank()
+    )
+```
+
 ## Session info
 ```{r}
 session_info()
