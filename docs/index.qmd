@@ -573,7 +573,65 @@ demographics |>
     ggtitle("sex")
 ```
 
+**UMAP grouped by center and sample (Figure S1C)**
+```{r}
+DimPlot(
+    umap_figure,
+    reduction = "umap.scvi.full",
+    pt.size = .1,
+    raster = FALSE,
+    alpha = 0.1,
+    group.by = "center",
+    cols = pals::cols25(3),
+    label = FALSE
+) +
+    theme(
+        axis.text = element_blank(),
+        axis.ticks = element_blank()
+    ) +
+    xlab("UMAP_1") +
+    ylab("UMAP_2")
 
+
+my_cols_50 <- unname(Polychrome::createPalette(50, pals::cols25()))
+
+DimPlot(
+    umap_figure,
+    reduction = "umap.scvi.full",
+    pt.size = .1,
+    raster = FALSE,
+    alpha = 0.1,
+    group.by = "sample",
+    cols = umap_figure@misc$sample_cols,
+    label = FALSE
+) +
+    theme(
+        axis.text = element_blank(),
+        axis.ticks = element_blank()
+    ) +
+    xlab("UMAP_1") +
+    ylab("UMAP_2")
+
+```
+
+**Number of genes per nucleus (Figure S1D)**
+```{r}
+count_genes <- dplyr::tibble(
+    feature = umap_figure@meta.data$nFeature_RNA,
+    sample = umap_figure@meta.data$sample
+)
+
+count_genes |>
+    ggplot(aes(x = sample, y = feature, fill = sample)) +
+    geom_boxplot() +
+    scale_fill_manual(values = umap_figure@misc$sample_cols) +
+    theme_classic() +
+    theme(legend.position = "none") +
+    xlab("") +
+    ylab("") +
+    ggtitle("Number of genes per nucleus") +
+    theme(axis.text.x = element_text(angle = 90))
+```
 ## Session info
 
 ```{r}
