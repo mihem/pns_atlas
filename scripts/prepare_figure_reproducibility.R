@@ -33,18 +33,32 @@ umap_figure$RNA$scale.data <- Matrix::Matrix(
     ncol = ncol(umap_figure$RNA)
 )
 
-# Remove unnecessary data to further reduce the object size
-umap_figure$RNA$counts <- NULL
-umap_figure$RNA$data <- NULL
-umap_figure$RNA$scale.data <- Matrix::Matrix(
-    0,
-    nrow = nrow(umap_figure$RNA),
-    ncol = ncol(umap_figure$RNA)
-)
+umap_figure@meta.data <- 
+    umap_figure@meta.data |>
+    tibble::rownames_to_column("barcode") |>
+    dplyr::select(
+        barcode,
+        sample,
+        center,
+        sex,
+        age,
+        incat,
+        milbrandt_sciatic_label_full,
+        milbrandt_sciatic_label_full.score,
+        suter_p60_label_full,
+        suter_p60_label_full.score,
+        nCount_RNA,
+        nFeature_RNA,
+        percent_mt,
+        scDblFinder.score
+    ) |>
+    tibble::column_to_rownames("barcode")
 
-umap_figure@meta.data <- data.frame()
 umap_figure@commands <- list()
 umap_figure@tools <- list()
+
+my_cols_50 <- unname(Polychrome::createPalette(50, pals::cols25()))
+umap_figure@misc$sample_cols <- my_cols_50
 
 # Save the processed Seurat object to a file
 qs::qsave(umap_figure, file.path("docs", "umap_figure.qs"))
@@ -436,6 +450,7 @@ quanti_result <-
 qsave(quanti_result, file.path("docs", "manual_xenium_quantification.qs"))
 
 # Supplementary Figure 1 ----
+## Supplementary Figure 1A
 sample_lookup <-
     read_csv(file.path("lookup", "sample_lookup.csv")) |>
     janitor::clean_names() |>
@@ -465,3 +480,5 @@ demographics <-
 
 
 qs::qsave(demographics, file.path("docs", "demographics.qs"))
+
+
