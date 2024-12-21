@@ -26,12 +26,14 @@ umap_figure <- DietSeurat(
 
 # Remove unnecessary data to further reduce the object size
 umap_figure$RNA$counts <- NULL
-umap_figure$RNA$data <- NULL
-umap_figure$RNA$scale.data <- Matrix::Matrix(
-    0,
-    nrow = nrow(umap_figure$RNA),
-    ncol = ncol(umap_figure$RNA)
-)
+# umap_figure$RNA$data <- NULL
+umap_figure$RNA$scale.data <- NULL
+
+# umap_figure$RNA$scale.data <- Matrix::Matrix(
+#     0,
+#     nrow = nrow(umap_figure$RNA),
+#     ncol = ncol(umap_figure$RNA)
+# )
 
 umap_figure@meta.data <- 
     umap_figure@meta.data |>
@@ -57,8 +59,18 @@ umap_figure@meta.data <-
 umap_figure@commands <- list()
 umap_figure@tools <- list()
 
+# store colors in Seurat object
+set.seed(123)
 my_cols_50 <- unname(Polychrome::createPalette(50, pals::cols25()))
-umap_figure@misc$sample_cols <- my_cols_50
+umap_figure@misc$sample_cols <- my_cols_50[1:37]
+
+# store markers in Seurat object
+markers_dotplot <- read_csv(file.path("lookup", "markers.csv")) |>
+    select(dotplot_short) |>
+    drop_na() |>
+    pull()
+
+umap_figure@misc$markers_dotplot <- markers_dotplot
 
 # Save the processed Seurat object to a file
 qs::qsave(umap_figure, file.path("docs", "umap_figure.qs"))
@@ -480,5 +492,17 @@ demographics <-
 
 
 qs::qsave(demographics, file.path("docs", "demographics.qs"))
+
+abundance_main_clusters_sample <-
+    preStackedPlot(
+        object = sc_merge,
+        x_axis = "sample",
+        y_axis = "cluster",
+        x_order = unique(sc_merge$sample),
+        y_order = sc_merge@misc$cluster_order
+    )
+
+
+qsave(abundance_main_clusters_sample, file.path("docs", "abundance_main_clusters_sample.qs"))
 
 
