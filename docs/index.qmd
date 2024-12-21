@@ -632,8 +632,101 @@ count_genes |>
     ggtitle("Number of genes per nucleus") +
     theme(axis.text.x = element_text(angle = 90))
 ```
-## Session info
 
+**Abundance of clusters per sample (Figure S1E)**
+```{r}
+options(timeout = 3600)
+if (!file.exists("abundance_main_clusters_sample.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "abundanance_main_clusters_sample.qs"
+    )
+}
+abundance_main_clusters_sample <- qread("abundance_main_clusters_sample.qs")
+abundance_main_clusters_sample |>
+    mutate(type = factor(type, levels = rev(levels(factor(type))))) |>
+    ggplot() +
+    geom_col(
+        aes(x = type, y = count, fill = cell),
+        color = "black",
+        linewidth = 0.1,
+        position = "fill"
+    ) +
+    scale_fill_manual(values = umap_figure@misc$cluster_col) +
+    theme_classic() +
+    ylab("Proportion of cells") +
+    xlab("") +
+    theme(
+        axis.text.x = element_text(
+            angle = 90,
+            hjust = 1, vjust = 0.3
+        ),
+        legend.position = "none"
+    ) +
+    coord_flip()
+```
+
+## Supplementary Figure 2
+
+**Dotplot of main clusters(Figure S2A)**
+
+```{r}
+options(timeout = 3600)
+if (!file.exists("dotplot_data.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "abundanance_main_clusters_sample.qs"
+    )
+}
+dotplot_data <- qread("dotplot_data.qs")
+
+# Seurat DotPlot function (only ggplot part to avoid calculations)
+DotPlotModified <- function(
+  data.plot,
+  cols = c("lightgrey", "blue"),
+  dot.scale = 6,
+  scale.by = 'radius',
+  scale.min = NA,
+  scale.max = NA
+) {
+  scale.func <- switch(
+    EXPR = scale.by,
+    'size' = scale_size,
+    'radius' = scale_radius,
+    stop("'scale.by' must be either 'size' or 'radius'")
+  )
+  color.by <- 'avg.exp.scaled'
+  plot <- ggplot(data = data.plot, mapping = aes_string(x = 'features.plot', y = 'id')) +
+    geom_point(mapping = aes_string(size = 'pct.exp', color = color.by)) +
+    scale.func(range = c(0, dot.scale), limits = c(scale.min, scale.max)) +
+    theme(axis.title.x = element_blank(), axis.title.y = element_blank()) +
+    guides(size = guide_legend(title = 'Percent Expressed')) + 
+    cowplot::theme_cowplot()
+  plot <- plot + guides(color = guide_colorbar(title = 'Average Expression'))
+  return(plot)
+}
+
+DotPlotModified(
+    data.plot = dotplot_data,
+    scale.by = "size"
+) +
+    viridis::scale_color_viridis(option = "viridis") +
+    theme(axis.text.x = element_text(
+        angle = 90,
+        vjust = 0.5,
+        hjust = 1,
+        face = "italic",
+        size = 7
+        ),
+        legend.position = "top",
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 10)
+        ) +
+    xlab("") +
+    ylab("")
+```
+
+## Session info
 ```{r}
 session_info()
 ```
