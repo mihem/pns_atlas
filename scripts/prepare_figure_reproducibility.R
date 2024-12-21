@@ -460,7 +460,7 @@ quanti_result <-
 qsave(quanti_result, file.path("docs", "manual_xenium_quantification.qs"))
 
 # Supplementary Figure 1 ----
-## Supplementary Figure 1A
+## Supplementary Figure 1A ---
 sample_lookup <-
     read_csv(file.path("lookup", "sample_lookup.csv")) |>
     janitor::clean_names() |>
@@ -503,10 +503,7 @@ abundance_main_clusters_sample <-
 
 qsave(abundance_main_clusters_sample, file.path("docs", "abundance_main_clusters_sample.qs"))
 
-umap_figure <- qs::qread(file.path("docs", "umap_figure.qs"))
-
-test2 <- as(umap_figure$RNA$data, "dgCMatrix")
-
+## Supplementary Figure 2A ---
 # load modified Seurat data
 source(file.path("scripts", "dotplot_data.R"))
 
@@ -527,7 +524,7 @@ dotplot_data <-
         dot.min = 0.01,
     )
 
-## Supplementary Figure 2B
+## Supplementary Figure 2B ----
 enrichr_clusters <- c("periC1", "periC2", "periC3")
 names(enrichr_clusters) <- c("periC1", "periC2", "periC3")
 
@@ -540,3 +537,47 @@ enrichr_periC <-
     )
 
 qsave(enrichr_periC, file.path("docs", "enrichr_periC.qs"))
+
+## Supplementary Figure 2C
+ec <- subset(sc_merge, subset = RNA_snn_res.0.7 %in% c("7", "10", "11", "19"))
+ec_rosmap <- subset(ec, subset = rosmap_label %in% c("aEndo", "capEndo", "vEndo"))
+
+ec_rosmap <- DietSeurat(
+    ec_rosmap,
+    counts = TRUE,
+    data = FALSE,
+    scale.data = FALSE,
+    assays = "RNA",
+    dimreducs = c("umap.scvi.full")
+)
+
+# Remove unnecessary data to further reduce the object size
+ec_rosmap$RNA$counts <- NULL
+ec_rosmap$RNA$data <- NULL
+ec_rosmap$RNA$scale.data <- Matrix::Matrix(
+    0,
+    nrow = nrow(ec_rosmap$RNA),
+    ncol = ncol(ec_rosmap$RNA)
+)
+
+ec_rosmap@meta.data <- 
+    ec_rosmap@meta.data |>
+    tibble::rownames_to_column("barcode") |>
+    dplyr::select(
+        barcode,
+        rosmap_label,
+        rosmap_score
+    ) |>
+    tibble::column_to_rownames("barcode")
+
+ec_rosmap@commands <- list()
+ec_rosmap@tools <- list()
+
+# store colors in Seurat object
+set.seed(123)
+my_cols_50 <- unname(Polychrome::createPalette(50, pals::cols25()))
+ec_rosmap@misc$sample_cols <- my_cols_50
+str(ec@meta.data)
+scMisc::lss()
+
+qsave(ec_rosmap, file.path("docs", "ec_rosmap.qs"))
