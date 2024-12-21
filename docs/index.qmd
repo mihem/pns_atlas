@@ -675,7 +675,7 @@ options(timeout = 3600)
 if (!file.exists("dotplot_data.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
-        "abundanance_main_clusters_sample.qs"
+        "abundance_main_clusters_sample.qs"
     )
 }
 dotplot_data <- qread("dotplot_data.qs")
@@ -726,6 +726,43 @@ DotPlotModified(
     ylab("")
 ```
 
+**Enrichment of gene ontology terms in periC (Figure S2B)**
+```{r}
+#| fig-height: 3
+options(timeout = 3600)
+if (!file.exists("enrichr_periC.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "enrichr_periC.qs"
+    )
+}
+enrichr_periC <- qread("enrichr_periC.qs")
+
+plotEnrichr <- function(data, name) {
+    plot <- 
+    data |>
+        dplyr::slice_min(order_by = Adjusted.P.value, n = 10, with_ties = FALSE) |>
+        tidyr::separate(Overlap, into = c("overlap1", "overlap2")) |> 
+        dplyr::mutate(Term = gsub(x = Term, pattern = "\\s\\(.+\\)", replacement = "")) |>
+        dplyr::mutate(overlap = as.numeric(overlap1) / as.numeric(overlap2)) |>
+        ggplot(aes(y = reorder(Term, -log10(Adjusted.P.value)), x = -log10(Adjusted.P.value))) +
+        geom_col(fill = scales::hue_pal()(5)[1]) +
+        labs(
+            x = "-Log10 Adjusted P value",
+            y = ""
+        ) +
+        theme_classic() +
+        theme(legend.position = "none") +
+        ggtitle(name)
+    print(plot)
+}
+
+purrr::walk2(
+    enrichr_periC,
+    names(enrichr_periC),
+    plotEnrichr
+)
+```
 ## Session info
 ```{r}
 session_info()
