@@ -264,7 +264,7 @@ qs::qsave(sc_merge, file.path("objects", "sc_merge.qs"))
 # Generate visualizations ----
 # Plot UMAPs and prediction results
 umap_group_sample <-
-  DimPlot(sc_merge, reduction = "umap.scvi.full", pt.size = .1, raster = FALSE, alpha = 0.1, group.by = "sample", cols = my_cols_50) +
+  DimPlot(sc_merge, reduction = "umap.scvi.full", pt.size = .1, raster = FALSE, alpha = 0.1, group.by = "sample", cols = sc_merge@misc$sample_cols) +
   theme_rect() 
 ggsave(plot = umap_group_sample, file.path("results", "umap", "scvi_umap_group_sample_full.png"), width = 10, height = 8)
 
