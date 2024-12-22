@@ -718,3 +718,23 @@ g_ratio <-
 
 qsave(g_ratio, file.path("docs", "g_ratio.qs"))
 
+## Supplementary Figure 5D ----
+axon_count_table <-
+    readxl::read_xlsx(file.path("lookup", "axon_count_v2.xlsx")) |>
+    dplyr::filter(is.na(remove)) |>
+    dplyr::filter(sample != "NA") |>
+    mutate(across(c(fascicle, normal_myelin:total_myelinated_axons, area_micrometer), parse_number)) |>
+    mutate(fascicle = str_extract(fascicle, "[0-9]+")) 
+
+axon_count_fascicle <- 
+    axon_count_table |>
+    group_by(sample, fascicle) |>
+    summarize(across(c(normal_myelin:total_myelinated_axons, area_micrometer), sum), .groups = "drop") |>
+    left_join(sample_lookup, by = "sample") |>
+    mutate(level2 = factor(level2, levels = umap_figure@misc$level2_order)) |>
+    group_by(sample) |>
+    mutate(axon_count = mean(normal_myelin)) |>
+    select(sample, level2, axon_count) |>
+    distinct()
+
+qsave(axon_count_fascicle, file.path("docs", "axon_count.qs"))

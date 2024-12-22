@@ -938,31 +938,61 @@ g_ratio |>
     ylab("")
 ```
 
-**Boxplots of g-ratio per PNP subtye (Figure S5B)**
+```{r}
+
+```
+**Boxplots of g-ratio per PNP subtye (Figure S5C)**
 
 ```{r}
 #| fig-height: 3
 #| fig-width: 3
+
+# function to plot boxplots Figure S5C-E
+plotBoxplotCustom <-
+    function(data, y_var) {
+        data |>
+            ggplot(aes(x = level2, y = .data[[y_var]], fill = level2)) +
+            geom_boxplot() +
+            geom_jitter(height = 0, width = 0.1) +
+            scale_fill_manual(values = umap_figure@misc$level2_cols) +
+            theme_classic() +
+            ylab(y_var) +
+            xlab("") +
+            theme(
+                axis.text.x = element_text(
+                    angle = 90,
+                    hjust = 1,
+                    vjust = 0.3
+                ),
+                legend.position = "none"
+            )
+    }
+
 g_ratio |>
     group_by(sample) |>
     mutate(g_ratio = mean(g_ratio)) |>
     select(sample, level2, g_ratio) |>
     distinct() |>
-    ggplot(aes(x = level2, y = g_ratio, fill = level2)) +
-    geom_boxplot() +
-    geom_jitter(height = 0, width = 0.1) +
-    scale_fill_manual(values = umap_figure@misc$level2_cols) +
-    theme_classic() +
-    ylab("g-ratio") +
-    xlab("") +
-    theme(
-        axis.text.x = element_text(
-            angle = 90,
-            hjust = 1,
-            vjust = 0.3
-        ),
-        legend.position = "none"
+    plotBoxplotCustom(y_var = "g_ratio")
+```
+
+**Boxplots of axon count per PNP subtype (Figure S5D)**
+
+```{r}
+#| fig-height: 3
+#| fig-width: 3
+if (!file.exists("axon_count.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/axon_count.qs?download=1",
+        "axon_count.qs"
     )
+}
+axon_count <- qread("axon_count.qs")
+
+plotBoxplotCustom(
+    data = axon_count,
+    y_var = "axon_count"
+)
 
 ```
 
