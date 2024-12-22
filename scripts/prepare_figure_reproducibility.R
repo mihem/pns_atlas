@@ -11,10 +11,11 @@ library(tidyverse)
 library(miloDE)
 library(SingleCellExperiment)
 
+sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
+ic <- qs::qread(file.path("objects", "ic.qs"), nthread = 4)
 # Figure 1 ----
 # Prepare Seurat object for reproducibility
 # DietSeurat reduces the size of the Seurat object by keeping only the necessary data
-sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 umap_figure <- DietSeurat(
     sc_merge,
     counts = TRUE,
@@ -74,7 +75,6 @@ umap_figure@misc$markers_dotplot <- markers_dotplot
 qs::qsave(umap_figure, file.path("docs", "umap_figure.qs"))
 
 # Figure 2 ----
-ic <- qs::qread(file.path("objects", "ic.qs"), nthread = 4)
 
 # Remove unnecessary data to further reduce the object size
 ic_figure <- DietSeurat(
@@ -97,8 +97,16 @@ ic_figure@meta.data <- data.frame()
 ic_figure@commands <- list()
 ic_figure@tools <- list()
 
+
+# store markers in Seurat object
+markers_dotplot_ic <- read_csv(file.path("lookup", "markers.csv")) |>
+    select(dotplot_ic_short) |>
+    drop_na() |>
+    pull()
+
+ic_figure@misc$markers_dotplot_ic <- markers_dotplot_ic
+
 qsave(ic_figure, file.path("docs", "ic_figure.qs"))
-ic_figure <- qread(file.path("docs", "ic_figure.qs"))
 
 # subset the object to only include the B and Plasma clusters
 b_plasma <- subset(ic, idents = c("Plasma", "B"))
@@ -503,7 +511,8 @@ abundance_main_clusters_sample <-
 
 qsave(abundance_main_clusters_sample, file.path("docs", "abundance_main_clusters_sample.qs"))
 
-## Supplementary Figure 2A ---
+# Supplementary Figure 2 ----
+## Supplementary Figure 2A ----
 # load modified Seurat data
 source(file.path("scripts", "dotplot_functions.R"))
 
@@ -659,3 +668,12 @@ dotplot_human_rodent <-
     )
 
 qsave(dotplot_human_rodent, file.path("docs", "dotplot_human_rodent.qs"))
+
+# Supplementary Figure 4 ----
+## Supplementary Figure 4A ----
+dotplot_data_ic <-
+    DotPlotData(
+        object = ic,
+        features = ic_figure@misc$markers_dotplot_ic,
+        dot.min = 0.01,
+    )
