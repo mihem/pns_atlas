@@ -505,15 +505,7 @@ qsave(abundance_main_clusters_sample, file.path("docs", "abundance_main_clusters
 
 ## Supplementary Figure 2A ---
 # load modified Seurat data
-source(file.path("scripts", "dotplot_data.R"))
-
-DotPlot(
-    sc_merge,
-    features = umap_figure@misc$markers_dotplot,
-    dot.scale = 10,
-    scale.by = "size",
-    dot.min = 0.01
-)
+source(file.path("scripts", "dotplot_functions.R"))
 
 Idents(sc_merge) <- factor(sc_merge$cluster, levels = rev(sc_merge@misc$cluster_order))
 
@@ -581,3 +573,89 @@ str(ec@meta.data)
 scMisc::lss()
 
 qsave(ec_rosmap, file.path("docs", "ec_rosmap.qs"))
+
+pns_sn_sciatic_milbrandt_subset <- subset(pns_sn_sciatic_milbrandt, subset = cluster %in% c("mySC", "nmSC", "PnC"))
+Idents(pns_sn_sciatic_milbrandt_subset) <- factor(pns_sn_sciatic_milbrandt_subset$cluster, levels = c("mySC", "nmSC", "PnC"))
+
+dotPlot(
+  path = file.path("lookup", "markers.csv"),
+  object = pns_sn_sciatic_milbrandt_subset,
+  par = "novel",
+  dot_min = 0.07,
+  height = 2,
+  width = 4,
+  ortho = "human2mouse"
+)
+
+## Supplementary Figure 2D ----
+pns_sn_sciatic_milbrandt <- qs::qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/pns_atlas_milbrandt/pns_sn_sciatic_GSE182098.qs")
+pns_sn_sciatic_milbrandt_subset <- subset(pns_sn_sciatic_milbrandt, subset = cluster %in% c("mySC", "nmSC", "PnC"))
+
+Idents(pns_sn_sciatic_milbrandt_subset) <- factor(pns_sn_sciatic_milbrandt_subset$cluster, levels = c("mySC", "nmSC", "PnC"))
+
+scMisc::dotPlot(
+  path = file.path("lookup", "markers.csv"),
+  object = pns_sn_sciatic_milbrandt_subset,
+  par = "novel",
+  dot_min = 0.07,
+  height = 2,
+  width = 4,
+  ortho = "human2mouse"
+)
+
+dotplot_data_milbrandt <-
+    DotPlotData(
+        object = pns_sn_sciatic_milbrandt_subset,
+        features = c("Mlip", "Grik3", "Prima1", "Cxcl14"),
+        dot.min = 0.07,
+    )
+
+dotplot_data_milbrandt <-
+    DotPlotData(
+        object = sc_merge,
+        features = c("Mlip", "Grik3", "Prima1", "Cxcl14"),
+        dot.min = 0.07,
+    )
+
+DotPlotModified(
+    data.plot = dotplot_data_milbrandt,
+    scale.by = "size",
+    dot.scale = 10,
+) +
+    viridis::scale_color_viridis(option = "viridis") +
+    theme(axis.text.x = element_text(
+        angle = 90,
+        vjust = 0.5,
+        hjust = 1,
+        face = "italic",
+        size = 7
+        ),
+        legend.position = "top",
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 10)
+        ) +
+    xlab("") +
+    ylab("")
+
+# subset sc_merge
+sc_merge_subset <- subset(sc_merge, subset = cluster %in% c("mySC", "nmSC", "periC1", "periC2", "periC3"))
+
+# rename periC1, periC2, periC3 to periC
+sc_merge_subset$cluster <- gsub(pattern = "periC\\d", replacement = "periC", x = sc_merge_subset$cluster)
+sc_merge_subset$cluster <- factor(sc_merge_subset$cluster, levels = c("mySC", "nmSC", "periC"))
+Idents(sc_merge_subset) <- sc_merge_subset$cluster
+
+dotplot_data_heming <-
+    DotPlotData(
+        object = sc_merge_subset,
+        features = c("MLIP", "GRIK3", "PRIMA1", "CXCL14"),
+        dot.min = 0.07,
+    )
+
+dotplot_human_rodent <-
+    list(
+        rodent = dotplot_data_milbrandt,
+        human = dotplot_data_heming
+    )
+
+qsave(dotplot_human_rodent, file.path("docs", "dotplot_human_rodent.qs"))
