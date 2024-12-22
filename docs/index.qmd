@@ -133,6 +133,8 @@ enrichr_macro18 |>
 
 **Dot plot IGH chain genes (Figure 2E)**
 ```{r}
+#| fig-height: 3
+#| fig-width: 5
 if (!file.exists("ic_figure.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -144,12 +146,17 @@ DotPlot(
     b_plasma_figure,
     features = c("IGHM", "IGHD", "IGHG1", "IGHG2", "IGHG3", "IGHG4", "IGHA1", "IGHA2"),
     scale = FALSE,
-    dot.scale = 10
+    dot.scale = 6
 ) +
     viridis::scale_color_viridis(option = "viridis") +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, face = "italic")) +
     xlab("") +
-    ylab("")
+    ylab("") + 
+    theme(
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 10),
+        legend.key.size = unit(0.2, "cm")
+    )
 ```
 
 ## Figure 3
