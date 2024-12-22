@@ -105,7 +105,7 @@ FeaturePlot(
 
 ```
 
-**Enrichment of gene ontology terms in  Macro 18 (Figure 2C)**
+**Enrichment of gene ontology terms in markers genes of Macro 18 (Figure 2C)**
 
 ```{r}
 #| fig-height: 3
@@ -711,7 +711,7 @@ DotPlotModified(
     ylab("")
 ```
 
-**Enrichment of gene ontology terms in periC (Figure S2B)**
+**Enrichment of gene ontology terms of markers genes in periC (Figure S2B)**
 ```{r}
 #| fig-height: 3
 if (!file.exists("enrichr_periC.qs")) {
@@ -854,6 +854,66 @@ purrr::walk2(
 )
 ```
 
+## Supplementary Figure 4
+**Dotplot of immune cell marker genes (Figure S4A)**
+
+```{r}
+#| fig-height: 7
+if (!file.exists("dotplot_data_ic.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "dotplot_data_ic.qs"
+    )
+}
+
+dotplot_data_ic <- qread("dotplot_data_ic.qs")
+
+DotPlotModified(
+    data.plot = dotplot_data_ic,
+    scale.by = "size"
+) +
+    viridis::scale_color_viridis(option = "viridis") +
+    theme(axis.text.x = element_text(
+        angle = 90,
+        vjust = 0.5,
+        hjust = 1,
+        face = "italic",
+        size = 7
+        ),
+        legend.position = "top",
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 10)
+        ) +
+    xlab("") +
+    ylab("")
+```
+
+**Enrichment of gene ontology terms in DEG (Figure S4B)**
+
+```{r}
+#| fig-height: 3
+if (!file.exists("enrichr_de.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "enrichr_de.qs"
+    )
+}
+
+enrichr_de <- qread("enrichr_de.qs")
+
+purrr::walk2(
+    enrichr_de$pos,
+    paste0(names(enrichr_de$pos), " upregulated in PNP"),
+    plotEnrichr
+)
+
+purrr::walk2(
+    enrichr_de$neg,
+    paste0(names(enrichr_de$neg), " downregulated in PNP"),
+    plotEnrichr
+)
+
+```
 
 ## Session info
 ```{r}
