@@ -57,7 +57,6 @@ DimPlot(
 **UMAP immune cells (Figure 2A)**
 
 ```{r}
-options(timeout = 3600)
 if (!file.exists("ic_figure.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -110,7 +109,6 @@ FeaturePlot(
 
 ```{r}
 #| fig-height: 3
-options(timeout = 3600)
 if (!file.exists("enrichr_macro18.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -135,7 +133,6 @@ enrichr_macro18 |>
 
 **Dot plot IGH chain genes (Figure 2E)**
 ```{r}
-options(timeout = 3600)
 if (!file.exists("ic_figure.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -161,7 +158,6 @@ DotPlot(
 ```{r}
 #| fig-width: 3
 #| fig-height: 3
-options(timeout = 3600)
 if (!file.exists("propeller_PNP_CTRL.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -199,7 +195,6 @@ dotplotPropeller(propeller_PNP_CTRL_ic, color = ic_figure@misc$ic_cluster_col, t
 **Covarying Neighborhood Analysis (Figure 3B)**
 
 ```{r}
-options(timeout = 3600)
 if (!file.exists("cna_pnp_gratio_figure.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -250,7 +245,6 @@ fplotCNA(cna_pnp_gratio_figure, "cna_ncorrs_gratio", title = "g-ratio")
 **Number of DEGs (Figure 3C)**
 
 ```{r}
-options(timeout = 3600)
 if (!file.exists("pnp_ctrl_pseudobulk_de.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -277,7 +271,6 @@ pnp_ctrl_pseudobulk |>
 
 ```{r}
 #| fig-width: 5
-options(timeout = 3600)
 if (!file.exists("milo_figure.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -307,7 +300,6 @@ plotMiloDE("pnp", "PNP vs CTRL")
 
 **Pseudobulk DE PNP vs CTRL (Figure 3E)**
 ```{r}
-options(timeout = 3600)
 if (!file.exists("de_pseudo_pnp_ctrl.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -385,7 +377,6 @@ purrr::walk(
 
 ```{r}
 #| fig-width: 4
-options(timeout = 3600)
 if (!file.exists("abundance_main_clusters.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -418,7 +409,6 @@ abundance_main_clusters |>
 ```{r}
 #| fig-width: 3
 #| fig-height: 3
-options(timeout = 3600)
 if (!file.exists("propeller_PNP_subtypes_main.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -445,7 +435,6 @@ purrr::walk(
 ```{r}
 #| fig-width: 3
 #| fig-height: 3
-options(timeout = 3600)
 if (!file.exists("propeller_PNP_subtypes_ic.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -470,7 +459,6 @@ purrr::walk(
 ```{r}
 #| fig-width: 3
 #| fig-height: 3
-options(timeout = 3600)
 if (!file.exists("manual_xenium_quantification.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -531,7 +519,6 @@ purrr::walk2(
 ```{r}
 #| fig-width: 3
 #| fig-height: 3
-options(timeout = 3600)
 if (!file.exists("demographics.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -635,7 +622,6 @@ count_genes |>
 
 **Abundance of clusters per sample (Figure S1E)**
 ```{r}
-options(timeout = 3600)
 if (!file.exists("abundance_main_clusters_sample.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -671,7 +657,6 @@ abundance_main_clusters_sample |>
 **Dotplot of main clusters(Figure S2A)**
 
 ```{r}
-options(timeout = 3600)
 if (!file.exists("dotplot_data.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -729,7 +714,6 @@ DotPlotModified(
 **Enrichment of gene ontology terms in periC (Figure S2B)**
 ```{r}
 #| fig-height: 3
-options(timeout = 3600)
 if (!file.exists("enrichr_periC.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -800,7 +784,6 @@ purrr::walk2(
 ```{r}
 #| fig-width: 4
 #| fig-height: 4
-options(timeout = 3600)
 if (!file.exists("ec_rosmap.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -835,7 +818,6 @@ DimPlot(
 ```{r}
 #| fig-width: 5
 #| fig-height: 4
-options(timeout = 3600)
 if (!file.exists("dotplot_human_rodent.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -871,6 +853,7 @@ purrr::walk2(
     DotPlotCustom
 )
 ```
+
 
 ## Session info
 ```{r}
