@@ -707,3 +707,14 @@ enrichr_de <-
     )
 
 qsave(enrichr_de, file.path("docs", "enrichr_de.qs"))
+
+# Supplementary Figure 5 ----
+# Load and join g-ratio measurements with sample metadata ----
+g_ratio <-
+    read_excel(file.path("lookup", "g_ratio.xlsx")) |>
+    left_join(sample_lookup, join_by(sample)) |>
+    mutate(level2 = factor(level2, levels = umap_figure@misc$level2_order)) |>
+    select(sample, level2, g_ratio, axon_diameter, ncv_tibial_motoric)
+
+qsave(g_ratio, file.path("docs", "g_ratio.qs"))
+

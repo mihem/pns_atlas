@@ -915,6 +915,29 @@ purrr::walk2(
 
 ```
 
+# Supplementary Figure 5
+
+**Boxplots of g-ratio per sample (Figure S5A)**
+```{r}
+#| fig-height: 3
+if (!file.exists("g_ratio.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "g_ratio.qs"
+    )
+}
+g_ratio <- qread("g_ratio.qs")
+
+g_ratio |>
+    ggplot(aes(x = sample, y = g_ratio)) +
+    geom_boxplot() +
+    geom_jitter(height = 0, width = 0.1, alpha = 0.3, size = 0.1) +
+    theme_bw() + 
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
+    xlab("") + 
+    ylab("") +
+    ggtitle("g-ratio") 
+```
 ## Session info
 ```{r}
 session_info()
