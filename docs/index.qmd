@@ -917,7 +917,7 @@ purrr::walk2(
 
 # Supplementary Figure 5
 
-**Boxplots of g-ratio per sample (Figure S5A)**
+**Boxplots of g-ratio per sample (Figure S5B)**
 ```{r}
 #| fig-height: 3
 if (!file.exists("g_ratio.qs")) {
@@ -934,10 +934,38 @@ g_ratio |>
     geom_jitter(height = 0, width = 0.1, alpha = 0.3, size = 0.1) +
     theme_bw() + 
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-    xlab("") + 
-    ylab("") +
-    ggtitle("g-ratio") 
+    xlab("g-ratio") + 
+    ylab("")
 ```
+
+**Boxplots of g-ratio per PNP subtye (Figure S5B)**
+
+```{r}
+#| fig-height: 3
+#| fig-width: 3
+g_ratio |>
+    group_by(sample) |>
+    mutate(g_ratio = mean(g_ratio)) |>
+    select(sample, level2, g_ratio) |>
+    distinct() |>
+    ggplot(aes(x = level2, y = g_ratio, fill = level2)) +
+    geom_boxplot() +
+    geom_jitter(height = 0, width = 0.1) +
+    scale_fill_manual(values = umap_figure@misc$level2_cols) +
+    theme_classic() +
+    ylab("g-ratio") +
+    xlab("") +
+    theme(
+        axis.text.x = element_text(
+            angle = 90,
+            hjust = 1,
+            vjust = 0.3
+        ),
+        legend.position = "none"
+    )
+
+```
+
 ## Session info
 ```{r}
 session_info()
