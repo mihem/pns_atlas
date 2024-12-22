@@ -996,6 +996,17 @@ plotBoxplotCustom(
 
 ```
 
+**Boxplots of axon diameter per PNP subtype (Figure S5E)**
+```{r}
+#| fig-height: 3
+#| fig-width: 3
+g_ratio |>
+    group_by(sample) |>
+    mutate(axon_diameter = mean(axon_diameter)) |>
+    select(sample, level2, axon_diameter) |>
+    distinct() |>
+    plotBoxplotCustom(y_var = "axon_diameter")
+```
 ## Session info
 ```{r}
 session_info()
