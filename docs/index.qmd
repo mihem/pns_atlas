@@ -830,6 +830,48 @@ DimPlot(
     )
 ```
 
+**Dotplot of new marker genes in rodent and human datasets (Figure S2D)**
+
+```{r}
+#| fig-width: 5
+#| fig-height: 4
+options(timeout = 3600)
+if (!file.exists("dotplot_human_rodent.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "dotplot_human_rodent.qs"
+    )
+}
+dotplot_human_rodent <- qread("dotplot_human_rodent.qs")
+
+DotPlotCustom <-
+    function(data, title) {
+        plot <-
+            DotPlotModified(
+                data.plot = data,
+                scale.by = "size",
+                dot.scale = 10,
+            ) +
+            viridis::scale_color_viridis(option = "viridis") +
+            theme(axis.text.x = element_text(
+                angle = 90,
+                vjust = 0.5,
+                hjust = 1,
+                face = "italic",
+            )) +
+            xlab("") +
+            ylab("") +
+            ggtitle(title)
+        print(plot)
+    }
+
+purrr::walk2(
+    dotplot_human_rodent,
+    c("rodent(Yim et al.)", "human (this study)"),
+    DotPlotCustom
+)
+```
+
 ## Session info
 ```{r}
 session_info()
