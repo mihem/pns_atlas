@@ -677,3 +677,33 @@ dotplot_data_ic <-
         features = ic_figure@misc$markers_dotplot_ic,
         dot.min = 0.01,
     )
+
+qsave(dotplot_data_ic, file.path("docs", "dotplot_data_ic.qs"))
+
+# Supplementary Figure 4B ----
+enrichr_de_clusters <- c("mySC", "nmSC", "PC2")
+names(enrichr_de_clusters) <- c("mySC", "nmSC", "PC2")
+
+enrichr_de_pos <- 
+    lapply(
+        enrichr_de_clusters,
+        function(condition) {
+            readxl::read_excel(file.path("results", "enrichr", paste0("enrichr_pos_", condition, ".xlsx")), sheet = "GO_Biological_Process_2023")
+        }
+    )
+
+enrichr_de_neg <- 
+    lapply(
+        enrichr_de_clusters,
+        function(condition) {
+            readxl::read_excel(file.path("results", "enrichr", paste0("enrichr_neg_", condition, ".xlsx")), sheet = "GO_Biological_Process_2023")
+        }
+    )
+glimpse(enrichr_de)
+enrichr_de <- 
+    list(
+        pos = enrichr_de_pos,
+        neg = enrichr_de_neg
+    )
+
+qsave(enrichr_de, file.path("docs", "enrichr_de.qs"))
