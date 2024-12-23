@@ -132,7 +132,7 @@ cor_g_ratio_ephysio <-
     geom_point() + 
     theme_bw() +
     xlab("NCV tibial motoric (m/s)") +
-    ylab("Normal axon count")
+    ylab("g-ratio")
 ggsave(plot = cor_g_ratio_ephysio, file.path("results", "gratio", "cor_g_ratio_ephysio.pdf"), width = 3, height = 3)
 
 # Analyze correlation between axon diameter and nerve conduction velocity ---- 
