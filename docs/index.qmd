@@ -994,12 +994,9 @@ if (!file.exists("axon_count.qs")) {
         "axon_count.qs"
     )
 }
-axon_count <- qread("axon_count.qs")
 
-plotBoxplotCustom(
-    data = axon_count,
-    y_var = "axon_count"
-)
+axon_count <- qread("axon_count.qs")
+plotBoxplotCustom(data = axon_count, y_var = "axon_count")
 
 ```
 
@@ -1007,13 +1004,63 @@ plotBoxplotCustom(
 ```{r}
 #| fig-height: 3
 #| fig-width: 3
-g_ratio |>
+g_ratio_grouped <- 
+    g_ratio |>
     group_by(sample) |>
-    mutate(axon_diameter = mean(axon_diameter)) |>
-    select(sample, level2, axon_diameter) |>
-    distinct() |>
-    plotBoxplotCustom(y_var = "axon_diameter")
+    mutate(
+        g_ratio = mean(g_ratio),
+        ncv_tibial_motoric = mean(ncv_tibial_motoric),
+        axon_diameter = mean(axon_diameter)
+    ) |>
+    ungroup() |>
+    select(sample, level2, g_ratio, ncv_tibial_motoric, axon_diameter) |>
+    distinct()
+
+plotBoxplotCustom(g_ratio_grouped, y_var = "axon_diameter")
 ```
+
+**Correlation plots of NCV and histological measures (Figure S5F)**
+```{r}
+#| fig-height: 3
+#| fig-width: 3
+plotCor <- function(data, x, y) {
+    ggplot(data, aes(x = .data[[x]], y = .data[[y]])) +
+        geom_point() +
+        geom_smooth(method = "lm") +
+        theme_bw() +
+        xlab(x) +
+        ylab(y)
+}
+
+plotCor(g_ratio_grouped, x = "ncv_tibial_motoric", y = "g_ratio")
+plotCor(axon_count, x = "ncv_tibial_motoric", y = "axon_count")
+plotCor(g_ratio_grouped, x = "ncv_tibial_motoric", y = "axon_diameter")
+
+```
+
+**Correlation plots of axon count and SC abundance (Figure S5G)**
+```{r}
+#| fig-height: 3
+#| fig-width: 3
+if(!file.exists("abundance_axon.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/abundance_axon.qs?download=1",
+        "abundance_axon.qs"
+    )
+}
+abundance_axon <- qread("abundance_axon.qs")
+
+abundance_axon |>
+    dplyr::filter(cell == "mySC") |>
+    plotCor(x = "log_axon_normal", y = "count") +
+    ylab("mySC (%)")
+
+abundance_axon |>
+    dplyr::filter(cell == "repairSC") |>
+    plotCor(x = "log_axon_normal", y = "count") +
+    ylab("repairSC (%)")
+```
+
 ## Session info
 ```{r}
 session_info()
