@@ -733,8 +733,33 @@ axon_count_fascicle <-
     left_join(sample_lookup, by = "sample") |>
     mutate(level2 = factor(level2, levels = umap_figure@misc$level2_order)) |>
     group_by(sample) |>
-    mutate(axon_count = mean(normal_myelin)) |>
-    select(sample, level2, axon_count) |>
+    mutate(
+        axon_count = mean(normal_myelin),
+        ncv_tibial_motoric = mean(ncv_tibial_motoric)
+    ) |>
+    select(sample, level2, axon_count, ncv_tibial_motoric) |>
+    mutate(log_axon_normal = log(axon_count)) |>
     distinct()
 
 qsave(axon_count_fascicle, file.path("docs", "axon_count.qs"))
+
+## Supplementary Figure 5G ----
+abundance_axon <-
+  table(sc_merge$cluster, sc_merge$sample) |>
+  as.data.frame.matrix() |>
+  rownames_to_column("cell") |>
+  mutate(across(where(is.numeric), function(x) x / sum(x) * 100)) |>
+  pivot_longer(!cell, names_to = "sample", values_to = "count") |>
+  left_join(axon_count_fascicle, join_by(sample)) 
+
+qsave(abundance_axon, file.path("docs", "abundance_axon.qs"))
+
+abundance_axon |>
+    dplyr::filter(cell == "mySC") |>
+    plotCor(x = "log_axon_normal", y = "count") +
+    ylab("mySC (%)")
+
+abundance_axon |>
+    dplyr::filter(cell == "repairSC") |>
+    plotCor(x = "log_axon_normal", y = "count") +
+    ylab("repairSC (%)")
