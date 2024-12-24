@@ -754,12 +754,43 @@ abundance_axon <-
 
 qsave(abundance_axon, file.path("docs", "abundance_axon.qs"))
 
-abundance_axon |>
-    dplyr::filter(cell == "mySC") |>
-    plotCor(x = "log_axon_normal", y = "count") +
-    ylab("mySC (%)")
+## Supplementary Figure 5I ----
+xenium_objects <- qs::qread(file.path("objects", "xenium_objects.qs"))
 
-abundance_axon |>
-    dplyr::filter(cell == "repairSC") |>
-    plotCor(x = "log_axon_normal", y = "count") +
-    ylab("repairSC (%)")
+cells_list <-
+    lapply(xenium_objects, function(x) (x$sn_predictions)) |>
+    unlist()
+
+cells_predicted <-
+    tibble(cluster =  unname(cells_list), sample = names(cells_list)) |>
+    mutate(condition = str_replace(sample, "(S\\d+)_(\\w+).*", "\\2")) |>
+    mutate(sample = str_replace(sample, "(S\\d+)_.*", "\\1"))  |>
+    dplyr::filter(!is.na(cluster))
+
+
+# boxplot sc
+xenium_sc_t_nk <-
+    cells_predicted |>
+    dplyr::count(cluster, sample) |>
+    pivot_wider(names_from = sample, values_from = n) |>
+    mutate(across(where(is.numeric), function(x) x / sum(x, na.rm = TRUE) * 100)) |>
+    pivot_longer(!cluster, names_to = "sample", values_to = "percent") |>
+    left_join(select(sample_lookup, sample, level2)) |>
+    dplyr::rename(condition = level2) |>
+    dplyr::filter(cluster %in% c("mySC", "nmSC", "repairSC", "T_NK"))  |>
+    mutate(percent  = replace_na(percent, 0)) |>
+    mutate(condition = factor(condition, levels = sc_merge@misc$level2_order)) 
+
+qsave(xenium_sc_t_nk, file.path("docs", "xenium_sc_t_nk.qs"))
+
+xenium_sc_t_nk |>
+    ggplot(aes(x = condition, y = percent, fill = condition)) +
+    geom_boxplot() +
+    geom_point() + 
+    theme_classic() +
+    facet_wrap(vars(cluster), scales = "free_y", nrow = 1) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.3)) +
+    xlab("") +
+    ylab("percentage") +
+    scale_fill_manual(values = sc_merge@misc$level2_cols) +
+    theme(legend.position = "none")

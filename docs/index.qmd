@@ -1061,6 +1061,29 @@ abundance_axon |>
     ylab("repairSC (%)")
 ```
 
+**Quantification of predicted cluster abundance in Xenium (Figure S5I+M)**
+```{r}
+#| fig-height: 3
+if(!file.exists("xenium_sc_t_nk.qs")) {
+    download.file(
+        "https://zenodo.org/records/14226219/files/xenium_sc_t_nk.qs?download=1",
+        "xenium_sc_t_nk.qs"
+    )
+}
+xenium_sc_t_nk <- qread("xenium_sc_t_nk.qs")
+xenium_sc_t_nk |>
+    ggplot(aes(x = condition, y = percent, fill = condition)) +
+    geom_boxplot() +
+    geom_point() + 
+    theme_classic() +
+    facet_wrap(vars(cluster), scales = "free_y", nrow = 1) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.3)) +
+    xlab("") +
+    ylab("percentage") +
+    scale_fill_manual(values = umap_figure@misc$level2_cols) +
+    theme(legend.position = "none")
+```
+
 ## Session info
 ```{r}
 session_info()
