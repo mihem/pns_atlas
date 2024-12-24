@@ -1,4 +1,4 @@
-# Use R 4.3.1 with ubuntu 22.02 jammy
+# Use R 4.3.1 with ubuntu 22.04 jammy
 # https://hub.docker.com/layers/rstudio/r-base/4.3.1-jammy/images/sha256-82c069a26ec53b50226f68c7d3e2271e60aff857207c5f9784355d660a10f3ef?context=explore
 FROM rstudio/r-base@sha256:82c069a26ec53b50226f68c7d3e2271e60aff857207c5f9784355d660a10f3ef 
 
