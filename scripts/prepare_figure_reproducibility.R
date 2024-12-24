@@ -782,15 +782,3 @@ xenium_sc_t_nk <-
     mutate(condition = factor(condition, levels = sc_merge@misc$level2_order)) 
 
 qsave(xenium_sc_t_nk, file.path("docs", "xenium_sc_t_nk.qs"))
-
-xenium_sc_t_nk |>
-    ggplot(aes(x = condition, y = percent, fill = condition)) +
-    geom_boxplot() +
-    geom_point() + 
-    theme_classic() +
-    facet_wrap(vars(cluster), scales = "free_y", nrow = 1) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.3)) +
-    xlab("") +
-    ylab("percentage") +
-    scale_fill_manual(values = sc_merge@misc$level2_cols) +
-    theme(legend.position = "none")

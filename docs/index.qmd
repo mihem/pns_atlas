@@ -461,11 +461,11 @@ purrr::walk(
 )
 ```
 
-**Manual PTPRC quantif (Figure 4F)**
+**Manual PTPRC quantification in Xenium (Figure 4F)**
 
 ```{r}
-#| fig-width: 3
-#| fig-height: 3
+#| fig-width: 3.5
+#| fig-height: 3.5
 if (!file.exists("manual_xenium_quantification.qs")) {
     download.file(
         "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
@@ -484,7 +484,7 @@ plotQuanti <- function(y_value, title) {
         guides(fill = guide_legend(title = NULL)) +
         theme_classic() +
         xlab("") +
-        ylab("PTPRC density") +
+        ylab("") +
         ggtitle(title) +
         theme(
             legend.position = "none",
@@ -499,7 +499,7 @@ plotQuanti <- function(y_value, title) {
 
 purrr::walk2(
     c("endoPTPRC_density_sum", "epiPTPRC_density"),
-    c("endoneurial", "epineurial"),  
+    c("PTPRC density endoneurial", "PTPRC density epineurial"),  
     function(y_value, title) {
         plotQuanti(y_value = y_value, title = title)
     }
@@ -1084,6 +1084,16 @@ xenium_sc_t_nk |>
     theme(legend.position = "none")
 ```
 
+**Manual CD3E quantification in Xenium (Figure S5J)**
+```{r}
+#| fig-width: 3.5
+#| fig-height: 3.5
+purrr::walk2(
+    c("endoCD3E_density_sum", "epiCD3E_density"),
+    c("CD3E density endoneurial", "CD3E density epineurial"),
+    plotQuanti
+)
+```
 ## Session info
 ```{r}
 session_info()
