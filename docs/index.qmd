@@ -1094,6 +1094,19 @@ purrr::walk2(
     plotQuanti
 )
 ```
+
+**Manual MS4A1 quantification in Xenium (Figure S5K)**
+```{r}
+#| fig-width: 3.5
+#| fig-height: 3.5
+purrr::walk2(
+    c("endoMS4A1_density_sum", "epiMS4A1_density"),
+    c("MS4A1 density endoneurial", "MS4A1 density epineurial"),
+    plotQuanti
+)
+```
+
+
 ## Session info
 ```{r}
 session_info()
