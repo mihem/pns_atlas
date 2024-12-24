@@ -363,7 +363,7 @@ boxplot_xenium_sc_t_nk <-
     mutate(across(where(is.numeric), function(x) x / sum(x, na.rm = TRUE) * 100)) |>
     pivot_longer(!cluster, names_to = "sample", values_to = "percent") |>
     left_join(select(sample_lookup, sample, level2)) |>
-    rename(condition = level2) |>
+    dplyr::rename(condition = level2) |>
     dplyr::filter(cluster %in% c("mySC", "nmSC", "repairSC", "T_NK"))  |>
     mutate(percent  = replace_na(percent, 0)) |>
     mutate(condition = factor(condition, levels = sc_merge@misc$level2_order)) |>
