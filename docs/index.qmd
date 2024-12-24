@@ -21,7 +21,6 @@ library(pals)
 library(scMisc)
 ```
 
-
 ## Figure 1
 
 **UMAP of all cells (Figure 1B)**
@@ -29,7 +28,7 @@ library(scMisc)
 options(timeout = 3600)
 if (!file.exists("umap_figure.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/umap_figure.qs?download=1",
         "umap_figure.qs"
     )
 }
@@ -59,7 +58,7 @@ DimPlot(
 ```{r}
 if (!file.exists("ic_figure.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/ic_figure.qs?download=1",
         "ic_figure.qs"
     )
 }
@@ -111,8 +110,8 @@ FeaturePlot(
 #| fig-height: 3
 if (!file.exists("enrichr_macro18.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
-        "b_plasma_figure.qs"
+        "https://zenodo.org/records/14551660/files/enrichr_macro18.qs?download=1",
+        "enrichr_macro18.qs"
     )
 }
 enrichr_macro18 <- qread("enrichr_macro18.qs")
@@ -135,9 +134,9 @@ enrichr_macro18 |>
 ```{r}
 #| fig-height: 3
 #| fig-width: 5
-if (!file.exists("ic_figure.qs")) {
+if (!file.exists("b_plasma_figure.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/b_plasma_figure.qs?download=1",
         "b_plasma_figure.qs"
     )
 }
@@ -167,13 +166,13 @@ DotPlot(
 #| fig-height: 3
 if (!file.exists("propeller_PNP_CTRL.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/propeller_PNP_CTRL.qs?download=1",
         "propeller_PNP_CTRL.qs"
     )
 }
-if (!file.exists("propeller_PNP_CTRL.qs")) {
+if (!file.exists("propeller_PNP_CTRL_ic.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/propeller_PNP_CTRL_ic.qs?download=1",
         "propeller_PNP_CTRL_ic.qs"
     )
 }
@@ -204,13 +203,13 @@ dotplotPropeller(propeller_PNP_CTRL_ic, color = ic_figure@misc$ic_cluster_col, t
 ```{r}
 if (!file.exists("cna_pnp_gratio_figure.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/cna_pnp_gratio_figure.qs?download=1",
         "cna_pnp_gratio_figure.qs"
     )
 }
 if (!file.exists("cna_incat_figure.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/cna_incat_figure.qs?download=1",
         "cna_incat_figure.qs"
     )
 }
@@ -254,7 +253,7 @@ fplotCNA(cna_pnp_gratio_figure, "cna_ncorrs_gratio", title = "g-ratio")
 ```{r}
 if (!file.exists("pnp_ctrl_pseudobulk_de.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/pnp_ctrl_pseudobulk_de.qs?download=1",
         "pnp_ctrl_pseudobulk_de.qs"
     )
 }
@@ -280,7 +279,7 @@ pnp_ctrl_pseudobulk |>
 #| fig-width: 5
 if (!file.exists("milo_figure.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/milo_figure.qs?download=1",
         "milo_figure.qs"
     )
 }
@@ -309,7 +308,7 @@ plotMiloDE("pnp", "PNP vs CTRL")
 ```{r}
 if (!file.exists("de_pseudo_pnp_ctrl.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/de_pseudo_pnp_ctrl.qs?download=1",
         "de_pseudo_pnp_ctrl.qs"
     )
 }
@@ -386,8 +385,8 @@ purrr::walk(
 #| fig-width: 4
 if (!file.exists("abundance_main_clusters.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
-        "abundanance_main_clusters.qs"
+        "https://zenodo.org/records/14551660/files/abundance_main_clusters.qs?download=1",
+        "abundance_main_clusters.qs"
     )
 }
 abundance_main_clusters <- qread("abundance_main_clusters.qs")
@@ -418,7 +417,7 @@ abundance_main_clusters |>
 #| fig-height: 3
 if (!file.exists("propeller_PNP_subtypes_main.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/propeller_PNP_subtypes_main.qs?download=1",
         "propeller_PNP_subtypes_main.qs"
     )
 }
@@ -444,7 +443,7 @@ purrr::walk(
 #| fig-height: 3
 if (!file.exists("propeller_PNP_subtypes_ic.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/propeller_PNP_subtypes_ic.qs?download=1",
         "propeller_PNP_subtypes_ic.qs"
     )
 }
@@ -468,7 +467,7 @@ purrr::walk(
 #| fig-height: 3.5
 if (!file.exists("manual_xenium_quantification.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/manual_xenium_quantification.qs?download=1",
         "manual_xenium_quantification.qs"
     )
 }
@@ -528,7 +527,7 @@ purrr::walk2(
 #| fig-height: 3
 if (!file.exists("demographics.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/demographics.qs?download=1",
         "demographics.qs"
     )
 }
@@ -631,8 +630,8 @@ count_genes |>
 ```{r}
 if (!file.exists("abundance_main_clusters_sample.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
-        "abundanance_main_clusters_sample.qs"
+        "https://zenodo.org/records/14551660/files/abundance_main_clusters_sample.qs?download=1",
+        "abundance_main_clusters_sample.qs"
     )
 }
 abundance_main_clusters_sample <- qread("abundance_main_clusters_sample.qs")
@@ -666,8 +665,8 @@ abundance_main_clusters_sample |>
 ```{r}
 if (!file.exists("dotplot_data.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
-        "abundance_main_clusters_sample.qs"
+        "https://zenodo.org/records/14551660/files/dotplot_data.qs?download=1",
+        "dotplot_data.qs"
     )
 }
 dotplot_data <- qread("dotplot_data.qs")
@@ -723,7 +722,7 @@ DotPlotModified(
 #| fig-height: 3
 if (!file.exists("enrichr_periC.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/enrichr_periC.qs?download=1",
         "enrichr_periC.qs"
     )
 }
@@ -793,8 +792,8 @@ purrr::walk2(
 #| fig-height: 4
 if (!file.exists("ec_rosmap.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
-        "ec_rosmap.qd"
+        "https://zenodo.org/records/14551660/files/ec_rosmap.qs?download=1",
+        "ec_rosmap.qs"
     )
 }
 ec_rosmap <- qread("ec_rosmap.qs")
@@ -827,7 +826,7 @@ DimPlot(
 #| fig-height: 4
 if (!file.exists("dotplot_human_rodent.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/dotplot_human_rodent.qs?download=1",
         "dotplot_human_rodent.qs"
     )
 }
@@ -868,7 +867,7 @@ purrr::walk2(
 #| fig-height: 7
 if (!file.exists("dotplot_data_ic.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/dotplot_data_ic.qs?download=1",
         "dotplot_data_ic.qs"
     )
 }
@@ -901,7 +900,7 @@ DotPlotModified(
 #| fig-height: 3
 if (!file.exists("enrichr_de.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/enrichr_de.qs?download=1",
         "enrichr_de.qs"
     )
 }
@@ -929,7 +928,7 @@ purrr::walk2(
 #| fig-height: 3
 if (!file.exists("g_ratio.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/umap_figure.qs?download=1",
+        "https://zenodo.org/records/14551660/files/g_ratio.qs?download=1",
         "g_ratio.qs"
     )
 }
@@ -990,7 +989,7 @@ g_ratio |>
 #| fig-width: 3
 if (!file.exists("axon_count.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/axon_count.qs?download=1",
+        "https://zenodo.org/records/14551660/files/axon_count.qs?download=1",
         "axon_count.qs"
     )
 }
@@ -1044,7 +1043,7 @@ plotCor(g_ratio_grouped, x = "ncv_tibial_motoric", y = "axon_diameter")
 #| fig-width: 3
 if(!file.exists("abundance_axon.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/abundance_axon.qs?download=1",
+        "https://zenodo.org/records/14551660/files/abundance_axon.qs?download=1",
         "abundance_axon.qs"
     )
 }
@@ -1066,7 +1065,7 @@ abundance_axon |>
 #| fig-height: 3
 if(!file.exists("xenium_sc_t_nk.qs")) {
     download.file(
-        "https://zenodo.org/records/14226219/files/xenium_sc_t_nk.qs?download=1",
+        "https://zenodo.org/records/14551660/files/xenium_sc_t_nk.qs?download=1",
         "xenium_sc_t_nk.qs"
     )
 }
