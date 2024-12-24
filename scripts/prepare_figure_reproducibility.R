@@ -525,6 +525,8 @@ dotplot_data <-
         dot.min = 0.01,
     )
 
+qsave(dotplot_data, file.path("docs", "dotplot_data.qs"))
+
 ## Supplementary Figure 2B ----
 enrichr_clusters <- c("periC1", "periC2", "periC3")
 names(enrichr_clusters) <- c("periC1", "periC2", "periC3")
