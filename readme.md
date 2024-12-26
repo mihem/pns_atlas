@@ -32,5 +32,8 @@ All required data are automatically downloaded from *Zenodo*  in the *Quarto* do
 quarto render index.qmd
 ```
 
+## Website
+To interactively explore the data, we created a website: [pns-atlas.mzhlab.com](https://pns-atlas.mzhlab.com/).
+
 ## Questions?
 f you have any questions, please contact us at [mheming.de](https://www.mheming.de/).
