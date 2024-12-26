@@ -11,7 +11,7 @@ To ensure reproducibility, we used the *renv* package. To restore the environmen
 renv::restore()
 ```
 
-**Docker**
+## Docker
 If you have trouble restoring the environment via *renv*, or if you want to be on the safe side regarding reproducibility,
 you can also use the *Docker* image.
 
@@ -20,8 +20,8 @@ docker pull mihem/pns_atlas:v2.0
 ```
 
 ### Figures
-To reproduce the figures, we created a self-contained Quarto document: [Reproducing the figures](https://mihem.github.io/pns_atlas/).
-All required data are automatically downloaded from Zenodo  in the Quarto document.
+To reproduce the figures, we created a self-contained *Quarto* document: [Reproducing the figures](https://mihem.github.io/pns_atlas/).
+All required data are automatically downloaded from *Zenodo*  in the *Quarto* document.
 
 **Steps to reproduce all figures:**
 1. Download `docs/index.qmd`.
