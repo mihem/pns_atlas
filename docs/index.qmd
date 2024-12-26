@@ -7,6 +7,15 @@ execute:
     cache: true
 ---
 
+## Introduction
+This markdown document reproduces the figures of the manuscript:
+[Multi-omic characterization of human sural nerves across polyneuropathies](https://www.biorxiv.org/content/10.1101/2024.12.05.627043v2).
+All relevant data are automatically downloaded from Zenodo.
+
+Instructions on how to restore the environment using `renv` or `Docker` can be found in the corresponding [GitHub repository](https://github.com/mihem/pns_atlas).
+The corresponding website, which contains interactive visualizations of the single nucleus transcriptomics and spatial transcriptomics data, is available at [pns-atlas.mzhlab.com](https://pns-atlas.mzhlab.com/).
+If you have any questions, please contact us at [mheming.de](https://www.mheming.de/).
+
 ## Load libraries
 
 ```{r}
