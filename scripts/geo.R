@@ -15,8 +15,6 @@ library(tibble)
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 ic <- qs::qread(file.path("objects", "ic.qs"), nthread = 4)
 
-str(sc_merge@meta.data)
-
 geo_meta_all <- 
     sc_merge@meta.data |>
     tibble::rownames_to_column("barcode") |>
@@ -37,3 +35,23 @@ geo_meta_all <-
     )
 
 write.csv(geo_meta_all, file = file.path("geo", "metadata_all.csv"), row.names = FALSE)
+
+# immune cells
+geo_meta_ic <- 
+    ic@meta.data |>
+    tibble::rownames_to_column("barcode") |>
+    dplyr::select(
+      barcode,
+      sample,
+      ic_cluster,
+      level2,
+      nCount_RNA:incat,
+      g_ratio,
+      axon_diameter,
+      milbrandt_sciatic_label_full,
+      milbrandt_sciatic_label_full.score,
+      suter_p60_label_full,
+      suter_p60_label_full.score
+    )
+
+write.csv(geo_meta_ic, file = file.path("geo", "metadata_ic.csv"), row.names = FALSE)
