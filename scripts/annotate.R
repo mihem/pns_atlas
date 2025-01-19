@@ -132,6 +132,15 @@ dotPlot(
   width = 16
 )
 
+dotPlot(
+  path = file.path("lookup", "markers.csv"),
+  object = sc_merge,
+  par = "Macro18",
+  dot_min = 0.01,
+  height = 7.5,
+  width = 20
+)
+
 Idents(sc_merge) <- factor(sc_merge$cluster, levels = rev(sc_merge@misc$cluster_order))
 
 dotPlot(
