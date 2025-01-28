@@ -17,7 +17,6 @@ library(tidyverse)
 library(Seurat)
 library(BPCells)
 library(qs)
-library(liana)
 
 # Load and preprocess data ----
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
