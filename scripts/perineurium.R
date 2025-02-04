@@ -25,7 +25,7 @@ perineurium <-
     mutate(diagnosis = coalesce(level2, diagnosis_CH)) |>
     mutate(diagnosis = factor(diagnosis, levels = diagnosis_order)) |>
     mutate(sample_ordered = reorder(sample, as.numeric(diagnosis))) |>
-    mutate(area = outer_area - inner_area)
+    mutate(area_CH = outer_area_CH - inner_area_CH) 
 
 # sanity check
 all(perineurium$inner_area < perineurium$outer_area)
@@ -38,7 +38,7 @@ perineurium_outer_inner_diameter <-
     perineurium |>
     dplyr::filter(!is.na(outer_diameter)) |>
     dplyr::mutate(outer_inner_diameter_ratio = outer_diameter / inner_diameter) |>
-    ggplot(aes(x = sample, y = outer_inner_diameter_ratio, fill = level2)) +
+    ggplot(aes(x = sample_ordered, y = outer_inner_diameter_ratio, fill = diagnosis)) +
     geom_boxplot() +
     geom_point() +
     theme_classic() +
@@ -47,24 +47,7 @@ perineurium_outer_inner_diameter <-
 ggsave(
     file.path("results", "perineurium", "perineurium_outer_inner_diameter_ratio.pdf"),
     plot = perineurium_outer_inner_diameter,
-    width = 5,
-    height = 5
-)
-
-perineurium_inner_outer_diameter <-
-    perineurium |>
-    dplyr::filter(!is.na(outer_diameter)) |>
-    dplyr::mutate(inner_outer_diameter_ratio = inner_diameter / outer_diameter) |>
-    ggplot(aes(x = sample, y = inner_outer_diameter_ratio, fill = level2)) +
-    geom_boxplot() +
-    geom_point() +
-    theme_classic() +
-    scale_fill_manual(values = diagnosis_col)
-
-ggsave(
-    file.path("results", "perineurium", "perineurium_inner_outer_diameter_ratio.pdf"),
-    plot = perineurium_inner_outer_diameter,
-    width = 5,
+    width = 7,
     height = 5
 )
 
