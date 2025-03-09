@@ -30,6 +30,8 @@ all(perineurium$inner_diameter < perineurium$outer_diameter)
 all(!duplicated(count(perineurium, sample, diagnosis)$sample))
 perineurium[perineurium$inner_diameter > perineurium$outer_diameter, ]
 print(dplyr::count(perineurium, sample, diagnosis), n = Inf)
+select(arrange(perineurium, desc(outer_inner_area_ratio)), sample, outer_area, inner_area, outer_inner_area_ratio)
+
 
 # plot perineurium diameter ratio ----
 perineurium_outer_inner_diameter <-
