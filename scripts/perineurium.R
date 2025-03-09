@@ -12,32 +12,27 @@ library(readxl)
 diagnosis_order <- c("CTRL", "VN", "CIDP", "CIAP", "PPN", "DPN", "OIN", "ONIN", "MNC", "IN")
 diagnosis_col <- setNames(pals::cols25(length(diagnosis_order)), diagnosis_order)
 
-sample_lookup <-
-    read_csv(file.path("lookup", "sample_lookup.csv")) |>
-    dplyr::select(sample, level1, level2, center, INCAT)
+# meta data 
+perineurium_lookup <- read_csv(file.path("lookup", "perineurium_lookup.csv"))
 
 perineurium <-
     read_csv(file.path("lookup", "perineurium_measurement.csv")) |>
-    dplyr::filter(remove == "no") |>
-    mutate(original_name = sub("_EMA\\.svs \\[0\\]", "", x = original_name)) |>
-    left_join(sample_lookup, join_by(sample)) |>
-    mutate(center = coalesce(center, center_CH)) |>
-    mutate(diagnosis = coalesce(level2, diagnosis_CH)) |>
+    dplyr::filter(is.na(remove) | !remove == "yes") |>
+    left_join(perineurium_lookup) |>
     mutate(diagnosis = factor(diagnosis, levels = diagnosis_order)) |>
-    mutate(sample_ordered = reorder(sample, as.numeric(diagnosis))) |>
-    mutate(area_CH = outer_area_CH - inner_area_CH) 
+    mutate(sample_ordered = reorder(sample, as.numeric(diagnosis)))  |>
+    dplyr::mutate(outer_inner_diameter_ratio = outer_diameter / inner_diameter)
 
 # sanity check
 all(perineurium$inner_area < perineurium$outer_area)
-dplyr::count(perineurium, diagnosis, sample)
-unique(perineurium$sample)
-dplyr::count(perineurium, sample, original_name)
+all(perineurium$inner_diameter < perineurium$outer_diameter)
+all(!duplicated(count(perineurium, sample, diagnosis)$sample))
+perineurium[perineurium$inner_diameter > perineurium$outer_diameter, ]
+print(dplyr::count(perineurium, sample, diagnosis), n = Inf)
 
 # plot perineurium diameter ratio ----
 perineurium_outer_inner_diameter <-
     perineurium |>
-    dplyr::filter(!is.na(outer_diameter)) |>
-    dplyr::mutate(outer_inner_diameter_ratio = outer_diameter / inner_diameter) |>
     ggplot(aes(x = sample_ordered, y = outer_inner_diameter_ratio, fill = diagnosis)) +
     geom_boxplot() +
     geom_point() +
