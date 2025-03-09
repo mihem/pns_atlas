@@ -21,7 +21,8 @@ perineurium <-
     left_join(perineurium_lookup) |>
     mutate(diagnosis = factor(diagnosis, levels = diagnosis_order)) |>
     mutate(sample_ordered = reorder(sample, as.numeric(diagnosis)))  |>
-    dplyr::mutate(outer_inner_diameter_ratio = outer_diameter / inner_diameter)
+    dplyr::mutate(outer_inner_diameter_ratio = outer_diameter / inner_diameter) |>
+    dplyr::mutate(outer_inner_area_ratio = outer_area / inner_area) 
 
 # sanity check
 all(perineurium$inner_area < perineurium$outer_area)
@@ -42,7 +43,7 @@ perineurium_outer_inner_diameter <-
 ggsave(
     file.path("results", "perineurium", "perineurium_outer_inner_diameter_ratio.pdf"),
     plot = perineurium_outer_inner_diameter,
-    width = 7,
+    width = 13,
     height = 5
 )
 
@@ -60,13 +61,12 @@ perineurium_area <-
 ggsave(
     file.path("results", "perineurium", "perineurium_area.pdf"),
     plot = perineurium_area,
-    width = 8,
+    width = 13,
     height = 5
 )
 
 perineurium_outer_inner_area_ratio <-
     perineurium |>
-    dplyr::mutate(outer_inner_area_ratio = outer_area / inner_area) |>
     ggplot(aes(
       x = sample_ordered,
       y = outer_inner_area_ratio,
@@ -80,6 +80,6 @@ perineurium_outer_inner_area_ratio <-
 ggsave(
     file.path("results", "perineurium", "perineurium_outer_inner_area_ratio.pdf"),
     plot = perineurium_outer_inner_area_ratio,
-    width = 8,
+    width = 12,
     height = 5
 )
