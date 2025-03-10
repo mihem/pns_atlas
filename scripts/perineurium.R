@@ -7,6 +7,8 @@
 # load libraries ----
 library(tidyverse)
 library(readxl)
+library(lme4)
+library(lmerTest)
 
 # define metadata ----
 # use the same order and color palette as in the rest of the analysis
@@ -57,6 +59,14 @@ select(
     outer_inner_area_ratio
 )
 
+
+# Count the number of samples for each diagnosis
+sample_counts <- perineurium |>
+    group_by(diagnosis) |>
+    summarise(n = n_distinct(sample))
+
+print(sample_counts)
+
 # plot parameters per sample ----
 plot_peri_sample <- function(param) {
     plot <- ggplot(
@@ -89,44 +99,37 @@ lapply(
 )
 
 # plot perineurial outer-inner area ratio per diagnosis ---
-outer_inner_area_ratio_resid <- resid(lm(
-    outer_inner_area_ratio ~ sex + age,
-    data = perineurium
-))
-
-outer_inner_area_ratio_stats <- broom::tidy(wilcox.test(
-    outer_inner_area_ratio_resid ~ perineurium$diagnosis
-))
-
-
-outer_inner_diameter_ratio_resid <- resid(lm(
-    outer_inner_diameter_ratio ~ sex + age,
-    data = perineurium
-))
-
-outer_inner_diameter_ratio_stats <- broom::tidy(wilcox.test(
-    outer_inner_diameter_ratio_resid ~ perineurium$diagnosis
-))
-
+perineurium_median <- perineurium |>
+    group_by(sample) |>
+    mutate(
+        outer_inner_area_ratio = median(outer_inner_area_ratio),
+        outer_inner_diameter_ratio = median(outer_inner_diameter_ratio)
+    ) |>
+    ungroup() |>
+    distinct(sample, .keep_all = TRUE)
 
 plot_peri_diagnosis <- function(param, y_lab) {
-    # calculcate residuals in a first step to adjust for age and sex
-    formula <- as.formula(paste0(param, " ~ sex + age"))
-    resid_val <- resid(lm(
-        formula,
-        data = perineurium
+    # calculate residuals in a first step to adjust for age and sex
+    formula <- as.formula(paste0(
+        param,
+        " ~ sex + age + center_sample + center_stain"
     ))
+    model <- lm(formula, data = perineurium_median)
+    perineurium_median$resid_val <- resid(model) + coef(model)[1] # add intercept back to residuals
+
     # perform Wilcoxon test on residuals
     stats <- broom::tidy(wilcox.test(
-        resid_val ~ perineurium$diagnosis
+        resid_val ~ diagnosis,
+        data = perineurium_median
     ))
+
     # plot boxplot
     plot <- ggplot(
-        perineurium,
-        aes(x = diagnosis, y = .data[[param]], fill = diagnosis)
+        perineurium_median,
+        aes(x = diagnosis, y = resid_val, fill = diagnosis)
     ) +
         geom_boxplot() +
-        geom_jitter(size = 0.3, width = 0.3) +
+        geom_jitter(size = 0.5, width = 0.3) +
         theme_classic() +
         ggsignif::geom_signif(
             comparisons = list(c("CTRL", "CIDP")),
@@ -135,23 +138,99 @@ plot_peri_diagnosis <- function(param, y_lab) {
         scale_fill_manual(values = diagnosis_col) +
         theme(legend.position = "none") +
         xlab("") +
-        ylab(paste0("Perineurium outer-inner ratio ", y_lab))
+        ylab(paste0("Adjusted perineurium outer-inner ratio ", y_lab))
 
     # save plot
     ggsave(
         file.path(
             "results",
             "perineurium",
-            paste0("perineurium_", param, "_diagnosis.pdf")
+            paste0("perineurium_median_", param, "_diagnosis.pdf")
         ),
         plot = plot,
         width = 2,
-        height = 3.5
+        height = 3.7
     )
 }
-
 
 # Define the parameters and labels
 params <- c("outer_inner_diameter_ratio", "outer_inner_area_ratio")
 labels <- c("diameter", "area")
 map2(params, labels, plot_peri_diagnosis)
+
+
+plot_peri_diagnosis_mixed <- function(param, y_lab) {
+    # Fit a linear mixed model
+    formula <- as.formula(paste0(
+        param,
+        " ~ diagnosis + sex + age + center_sample + center_stain + (1|sample)"
+    ))
+
+    mixed_model <- lmer(formula, data = perineurium)
+
+    # Get model summary and p-value for diagnosis effect
+    model_summary <- summary(mixed_model)
+    diagnosis_p_value <- coef(model_summary)[2, "Pr(>|t|)"]
+
+    # Get fixed effects to calculate adjusted values
+    fixed_effects <- fixef(mixed_model)
+
+    # First adjust all individual measurements
+    adjusted_perineurium <- perineurium %>%
+        mutate(
+            # Remove effects of all covariates except diagnosis
+            covariate_effect = (sex == "male") *
+                fixed_effects["sexmale"] +
+                age * fixed_effects["age"] +
+                (center_sample == "Leipzig") *
+                    fixed_effects["center_sampleLeipzig"] +
+                (center_sample == "Münster") *
+                    fixed_effects["center_sampleMünster"] +
+                (center_stain == "Münster") *
+                    fixed_effects["center_stainMünster"],
+
+            # Calculate adjusted value (raw value minus covariate effects)
+            adjusted_value = .data[[param]] - covariate_effect
+        )
+
+    # Then calculate median of adjusted values per sample
+    sample_data <- adjusted_perineurium |>
+        group_by(sample, diagnosis) |>
+        summarise(
+            adjusted_value = median(adjusted_value),
+            .groups = "drop"
+        )
+
+    # Plot
+    plot <- ggplot(
+        sample_data,
+        aes(x = diagnosis, y = adjusted_value, fill = diagnosis)
+    ) +
+        geom_boxplot() +
+        geom_jitter(width = 0.2, size = 1) +
+        theme_classic() +
+        ggsignif::geom_signif(
+            comparisons = list(c("CTRL", "CIDP")),
+            annotation = paste("p =", signif(diagnosis_p_value, 3))
+        ) +
+        scale_fill_manual(values = diagnosis_col) +
+        theme(legend.position = "none") +
+        xlab("") +
+        ylab(paste0("Adjusted perineurium outer-inner ratio (", y_lab, ")"))
+
+    # Save plot
+    ggsave(
+        file.path(
+            "results",
+            "perineurium",
+            paste0("perineurium_mixed_model_", param, "_diagnosis.pdf")
+        ),
+        plot = plot,
+        width = 2,
+        height = 3.7
+    )
+}
+
+params <- c("outer_inner_diameter_ratio", "outer_inner_area_ratio")
+labels <- c("diameter", "area")
+map2(params, labels, plot_peri_diagnosis_mixed)
