@@ -4172,7 +4172,7 @@
       "Package": "languageserver",
       "Version": "0.3.16",
       "Source": "Repository",
-      "Repository": "https://reditorsupport.r-universe.dev",
+      "Repository": "RSPM",
       "Requirements": [
         "R",
         "R6",
