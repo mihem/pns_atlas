@@ -68,15 +68,43 @@ sample_counts <- perineurium |>
 print(sample_counts)
 
 # plot parameters per sample ----
-plot_peri_sample <- function(param) {
+plot_peri_sample <- function(param, y_lab) {
+    # Fit a linear mixed model
+    formula <- as.formula(paste0(
+        param,
+        " ~ diagnosis + sex + age + (1|sample) + (1|center_sample) + (1|center_stain)"
+    ))
+
+    mixed_model <- lmer(formula, data = perineurium)
+
+    # Get model summary and p-value for diagnosis effect
+    model_summary <- summary(mixed_model)
+
+    # Get fixed effects to calculate adjusted values
+    fixed_effects <- fixef(mixed_model)
+
+    # First adjust all individual measurements
+    adjusted_perineurium <- perineurium |>
+        mutate(
+            # Remove effects of all covariates except diagnosis
+            covariate_effect = (sex == "male") *
+                fixed_effects["sexmale"] +
+                age * fixed_effects["age"],
+
+            # Calculate adjusted value (raw value minus covariate effects)
+            adjusted_value = .data[[param]] - covariate_effect
+        )
+
     plot <- ggplot(
-        perineurium,
-        aes(x = sample_ordered, y = .data[[param]], fill = diagnosis)
+        adjusted_perineurium,
+        aes(x = sample_ordered, y = adjusted_value, fill = diagnosis)
     ) +
         geom_boxplot() +
         geom_point() +
         theme_classic() +
-        scale_fill_manual(values = diagnosis_col)
+        scale_fill_manual(values = diagnosis_col) +
+        xlab("") +
+        ylab(paste0("Adjusted perineurium outer-inner ratio (", y_lab, ")"))
 
     ggsave(
         file.path(
@@ -90,25 +118,9 @@ plot_peri_sample <- function(param) {
     )
 }
 
-lapply(
-    c(
-        "outer_inner_diameter_ratio",
-        "outer_inner_area_ratio"
-    ),
-    plot_peri_sample
-)
 
 # plot perineurial outer-inner area ratio per diagnosis ---
-perineurium_median <- perineurium |>
-    group_by(sample) |>
-    mutate(
-        outer_inner_area_ratio = median(outer_inner_area_ratio),
-        outer_inner_diameter_ratio = median(outer_inner_diameter_ratio)
-    ) |>
-    ungroup() |>
-    distinct(sample, .keep_all = TRUE)
-
-plot_peri_diagnosis_mixed <- function(param, y_lab) {
+plot_peri_diagnosis <- function(param, y_lab) {
     # Fit a linear mixed model
     formula <- as.formula(paste0(
         param,
@@ -125,7 +137,7 @@ plot_peri_diagnosis_mixed <- function(param, y_lab) {
     fixed_effects <- fixef(mixed_model)
 
     # First adjust all individual measurements
-    adjusted_perineurium <- perineurium %>%
+    adjusted_perineurium <- perineurium |>
         mutate(
             # Remove effects of all covariates except diagnosis
             covariate_effect = (sex == "male") *
@@ -176,4 +188,5 @@ plot_peri_diagnosis_mixed <- function(param, y_lab) {
 
 params <- c("outer_inner_diameter_ratio", "outer_inner_area_ratio")
 labels <- c("diameter", "area")
-map2(params, labels, plot_peri_diagnosis_mixed)
+map2(params, labels, plot_peri_sample)
+map2(params, labels, plot_peri_diagnosis)
