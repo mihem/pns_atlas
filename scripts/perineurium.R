@@ -112,7 +112,7 @@ plot_peri_diagnosis_mixed <- function(param, y_lab) {
     # Fit a linear mixed model
     formula <- as.formula(paste0(
         param,
-        " ~ diagnosis + sex + age + center_sample + center_stain + (1|sample)"
+        " ~ diagnosis + sex + age + (1|sample) + (1|center_sample) + (1|center_stain)"
     ))
 
     mixed_model <- lmer(formula, data = perineurium)
@@ -130,13 +130,7 @@ plot_peri_diagnosis_mixed <- function(param, y_lab) {
             # Remove effects of all covariates except diagnosis
             covariate_effect = (sex == "male") *
                 fixed_effects["sexmale"] +
-                age * fixed_effects["age"] +
-                (center_sample == "Leipzig") *
-                    fixed_effects["center_sampleLeipzig"] +
-                (center_sample == "Münster") *
-                    fixed_effects["center_sampleMünster"] +
-                (center_stain == "Münster") *
-                    fixed_effects["center_stainMünster"],
+                age * fixed_effects["age"],
 
             # Calculate adjusted value (raw value minus covariate effects)
             adjusted_value = .data[[param]] - covariate_effect
