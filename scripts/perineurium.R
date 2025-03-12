@@ -104,9 +104,6 @@ plot_peri_sample <- function(param, y_lab) {
 
     mixed_model <- lmer(formula, data = perineurium)
 
-    # Get model summary and p-value for diagnosis effect
-    model_summary <- summary(mixed_model)
-
     # Get fixed effects to calculate adjusted values
     fixed_effects <- fixef(mixed_model)
 
