@@ -9,6 +9,7 @@ library(tidyverse)
 library(readxl)
 library(lme4)
 library(lmerTest)
+library(nlme)
 
 # define metadata ----
 # use the same order and color palette as in the rest of the analysis
@@ -43,7 +44,10 @@ perineurium <-
     dplyr::mutate(
         outer_inner_diameter_ratio = outer_diameter / inner_diameter
     ) |>
-    dplyr::mutate(outer_inner_area_ratio = outer_area / inner_area)
+    dplyr::mutate(outer_inner_area_ratio = outer_area / inner_area) |>
+    dplyr::mutate(
+        center_combined = paste(center_sample, center_stain, sep = "_")
+    )
 
 # sanity check
 all(perineurium$inner_area < perineurium$outer_area)
@@ -67,7 +71,30 @@ sample_counts <- perineurium |>
 
 print(sample_counts)
 
-# plot parameters per sample ----
+# function to test for variance heterogeneity ----
+peri_var_test <- function(param) {
+    formula <- as.formula(paste0(param, " ~ diagnosis + sex + age"))
+    # Fit an lme model assuming equal residual variance
+    model_lme_hom <- lme(
+        formula,
+        random = list(center_combined = pdIdent(~1)),
+        data = perineurium
+    )
+
+    # Fit an lme model allowing different residual variances by diagnosis
+    model_lme_het <- lme(
+        formula,
+        random = list(center_combined = pdIdent(~1)),
+        data = perineurium,
+        weights = varIdent(form = ~ 1 | diagnosis)
+    )
+
+    # Compare the two models with a likelihood ratio test
+    return(anova(model_lme_hom, model_lme_het))
+}
+
+
+# function to plot parameters per sample ----
 plot_peri_sample <- function(param, y_lab) {
     # Fit a linear mixed model
     formula <- as.formula(paste0(
@@ -95,6 +122,13 @@ plot_peri_sample <- function(param, y_lab) {
             adjusted_value = .data[[param]] - covariate_effect
         )
 
+    # Run the variance heterogeneity test and extract key values
+    var_test <- peri_var_test(param)
+    lrt_val <- signif(var_test$`L.Ratio`[2], 4)
+    p_val <- var_test$`p-value`[2]
+    p_text <- as.character(signif(p_val, 2))
+    var_text <- paste0("LRT = ", lrt_val, ", p = ", p_text)
+
     plot <- ggplot(
         adjusted_perineurium,
         aes(x = sample_ordered, y = adjusted_value, fill = diagnosis)
@@ -104,7 +138,16 @@ plot_peri_sample <- function(param, y_lab) {
         theme_classic() +
         scale_fill_manual(values = diagnosis_col) +
         xlab("") +
-        ylab(paste0("Adjusted perineurium outer-inner ratio (", y_lab, ")"))
+        ylab(paste0("Adjusted perineurium outer-inner ratio (", y_lab, ")")) +
+        annotate(
+            "text",
+            x = Inf,
+            y = Inf,
+            label = var_text,
+            size = 3,
+            hjust = 1.1,
+            vjust = 1.1
+        )
 
     ggsave(
         file.path(
@@ -118,13 +161,12 @@ plot_peri_sample <- function(param, y_lab) {
     )
 }
 
-
-# plot perineurial outer-inner area ratio per diagnosis ---
+# function to plot perineurial outer-inner area ratio per diagnosis ---
 plot_peri_diagnosis <- function(param, y_lab) {
     # Fit a linear mixed model
     formula <- as.formula(paste0(
         param,
-        " ~ diagnosis + sex + age + (1|sample) + (1|center_sample) + (1|center_stain)"
+        " ~ diagnosis + sex + age + (1|center_combined) + (1|sample)"
     ))
 
     mixed_model <- lmer(formula, data = perineurium)
