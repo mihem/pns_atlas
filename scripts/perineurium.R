@@ -99,7 +99,7 @@ plot_peri_sample <- function(param, y_lab) {
     # Fit a linear mixed model
     formula <- as.formula(paste0(
         param,
-        " ~ diagnosis + sex + age + (1|sample) + (1|center_sample) + (1|center_stain)"
+        " ~ diagnosis + sex + age + (1|center_combined) + (1|sample)"
     ))
 
     mixed_model <- lmer(formula, data = perineurium)
