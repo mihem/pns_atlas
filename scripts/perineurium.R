@@ -42,7 +42,7 @@ perineurium <-
     mutate(diagnosis = factor(diagnosis, levels = diagnosis_order)) |>
     mutate(sample_ordered = reorder(sample, as.numeric(diagnosis))) |>
     dplyr::mutate(
-        outer_inner_diameter_ratio = outer_diameter / inner_diameter
+        outer_inner_perimeter_ratio = outer_perimeter / inner_perimeter
     ) |>
     dplyr::mutate(outer_inner_area_ratio = outer_area / inner_area) |>
     dplyr::mutate(
@@ -51,9 +51,9 @@ perineurium <-
 
 # sanity check
 all(perineurium$inner_area < perineurium$outer_area)
-all(perineurium$inner_diameter < perineurium$outer_diameter)
+all(perineurium$inner_perimeter < perineurium$outer_perimeter)
 all(!duplicated(count(perineurium, sample, diagnosis)$sample))
-perineurium[perineurium$inner_diameter > perineurium$outer_diameter, ]
+perineurium[perineurium$inner_perimeter > perineurium$outer_perimeter, ]
 print(dplyr::count(perineurium, sample, diagnosis), n = Inf)
 select(
     arrange(perineurium, desc(outer_inner_area_ratio)),
@@ -221,11 +221,11 @@ plot_peri_diagnosis <- function(param, y_lab) {
         ),
         plot = plot,
         width = 2,
-        height = 3.7
+        height = 3.8
     )
 }
 
-params <- c("outer_inner_diameter_ratio", "outer_inner_area_ratio")
-labels <- c("diameter", "area")
+params <- c("outer_inner_perimeter_ratio", "outer_inner_area_ratio")
+labels <- c("perimeter", "area")
 map2(params, labels, plot_peri_sample)
 map2(params, labels, plot_peri_diagnosis)
