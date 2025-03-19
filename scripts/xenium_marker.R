@@ -28,6 +28,7 @@ my_cols_50 <- unname(Polychrome::createPalette(50, pals::cols25()))
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 sc_merge_small <- qs::qread(file.path("objects", "sc_merge_small.qs"))
 sc_xenium <- subset(sc_merge, sample %in% c("S22", "S24", "S29", "S30", "S14", "S11", "S04", "S01"))
+ic <- qs::qread(file.path("objects", "ic.qs"), nthread = 4)
 
 # Count cells per cluster
 dplyr::count(sc_xenium@meta.data, cluster) |>
@@ -95,6 +96,24 @@ dotPlot(
   dot_min = 0.01,
   height = 10,
   width = 30
+)
+
+dotPlot(
+  path = file.path("lookup", "markers.csv"),
+  object = sc_merge,
+  par = "xenium",
+  dot_min = 0.01,
+  height = 7,
+  width = 20
+)
+
+dotPlot(
+  path = file.path("lookup", "markers.csv"),
+  object = ic,
+  par = "xenium",
+  dot_min = 0.01,
+  height = 7,
+  width = 20
 )
 
 dotPlot(
