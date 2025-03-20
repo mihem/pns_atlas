@@ -119,7 +119,6 @@ plot_peri_sample <- function(param, y_lab) {
             adjusted_value = .data[[param]] - covariate_effect
         )
 
-
     plot <- ggplot(
         adjusted_perineurium,
         aes(x = sample_ordered, y = adjusted_value, fill = diagnosis)
@@ -129,7 +128,7 @@ plot_peri_sample <- function(param, y_lab) {
         theme_classic() +
         scale_fill_manual(values = diagnosis_col) +
         xlab("") +
-        ylab(paste0("Adjusted perineurium outer-inner ratio (", y_lab, ")")) 
+        ylab(paste0("Adjusted perineurium outer-inner ratio (", y_lab, ")"))
 
     ggsave(
         file.path(
@@ -220,13 +219,6 @@ plot_peri_var <- function(param, y_lab) {
 
     mixed_model <- lmer(formula, data = perineurium)
 
-    # Run the variance heterogeneity test and extract key values
-    var_test <- peri_var_test(param)
-    lrt_val <- signif(var_test$`L.Ratio`[2], 4)
-    p_val <- var_test$`p-value`[2]
-    p_text <- as.character(signif(p_val, 2))
-    var_text <- paste0("LRT = ", lrt_val, ", p = ", p_text)
-
     # Get fixed effects to calculate adjusted values
     fixed_effects <- fixef(mixed_model)
 
@@ -242,26 +234,45 @@ plot_peri_var <- function(param, y_lab) {
             adjusted_value = .data[[param]] - covariate_effect
         )
 
+    # Calculate standard deviation of adjusted values per sample
+    sd_perineurium <- adjusted_perineurium |>
+        group_by(sample, diagnosis, center_combined, sex, age) |>
+        summarize(
+            sd_adjusted = sd(adjusted_value, na.rm = TRUE),
+            .groups = "drop"
+        )
+
+    # Test using a mixed model on the standard deviations
+    var_test_model <- lmer(
+        sd_adjusted ~ diagnosis + sex + age + (1 | center_combined),
+        data = sd_perineurium
+    )
+    var_test_summary <- summary(var_test_model)
+    p_val <- coef(var_test_summary)[2, "Pr(>|t|)"]
+
+    # Format p-value text
+    p_text <- as.character(signif(p_val, 3))
+    var_text <- paste0("p = ", p_text)
+
     # Plot
     plot <- ggplot(
-        adjusted_perineurium,
-        aes(x = diagnosis, y = adjusted_value, fill = diagnosis)
+        sd_perineurium,
+        aes(x = diagnosis, y = sd_adjusted, fill = diagnosis)
     ) +
-        geom_violin() +
-        # geom_jitter(width = 0.2, size = .5) +
+        geom_boxplot() +
+        geom_jitter(width = 0.2, size = .5) +
         theme_classic() +
         scale_fill_manual(values = diagnosis_col) +
         theme(legend.position = "none") +
         xlab("") +
-        ylab(paste0("Adjusted perineurium outer-inner ratio (", y_lab, ")")) +
-        annotate(
-            "text",
-            x = Inf,
-            y = Inf,
-            label = var_text,
-            size = 3,
-            hjust = 1,
-            vjust = 1.1
+        ylab(paste0(
+            "Standard deviation of adjusted perineurium outer-inner ratio (",
+            y_lab,
+            ")"
+        )) +
+        ggsignif::geom_signif(
+            comparisons = list(c("CTRL", "CIDP")),
+            annotation = var_text
         )
 
     # Save plot
