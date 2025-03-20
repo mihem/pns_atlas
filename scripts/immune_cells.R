@@ -629,7 +629,7 @@ dotPlot(
   object = ic,
   par = "SAMC",
   dot_min = 0.01,
-  height = 6,
+  height = 10,
   width = 4.5
 )
 
