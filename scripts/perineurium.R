@@ -119,12 +119,6 @@ plot_peri_sample <- function(param, y_lab) {
             adjusted_value = .data[[param]] - covariate_effect
         )
 
-    # Run the variance heterogeneity test and extract key values
-    var_test <- peri_var_test(param)
-    lrt_val <- signif(var_test$`L.Ratio`[2], 4)
-    p_val <- var_test$`p-value`[2]
-    p_text <- as.character(signif(p_val, 2))
-    var_text <- paste0("LRT = ", lrt_val, ", p = ", p_text)
 
     plot <- ggplot(
         adjusted_perineurium,
@@ -135,16 +129,7 @@ plot_peri_sample <- function(param, y_lab) {
         theme_classic() +
         scale_fill_manual(values = diagnosis_col) +
         xlab("") +
-        ylab(paste0("Adjusted perineurium outer-inner ratio (", y_lab, ")")) +
-        annotate(
-            "text",
-            x = Inf,
-            y = Inf,
-            label = var_text,
-            size = 3,
-            hjust = 1.1,
-            vjust = 1.1
-        )
+        ylab(paste0("Adjusted perineurium outer-inner ratio (", y_lab, ")")) 
 
     ggsave(
         file.path(
@@ -225,7 +210,75 @@ plot_peri_diagnosis <- function(param, y_lab) {
     )
 }
 
+# function to plot variance per diagnosis ----
+plot_peri_var <- function(param, y_lab) {
+    # Fit a linear mixed model
+    formula <- as.formula(paste0(
+        param,
+        " ~ diagnosis + sex + age + (1|center_combined) + (1|sample)"
+    ))
+
+    mixed_model <- lmer(formula, data = perineurium)
+
+    # Run the variance heterogeneity test and extract key values
+    var_test <- peri_var_test(param)
+    lrt_val <- signif(var_test$`L.Ratio`[2], 4)
+    p_val <- var_test$`p-value`[2]
+    p_text <- as.character(signif(p_val, 2))
+    var_text <- paste0("LRT = ", lrt_val, ", p = ", p_text)
+
+    # Get fixed effects to calculate adjusted values
+    fixed_effects <- fixef(mixed_model)
+
+    # Adjust all measurements to remove covariate effects
+    adjusted_perineurium <- perineurium |>
+        mutate(
+            # Remove effects of all covariates except diagnosis
+            covariate_effect = (sex == "male") *
+                fixed_effects["sexmale"] +
+                age * fixed_effects["age"],
+
+            # Calculate adjusted value (raw value minus covariate effects)
+            adjusted_value = .data[[param]] - covariate_effect
+        )
+
+    # Plot
+    plot <- ggplot(
+        adjusted_perineurium,
+        aes(x = diagnosis, y = adjusted_value, fill = diagnosis)
+    ) +
+        geom_violin() +
+        # geom_jitter(width = 0.2, size = .5) +
+        theme_classic() +
+        scale_fill_manual(values = diagnosis_col) +
+        theme(legend.position = "none") +
+        xlab("") +
+        ylab(paste0("Adjusted perineurium outer-inner ratio (", y_lab, ")")) +
+        annotate(
+            "text",
+            x = Inf,
+            y = Inf,
+            label = var_text,
+            size = 3,
+            hjust = 1,
+            vjust = 1.1
+        )
+
+    # Save plot
+    ggsave(
+        file.path(
+            "results",
+            "perineurium",
+            paste0("perineurium_var_", param, ".pdf")
+        ),
+        plot = plot,
+        width = 2,
+        height = 3.8
+    )
+}
+
 params <- c("outer_inner_perimeter_ratio", "outer_inner_area_ratio")
 labels <- c("perimeter", "area")
 map2(params, labels, plot_peri_sample)
 map2(params, labels, plot_peri_diagnosis)
+map2(params, labels, plot_peri_var)
