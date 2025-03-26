@@ -167,14 +167,12 @@ propeller_CIDP_CTRL <-
     lookup = sample_lookup,
     sample_col = "sample",
     formula = "~0 + level2",
-    # formula = "~0 + level2 + sex + age + center",
     min_cells = 30
   )
 
 scMisc::plotPropeller(
   data = propeller_CIDP_CTRL,
   color = sc_merge@misc$cluster_col,
-#   filename = "CIDP_CTRL_sex_age_center",
   filename = "CIDP_CTRL",
   FDR = 0.1
 )
@@ -207,7 +205,6 @@ propeller_CIDP_CTRL_ic <-
     lookup = sample_lookup,
     sample_col = "sample",
     formula = "~0 + level2",
-    # formula = "~0 + level2 + sex + age + center",
     min_cells = 30
   )
 
