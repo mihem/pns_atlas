@@ -1618,15 +1618,15 @@
     },
     "SeuratWrappers": {
       "Package": "SeuratWrappers",
-      "Version": "0.3.2",
+      "Version": "0.3.4",
       "Source": "GitHub",
-      "Remotes": "welch-lab/liger, hms-dbmi/conos, immunogenomics/harmony, immunogenomics/presto, satijalab/seurat-data, velocyto-team/velocyto.R, SaskiaFreytag/schex@031320d, cole-trapnell-lab/monocle3, mojaveazure/seurat-disk, powellgenomicslab/Nebulosa, atakanekiz/CIPR-Package, prabhakarlab/Banksy",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
+      "RemoteUsername": "satijalab",
       "RemoteRepo": "seurat-wrappers",
-      "RemoteUsername": "fentouxungui",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "aa02aeabd48525b413c51162cb011821b77eda55",
+      "RemoteRef": "d9594f67a9eab4f917390010a1c106b5422b102e",
+      "RemoteSha": "d9594f67a9eab4f917390010a1c106b5422b102e",
+      "Remotes": "welch-lab/liger, hms-dbmi/conos, immunogenomics/harmony, immunogenomics/presto, satijalab/seurat-data, velocyto-team/velocyto.R, SaskiaFreytag/schex@031320d, cole-trapnell-lab/monocle3, mojaveazure/seurat-disk, powellgenomicslab/Nebulosa, atakanekiz/CIPR-Package, prabhakarlab/Banksy",
       "Requirements": [
         "BiocManager",
         "Matrix",
@@ -1642,7 +1642,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "02b93fac0f2e9d2d77b40e00a0300ac6"
+      "Hash": "67393ed5595c64beab6880a8fbb04726"
     },
     "Signac": {
       "Package": "Signac",
