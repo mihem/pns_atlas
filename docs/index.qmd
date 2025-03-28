@@ -142,6 +142,7 @@ enrichr_macro18 |>
 **Dotplot of SAMC markers in IC (Figure 2D)**
 ```{r}
 #| fig-height: 7
+#| fig-width: 5
 
 if (!file.exists("dotplot_data_ic_samc.qs")) {
     download.file(
@@ -187,44 +188,13 @@ DotPlotModified(
             angle = 90,
             vjust = 0.5,
             hjust = 1,
-            face = "italic",
-            size = 7
+            face = "italic"
         ),
-        legend.position = "top",
-        legend.text = element_text(size = 6),
-        legend.title = element_text(size = 10)
     ) +
     xlab("") +
     ylab("")
 ```
 
-**Dot plot IGH chain genes (Figure 2E)**
-```{r}
-#| fig-height: 3
-#| fig-width: 5
-if (!file.exists("b_plasma_figure.qs")) {
-    download.file(
-        "https://zenodo.org/records/14551660/files/b_plasma_figure.qs?download=1",
-        "b_plasma_figure.qs"
-    )
-}
-b_plasma_figure <- qread("b_plasma_figure.qs")
-DotPlot(
-    b_plasma_figure,
-    features = c("IGHM", "IGHD", "IGHG1", "IGHG2", "IGHG3", "IGHG4", "IGHA1", "IGHA2"),
-    scale = FALSE,
-    dot.scale = 6
-) +
-    viridis::scale_color_viridis(option = "viridis") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, face = "italic")) +
-    xlab("") +
-    ylab("") + 
-    theme(
-        legend.text = element_text(size = 6),
-        legend.title = element_text(size = 10),
-        legend.key.size = unit(0.2, "cm")
-    )
-```
 
 ## Figure 3
 
@@ -936,8 +906,35 @@ DotPlotModified(
     xlab("") +
     ylab("")
 ```
+**Dot plot IGH chain genes (Figure 4B)**
+```{r}
+#| fig-height: 4
+#| fig-width: 5
+if (!file.exists("dotplot_data_b_plasma.qs")) {
+    download.file(
+        "https://zenodo.org/records/14551660/files/dotplot_data_b_plasma.qs?download=1",
+        "dotplot_data_b_plasma.qs"
+    )
+}
+dotplot_data_b_plasma <- qread("dotplot_data_b_plasma.qs")
+DotPlotModified(
+    data.plot = dotplot_data_b_plasma,
+    scale.by = "size",
+) +
+    viridis::scale_color_viridis(option = "viridis") +
+    theme(
+        axis.text.x = element_text(
+            angle = 90,
+            vjust = 0.5,
+            hjust = 1,
+            face = "italic"
+        ),
+    ) +
+    xlab("") +
+    ylab("")
+```
 
-**Enrichment of gene ontology terms in DEG (Figure S4B)**
+**Enrichment of gene ontology terms in DEG (Figure S4C)**
 
 ```{r}
 #| fig-height: 3
