@@ -11,8 +11,12 @@ library(tidyverse)
 library(miloDE)
 library(SingleCellExperiment)
 
+source(file.path("scripts", "dotplot_functions.R"))
+
+# Load data
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
 ic <- qs::qread(file.path("objects", "ic.qs"), nthread = 4)
+
 # Figure 1 ----
 # Prepare Seurat object for reproducibility
 # DietSeurat reduces the size of the Seurat object by keeping only the necessary data
@@ -107,6 +111,18 @@ markers_dotplot_ic <- read_csv(file.path("lookup", "markers.csv")) |>
 ic_figure@misc$markers_dotplot_ic <- markers_dotplot_ic
 
 qsave(ic_figure, file.path("docs", "ic_figure.qs"))
+
+## prepare data for dotplot IC SAMC ----
+samc_genes <- c("SPP1", "APOE", "LPL", "FABP5", "GPNMB")
+
+dotplot_data_ic_samc <-
+    DotPlotData(
+        object = ic,
+        features = samc_genes,
+        dot.min = 0.01,
+    )
+
+qsave(dotplot_data_ic_samc, file.path("docs", "dotplot_data_ic_samc.qs"))
 
 # subset the object to only include the B and Plasma clusters
 b_plasma <- subset(ic, idents = c("Plasma", "B"))
@@ -514,7 +530,6 @@ qsave(abundance_main_clusters_sample, file.path("docs", "abundance_main_clusters
 # Supplementary Figure 2 ----
 ## Supplementary Figure 2A ----
 # load modified Seurat data
-source(file.path("scripts", "dotplot_functions.R"))
 
 Idents(sc_merge) <- factor(sc_merge$cluster, levels = rev(sc_merge@misc$cluster_order))
 
