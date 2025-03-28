@@ -141,12 +141,17 @@ b_plasma_figure@meta.data <-
     b_plasma_figure@meta.data |>
     dplyr::select(ic_cluster)
 
-b_plasma_figure$RNA$counts <- NULL
-b_plasma_figure$RNA$scale.data <- NULL
-b_plasma_figure@commands <- list()
-b_plasma_figure@tools <- list()
+b_plasma_genes <- c("IGHM", "IGHD", "IGHG1", "IGHG2", "IGHG3", "IGHG4", "IGHA1", "IGHA2")
 
-qsave(b_plasma_figure, file.path("docs", "b_plasma_figure.qs"))
+dotplot_data_b_plasma <-
+    DotPlotData(
+        object = b_plasma,
+        features = b_plasma_genes,
+        dot.min = 0.01,
+    )
+
+
+qsave(dotplot_data_b_plasma, file.path("docs", "dotplot_data_b_plasma.qs"))
 
 # save enrichment results as qs object
 enrichr_macro18 <- readxl::read_excel(file.path("results", "enrichr", "enrichr_Macro18.xlsx"), sheet = "GO_Biological_Process_2023")
