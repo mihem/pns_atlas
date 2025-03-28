@@ -293,3 +293,32 @@ labels <- c("perimeter", "area")
 map2(params, labels, plot_peri_sample)
 map2(params, labels, plot_peri_diagnosis)
 map2(params, labels, plot_peri_var)
+
+# quantification of CXCL14 expression in perineurium using IF ----
+# read data
+
+sample_order <- c("S24", "S25", "S08", "S09")
+
+cxcl14 <- read_csv(file.path("lookup", "cxcl14_perineurium.csv")) |>
+    mutate(pct_positive = parse_number(perc_CXCL14_perineurium) / 100) |>
+    mutate(sample = factor(sample, levels = sample_order))
+
+cxcl14_perineurium_plot <-
+    cxcl14 |>
+    ggplot(aes(
+        x = sample,
+        y = pct_positive,
+        fill = diagnosis
+    )) +
+    geom_boxplot() +
+    geom_jitter(width = 0.2, height = 0, size = 1) +
+    theme_classic() +
+    ylab("% positive CXCL14 in the perineurium") +
+    scale_fill_manual(values = diagnosis_col)
+
+ggsave(
+    file.path("results", "histo", "cxcl14_expression_perineurium.pdf"),
+    plot = cxcl14_perineurium_plot,
+    width = 4,
+    height = 4
+)
