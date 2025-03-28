@@ -906,7 +906,7 @@ DotPlotModified(
     xlab("") +
     ylab("")
 ```
-**Dot plot IGH chain genes (Figure 4B)**
+**Dot plot IGH chain genes (Supplementary Figure 4B)**
 ```{r}
 #| fig-height: 4
 #| fig-width: 5
