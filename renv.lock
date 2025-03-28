@@ -1468,14 +1468,14 @@
     },
     "Seurat": {
       "Package": "Seurat",
-      "Version": "5.0.1",
+      "Version": "5.0.1.9004",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
+      "RemoteUsername": "satijalab",
       "RemoteRepo": "seurat",
-      "RemoteUsername": "fentouxungui",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "d2d8d60c92f951508a74b1ce7bedfca8d86e288b",
+      "RemoteRef": "9ad16275953f9de358c5286d2e3bc93a08a4b65a",
+      "RemoteSha": "9ad16275953f9de358c5286d2e3bc93a08a4b65a",
       "Requirements": [
         "KernSmooth",
         "MASS",
@@ -1536,7 +1536,7 @@
         "utils",
         "uwot"
       ],
-      "Hash": "be11f9cb1e64a4a51991daa165c9b496"
+      "Hash": "df156516d2539b83a21f5d39c22c68e4"
     },
     "SeuratData": {
       "Package": "SeuratData",
