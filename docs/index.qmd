@@ -139,6 +139,65 @@ enrichr_macro18 |>
     theme(legend.position = "none")
 ```
 
+**Dotplot of SAMC markers in IC (Figure 2D)**
+```{r}
+#| fig-height: 7
+
+if (!file.exists("dotplot_data_ic_samc.qs")) {
+    download.file(
+        "https://zenodo.org/records/14551660/files/dotplot_data_ic_samc.qs?download=1",
+        "dotplot_data_ic_samc.qs"
+    )
+}
+
+# Seurat DotPlot function (only ggplot part to avoid calculations)
+DotPlotModified <- function(
+  data.plot,
+  cols = c("lightgrey", "blue"),
+  dot.scale = 6,
+  scale.by = 'radius',
+  scale.min = NA,
+  scale.max = NA
+) {
+  scale.func <- switch(
+    EXPR = scale.by,
+    'size' = scale_size,
+    'radius' = scale_radius,
+    stop("'scale.by' must be either 'size' or 'radius'")
+  )
+  color.by <- 'avg.exp.scaled'
+  plot <- ggplot(data = data.plot, mapping = aes_string(x = 'features.plot', y = 'id')) +
+    geom_point(mapping = aes_string(size = 'pct.exp', color = color.by)) +
+    scale.func(range = c(0, dot.scale), limits = c(scale.min, scale.max)) +
+    theme(axis.title.x = element_blank(), axis.title.y = element_blank()) +
+    guides(size = guide_legend(title = 'Percent Expressed')) + 
+    cowplot::theme_cowplot()
+  plot <- plot + guides(color = guide_colorbar(title = 'Average Expression'))
+  return(plot)
+}
+
+dotplot_data_ic_samc <- qread("dotplot_data_ic_samc.qs")
+
+DotPlotModified(
+    data.plot = dotplot_data_ic_samc,
+    scale.by = "size"
+) +
+    viridis::scale_color_viridis(option = "viridis") +
+    theme(axis.text.x = element_text(
+        angle = 90,
+        vjust = 0.5,
+        hjust = 1,
+        face = "italic",
+        size = 7
+        ),
+        legend.position = "top",
+        legend.text = element_text(size = 6),
+        legend.title = element_text(size = 10)
+        ) +
+    xlab("") +
+    ylab("")
+```
+
 **Dot plot IGH chain genes (Figure 2E)**
 ```{r}
 #| fig-height: 3
@@ -680,31 +739,6 @@ if (!file.exists("dotplot_data.qs")) {
 }
 dotplot_data <- qread("dotplot_data.qs")
 
-# Seurat DotPlot function (only ggplot part to avoid calculations)
-DotPlotModified <- function(
-  data.plot,
-  cols = c("lightgrey", "blue"),
-  dot.scale = 6,
-  scale.by = 'radius',
-  scale.min = NA,
-  scale.max = NA
-) {
-  scale.func <- switch(
-    EXPR = scale.by,
-    'size' = scale_size,
-    'radius' = scale_radius,
-    stop("'scale.by' must be either 'size' or 'radius'")
-  )
-  color.by <- 'avg.exp.scaled'
-  plot <- ggplot(data = data.plot, mapping = aes_string(x = 'features.plot', y = 'id')) +
-    geom_point(mapping = aes_string(size = 'pct.exp', color = color.by)) +
-    scale.func(range = c(0, dot.scale), limits = c(scale.min, scale.max)) +
-    theme(axis.title.x = element_blank(), axis.title.y = element_blank()) +
-    guides(size = guide_legend(title = 'Percent Expressed')) + 
-    cowplot::theme_cowplot()
-  plot <- plot + guides(color = guide_colorbar(title = 'Average Expression'))
-  return(plot)
-}
 
 DotPlotModified(
     data.plot = dotplot_data,
