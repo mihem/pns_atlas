@@ -113,7 +113,7 @@ FeaturePlot(
 
 ```
 
-**Enrichment of gene ontology terms in markers genes of Macro 18 (Figure 2C)**
+**Enrichment of gene ontology terms in markers genes of Macro 18 (Figure 2B)**
 
 ```{r}
 #| fig-height: 3
