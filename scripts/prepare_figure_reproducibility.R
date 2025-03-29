@@ -730,6 +730,9 @@ calc_data_peri_var <- function(param, y_lab, diagnosis_col) {
     # Format p-value text
     p_text <- as.character(signif(p_val, 3))
     var_text <- paste0("p = ", p_text)
+
+    sd_perineurium <- sd_perineurium |>
+        select(diagnosis, sd_adjusted)
     return(list(
         data = sd_perineurium,
         var_text = var_text,
@@ -753,44 +756,9 @@ data_peri_var <- map2(
 
 qsave(
     data_peri_var,
-    file.path("docs", "data_peri_diagnosis.qs")
+    file.path("docs", "data_peri_var.qs")
 )
 
-plot_peri_sd <- function(data, diagnosis_col, y_lab, var_text) {
-    # Plot
-    plot <- ggplot(
-        data,
-        aes(x = diagnosis, y = sd_adjusted, fill = diagnosis)
-    ) +
-        geom_boxplot() +
-        geom_jitter(width = 0.2, size = .5) +
-        theme_classic() +
-        scale_fill_manual(values = diagnosis_col) +
-        theme(legend.position = "none") +
-        xlab("") +
-        ylab(paste0(
-            "Standard deviation of adjusted perineurium outer-inner ratio (",
-            y_lab,
-            ")"
-        )) +
-        ggsignif::geom_signif(
-            comparisons = list(c("CTRL", "CIDP")),
-            annotation = var_text
-        )
-    return(plot)
-}
-
-lapply(
-    data_peri_var,
-    function(x) {
-        plot_peri_sd(
-            data = x$data,
-            var_text = x$var_text,
-            y_lab = x$y_lab,
-            diagnosis_col = x$diagnosis_col
-        )
-    }
-)
 
 # Supplementary Figure 1 ----
 ## Supplementary Figure 1A ---
