@@ -28,6 +28,7 @@ library(sessioninfo)
 library(EnhancedVolcano)
 library(pals)
 library(scMisc)
+library(liana)
 ```
 
 ## Figure 1
@@ -1152,6 +1153,33 @@ DotPlotModified(
     ylab("")
 ```
 
+**Cell-cell interaction analysis (Figure S3B)**
+```{r}
+#| fig-height: 3.5
+#| fig-width: 7
+if (!file.exists("liana_results_aggregate.qs")) {
+    download.file(
+        "https://zenodo.org/records/14551660/files/liana_results_aggregate.qs?download=1",
+        "liana_results_aggregate.qs"
+    )
+}
+liana_results_aggregate <- qread("liana_results_aggregate.qs")
+
+liana_results_aggregate |>
+    dplyr::filter(ligand.complex == "CXCL14") |>
+    liana_dotplot(size_range = c(1, 5)) +
+    theme(
+        legend.text = element_text(size = 10),
+        axis.text.x = element_text(size = 10),
+        axis.title.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
+        legend.title = element_text(size = 10),
+        strip.text = element_text(size = 10),
+    )
+
+```
+
 ## Supplementary Figure 4
 **Dotplot of immune cell marker genes (Figure S4A)**
 
@@ -1187,6 +1215,7 @@ DotPlotModified(
     ylab("")
 ```
 
+
 **Dot plot IGH chain genes (Supplementary Figure 4B)**
 ```{r}
 #| fig-height: 4
@@ -1197,6 +1226,7 @@ if (!file.exists("dotplot_data_b_plasma.qs")) {
         "dotplot_data_b_plasma.qs"
     )
 }
+
 dotplot_data_b_plasma <- qread("dotplot_data_b_plasma.qs")
 DotPlotModified(
     data.plot = dotplot_data_b_plasma,
