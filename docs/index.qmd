@@ -644,6 +644,32 @@ purrr::walk2(
 )
 ```
 
+## Figure 5
+**CXCL14 expression in PNP (Figure 5A)**
+```{r}
+#| fig-width: 3.5
+#| fig-height: 3.5
+if (!file.exists("perineurial_figure.qs")) {
+    download.file(
+        "https://zenodo.org/records/14551660/files/perineurial_figure.qs?download=1",
+        "perineurial_figure.qs"
+    )
+}
+perineurial_figure <- qread("perineurial_figure.qs")
+
+VlnPlot(
+    perineurial_figure,
+    features = "CXCL14",
+    group.by = "level2",
+    cols = perineurial_figure@misc$level2_cols,
+    pt.size = 0
+) +
+    NoLegend() +
+    xlab("") +
+    ylab("") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
 ## Supplementary Figure 1
 
 **Demographics plot (Figure S1A)**
