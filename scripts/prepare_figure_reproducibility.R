@@ -576,6 +576,46 @@ for (slot in slots) {
 
 qsave(perineurial_figure, file.path("docs", "perineurial_figure.qs"))
 
+## Figure 5B ----
+diagnosis_order <- c(
+    "CTRL",
+    "VN",
+    "CIDP",
+    "CIAP",
+    "PPN",
+    "DPN",
+    "OIN",
+    "ONIN",
+    "MNC",
+    "IN"
+)
+diagnosis_col <- setNames(
+    pals::cols25(length(diagnosis_order)),
+    diagnosis_order
+)
+sample_order <- c("S24", "S25", "S08", "S09")
+
+cxcl14 <- read_csv(file.path("lookup", "cxcl14_perineurium.csv")) |>
+    mutate(pct_positive = parse_number(perc_CXCL14_perineurium) / 100) |>
+    mutate(sample = factor(sample, levels = sample_order))
+
+cxcl14_data <- list(
+    data = cxcl14,
+    diagnosis_col = diagnosis_col
+)
+
+cxcl14_data$data |>
+    ggplot(aes(
+        x = sample,
+        y = pct_positive,
+        fill = diagnosis
+    )) +
+    geom_boxplot() +
+    geom_jitter(width = 0.2, height = 0, size = 1) +
+    theme_classic() +
+    ylab("% positive CXCL14 in the perineurium") +
+    scale_fill_manual(values = cxcl14_data$diagnosis_col)
+
 
 # Supplementary Figure 1 ----
 ## Supplementary Figure 1A ---
