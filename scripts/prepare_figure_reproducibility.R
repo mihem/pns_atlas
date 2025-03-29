@@ -90,7 +90,7 @@ ic_figure <- DietSeurat(
     assays = "RNA",
     dimreducs = c("umap.rpca")
 )
-
+str(ic_figure@assays$RNA)
 # Remove unnecessary data to further reduce the object size
 ic_figure$RNA$counts <- NULL
 ic_figure$RNA$scale.data <- NULL
@@ -559,10 +559,14 @@ perineurial_figure <- DietSeurat(
     dimreducs = NULL
 )
 
-
 # Remove unnecessary data to further reduce the object size
 perineurial_figure$RNA$counts <- NULL
 perineurial_figure$RNA$scale.data <- NULL
+
+perineurial_figure$RNA$data <- as(
+    object = perineurial_figure$RNA$data,
+    Class = "dgCMatrix"
+)
 
 perineurial_figure@meta.data <- NULL
 perineurial_figure@commands <- list()
