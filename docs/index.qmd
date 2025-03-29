@@ -1121,6 +1121,36 @@ purrr::walk2(
     DotPlotCustom
 )
 ```
+## Supplementary Figure 3
+
+**Dotplot CXCR4 expression (Figure S3A)**
+```{r}
+#| fig-width: 4
+#| fig-height: 5
+if (!file.exists("dotplot_data_cxcr4.qs")) {
+    download.file(
+        "https://zenodo.org/records/14551660/files/dotplot_data_cxcr4.qs?download=1",
+        "dotplot_data_cxcr4.qs"
+    )
+}
+dotplot_data_cxcr4 <- qread("dotplot_data_cxcr4.qs")
+
+DotPlotModified(
+    data.plot = dotplot_data_cxcr4,
+    scale.by = "size"
+) +
+    viridis::scale_color_viridis(option = "viridis") +
+    theme(
+        axis.text.x = element_text(
+            angle = 90,
+            vjust = 0.5,
+            hjust = 1,
+            face = "italic"
+        ),
+    ) +
+    xlab("") +
+    ylab("")
+```
 
 ## Supplementary Figure 4
 **Dotplot of immune cell marker genes (Figure S4A)**
