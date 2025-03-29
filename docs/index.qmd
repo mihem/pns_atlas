@@ -65,12 +65,6 @@ DimPlot(
 **UMAP immune cells (Figure 2A)**
 
 ```{r}
-if (!file.exists("ic_figure.qs")) {
-    download.file(
-        "https://zenodo.org/records/14551660/files/ic_figure.qs?download=1",
-        "ic_figure.qs"
-    )
-}
 ic_figure <- qread("ic_figure.qs")
 DimPlot(
     ic_figure,
@@ -127,9 +121,14 @@ enrichr_macro18 <- qread("enrichr_macro18.qs")
 enrichr_macro18 |>
     dplyr::slice_min(order_by = Adjusted.P.value, n = 10, with_ties = FALSE) |>
     tidyr::separate(Overlap, into = c("overlap1", "overlap2")) |> # separate overlap in two columns
-    dplyr::mutate(Term = gsub(x = Term, pattern = "\\s\\(.+\\)", replacement = "")) |>
+    dplyr::mutate(
+        Term = gsub(x = Term, pattern = "\\s\\(.+\\)", replacement = "")
+    ) |>
     dplyr::mutate(overlap = as.numeric(overlap1) / as.numeric(overlap2)) |> # calculcate overlap
-    ggplot(aes(y = reorder(Term, -log10(Adjusted.P.value)), x = -log10(Adjusted.P.value))) +
+    ggplot(aes(
+        y = reorder(Term, -log10(Adjusted.P.value)),
+        x = -log10(Adjusted.P.value)
+    )) +
     geom_col(fill = scales::hue_pal()(5)[1]) +
     labs(
         x = "-Log10 Adjusted P value",
@@ -166,7 +165,10 @@ DotPlotModified <- function(
         stop("'scale.by' must be either 'size' or 'radius'")
     )
     color.by <- "avg.exp.scaled"
-    plot <- ggplot(data = data.plot, mapping = aes_string(x = "features.plot", y = "id")) +
+    plot <- ggplot(
+        data = data.plot,
+        mapping = aes_string(x = "features.plot", y = "id")
+    ) +
         geom_point(mapping = aes_string(size = "pct.exp", color = color.by)) +
         scale.func(range = c(0, dot.scale), limits = c(scale.min, scale.max)) +
         theme(axis.title.x = element_blank(), axis.title.y = element_blank()) +
@@ -195,6 +197,53 @@ DotPlotModified(
     ylab("")
 ```
 
+**Feature plots of SAMC markers in IC (Figure 2E)**
+```{r}
+if (!file.exists("ic_figure.qs")) {
+    download.file(
+        "https://zenodo.org/records/14551660/files/ic_figure.qs?download=1",
+        "ic_figure.qs"
+    )
+}
+ic_figure <- qread("ic_figure.qs")
+plot_predicted_samc <- function(seu_obj) {
+    # Create a data frame with alpha values, color values, and UMAP coordinates
+    umap_coords <- Embeddings(seu_obj, "umap.rpca")
+    alpha_values <- ifelse(seu_obj$stroke_label == "SAMC", 0.5, 0.001)
+    color_values <- ifelse(seu_obj$stroke_label == "SAMC", "SAMC", "Other")
+    color_map <- setNames(c("red", "grey"), c("SAMC", "Other"))
+    plot_df <- data.frame(
+        cell = rownames(umap_coords),
+        UMAP1 = umap_coords[, 1],
+        UMAP2 = umap_coords[, 2],
+        alpha = alpha_values,
+        color = color_values
+    )
+
+    # Create custom ggplot
+    samc_predicted <- ggplot(
+        plot_df,
+        aes(x = UMAP1, y = UMAP2, alpha = alpha, color = color)
+    ) +
+        geom_point(size = 0.1) +
+        scale_color_manual(values = color_map) + # Simplified color scale
+        theme_minimal() +
+        theme(
+            axis.text = element_blank(),
+            axis.ticks = element_blank(),
+            panel.grid = element_blank(),
+            panel.border = element_rect(color = "black", fill = NA, size = 1.0),
+            panel.background = element_rect(fill = "white", color = NA),
+            plot.background = element_rect(fill = "white", color = NA),
+            legend.position = "none"
+        ) +
+        ggtitle("predicted SAMC")
+    return(samc_predicted)
+}
+
+plot_predicted_samc(ic_figure)
+```
+
 
 ## Figure 3
 
@@ -219,21 +268,33 @@ propeller_PNP_CTRL_ic <- qread("propeller_PNP_CTRL_ic.qs")
 
 # function to plot custom dotplot
 dotplotPropeller <- function(data, color, title) {
-    ggplot(data, aes(x = log2ratio, y = fct_reorder(cluster, log2ratio), color = cluster)) +
+    ggplot(
+        data,
+        aes(x = log2ratio, y = fct_reorder(cluster, log2ratio), color = cluster)
+    ) +
         geom_point(size = 5) +
         theme_classic() +
         geom_vline(
-            xintercept = 0, color = "red",
+            xintercept = 0,
+            color = "red",
             linetype = "solid"
         ) +
         scale_color_manual(values = color) +
         xlab("Log2 fold change") +
         ylab(NULL) +
-        theme(legend.position = "none") + 
+        theme(legend.position = "none") +
         ggtitle(title)
 }
-dotplotPropeller(propeller_PNP_CTRL, color = umap_figure@misc$cluster_col, title = "PNP vs CTRL main clusters")
-dotplotPropeller(propeller_PNP_CTRL_ic, color = ic_figure@misc$ic_cluster_col, title = "PNP vs CTRL immune cells")
+dotplotPropeller(
+    propeller_PNP_CTRL,
+    color = umap_figure@misc$cluster_col,
+    title = "PNP vs CTRL main clusters"
+)
+dotplotPropeller(
+    propeller_PNP_CTRL_ic,
+    color = ic_figure@misc$ic_cluster_col,
+    title = "PNP vs CTRL immune cells"
+)
 ```
 
 **Covarying Neighborhood Analysis (Figure 3B)**
@@ -255,7 +316,7 @@ cna_pnp_gratio_figure <- qread("cna_pnp_gratio_figure.qs")
 cna_incat_figure <- qread("cna_incat_figure.qs")
 
 # function to plot CNA feature plot
-fplotCNA <-  function(object, feature, title) {
+fplotCNA <- function(object, feature, title) {
     FeaturePlot(
         object,
         reduction = "umap.scvi.full",
@@ -266,19 +327,22 @@ fplotCNA <-  function(object, feature, title) {
         raster = FALSE,
         alpha = 0.2
     ) +
-    scale_colour_gradient2(
-        low = "#2166AC",
-        mid = "white",
-        high = "#B2182B",
-        midpoint = 0,
-    ) +
-    theme(
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-    ) +
-    labs(
-        title = title, color = "Correlation", x = "UMAP1", y= "UMAP2"
-    )
+        scale_colour_gradient2(
+            low = "#2166AC",
+            mid = "white",
+            high = "#B2182B",
+            midpoint = 0,
+        ) +
+        theme(
+            axis.text = element_blank(),
+            axis.ticks = element_blank(),
+        ) +
+        labs(
+            title = title,
+            color = "Correlation",
+            x = "UMAP1",
+            y = "UMAP2"
+        )
 }
 
 fplotCNA(cna_pnp_gratio_figure, "cna_ncorrs_pnp", title = "PNP")
@@ -324,18 +388,18 @@ if (!file.exists("milo_figure.qs")) {
 
 milo_figure <- qread("milo_figure.qs")
 plotMiloDE <- function(condition, title) {
-    plot <- 
-    plot_milo_by_single_metric(
-        milo_figure$obj,
-        milo_figure$stat[[condition]],
-        colour_by = "n_DE_genes",
-        layout = "UMAP.SCVI.FULL",
-        size_range = c(0.5, 5),
-        edge_width = c(0.1, 1.0),
-        edge_weight.thres = 10
-    ) +
-    viridis::scale_fill_viridis(name = "# DE genes", option = "inferno") +
-    ggtitle(title)
+    plot <-
+        plot_milo_by_single_metric(
+            milo_figure$obj,
+            milo_figure$stat[[condition]],
+            colour_by = "n_DE_genes",
+            layout = "UMAP.SCVI.FULL",
+            size_range = c(0.5, 5),
+            edge_width = c(0.1, 1.0),
+            edge_weight.thres = 10
+        ) +
+        viridis::scale_fill_viridis(name = "# DE genes", option = "inferno") +
+        ggtitle(title)
     print(plot)
 }
 
@@ -353,7 +417,14 @@ if (!file.exists("de_pseudo_pnp_ctrl.qs")) {
 de_pseudo_pnp_ctrl <- qread("de_pseudo_pnp_ctrl.qs")
 
 # volcano plot function
-volcanoPlot <- function(cluster, input, FCcutoff = 2, selectLab = NULL, drawConnectors = TRUE, condition1, condition2) {
+volcanoPlot <- function(
+    cluster,
+    input,
+    FCcutoff = 2,
+    selectLab = NULL,
+    drawConnectors = TRUE,
+    condition1,
+    condition2) {
     input <- input[[cluster]]
     volcano <- EnhancedVolcano::EnhancedVolcano(
         data.frame(input),
@@ -381,8 +452,10 @@ volcanoPlot <- function(cluster, input, FCcutoff = 2, selectLab = NULL, drawConn
         ylab = bquote(~ -Log[10] ~ "adjusted p-value"),
         parseLabels = TRUE,
         legendLabels = c(
-            "NS", "logFC",
-            "p-val", "p-val + logFC"
+            "NS",
+            "logFC",
+            "p-val",
+            "p-val + logFC"
         ),
         legendPosition = "right",
     )
@@ -393,10 +466,22 @@ cluster_de <- c("mySC", "nmSC", "repairSC", "PC2")
 
 # define genes of interests
 lab_pnp_ctrl <- list(
-    "mySC" = paste0("italic('", c("DCN", "TNXB", "COL1A1", "COL15A1", "CD53", "IL4R", "CD74"), "')"),
-    "nmSC" = paste0("italic('", c("IL10RA", "IL13RA1", "CSF2RA", "TGFBI"), "')"),
+    "mySC" = paste0(
+        "italic('",
+        c("DCN", "TNXB", "COL1A1", "COL15A1", "CD53", "IL4R", "CD74"),
+        "')"
+    ),
+    "nmSC" = paste0(
+        "italic('",
+        c("IL10RA", "IL13RA1", "CSF2RA", "TGFBI"),
+        "')"
+    ),
     "repairSC" = paste0("italic('", c("GALR1", "TMEM47"), "')"),
-    "PC2" = paste0("italic('", c("MFAP5", "NLGN4Y", "PCDH11Y", "IFIT3", "OASL", "MX1"), "')")
+    "PC2" = paste0(
+        "italic('",
+        c("MFAP5", "NLGN4Y", "PCDH11Y", "IFIT3", "OASL", "MX1"),
+        "')"
+    )
 )
 
 # plot volcano plots of selected clusters
@@ -442,10 +527,13 @@ abundance_main_clusters |>
     theme_classic() +
     ylab("Proportion of cells") +
     xlab("") +
-    theme(axis.text.x = element_text(
-        angle = 90,
-        hjust = 1, vjust = 0.3
-    ))
+    theme(
+        axis.text.x = element_text(
+            angle = 90,
+            hjust = 1,
+            vjust = 0.3
+        )
+    )
 ```
 
 **Propeller abundance of PNP subtypes main cluster (Figure 4B)**
@@ -512,8 +600,8 @@ if (!file.exists("manual_xenium_quantification.qs")) {
 
 manual_xenium_quantification <- qread("manual_xenium_quantification.qs")
 plotQuanti <- function(y_value, title) {
-    plot <- 
-    manual_xenium_quantification |>
+    plot <-
+        manual_xenium_quantification |>
         ggplot(aes(x = level2, y = .data[[y_value]], fill = level2)) +
         geom_boxplot() +
         geom_jitter(height = 0, width = 0.1) +
@@ -531,12 +619,12 @@ plotQuanti <- function(y_value, title) {
                 vjust = 0.3,
             )
         )
-        print(plot)
+    print(plot)
 }
 
 purrr::walk2(
     c("endoPTPRC_density_sum", "epiPTPRC_density"),
-    c("PTPRC density endoneurial", "PTPRC density epineurial"),  
+    c("PTPRC density endoneurial", "PTPRC density epineurial"),
     function(y_value, title) {
         plotQuanti(y_value = y_value, title = title)
     }
@@ -596,7 +684,7 @@ purrr::walk(c("age", "ncv_tibial_motoric", "incat"), plotDemographics)
 #| fig-height: 3
 demographics |>
     ggplot(aes(x = level2, fill = sex)) +
-    geom_bar() + 
+    geom_bar() +
     theme_bw() +
     scale_fill_manual(values = pals::cols25(2)) +
     xlab("") +
@@ -689,7 +777,8 @@ abundance_main_clusters_sample |>
     theme(
         axis.text.x = element_text(
             angle = 90,
-            hjust = 1, vjust = 0.3
+            hjust = 1,
+            vjust = 0.3
         ),
         legend.position = "none"
     ) +
@@ -715,17 +804,18 @@ DotPlotModified(
     scale.by = "size"
 ) +
     viridis::scale_color_viridis(option = "viridis") +
-    theme(axis.text.x = element_text(
-        angle = 90,
-        vjust = 0.5,
-        hjust = 1,
-        face = "italic",
-        size = 7
+    theme(
+        axis.text.x = element_text(
+            angle = 90,
+            vjust = 0.5,
+            hjust = 1,
+            face = "italic",
+            size = 7
         ),
         legend.position = "top",
         legend.text = element_text(size = 6),
         legend.title = element_text(size = 10)
-        ) +
+    ) +
     xlab("") +
     ylab("")
 ```
@@ -742,13 +832,22 @@ if (!file.exists("enrichr_periC.qs")) {
 enrichr_periC <- qread("enrichr_periC.qs")
 
 plotEnrichr <- function(data, name) {
-    plot <- 
-    data |>
-        dplyr::slice_min(order_by = Adjusted.P.value, n = 10, with_ties = FALSE) |>
-        tidyr::separate(Overlap, into = c("overlap1", "overlap2")) |> 
-        dplyr::mutate(Term = gsub(x = Term, pattern = "\\s\\(.+\\)", replacement = "")) |>
+    plot <-
+        data |>
+        dplyr::slice_min(
+            order_by = Adjusted.P.value,
+            n = 10,
+            with_ties = FALSE
+        ) |>
+        tidyr::separate(Overlap, into = c("overlap1", "overlap2")) |>
+        dplyr::mutate(
+            Term = gsub(x = Term, pattern = "\\s\\(.+\\)", replacement = "")
+        ) |>
         dplyr::mutate(overlap = as.numeric(overlap1) / as.numeric(overlap2)) |>
-        ggplot(aes(y = reorder(Term, -log10(Adjusted.P.value)), x = -log10(Adjusted.P.value))) +
+        ggplot(aes(
+            y = reorder(Term, -log10(Adjusted.P.value)),
+            x = -log10(Adjusted.P.value)
+        )) +
         geom_col(fill = scales::hue_pal()(5)[1]) +
         labs(
             x = "-Log10 Adjusted P value",
@@ -771,25 +870,25 @@ purrr::walk2(
 #| fig-width: 4
 #| fig-height: 4
 plotUMAP <- function(group, title) {
-    plot <- 
-    DimPlot(
-        umap_figure,
-        reduction = "umap.scvi.full",
-        group.by = group,
-        raster = FALSE,
-        pt.size = .1,
-        alpha = .1,
-        cols = umap_figure@misc$sample_cols,
-        label = TRUE
-    ) +
-    theme(
-        axis.text = element_blank(),
-        axis.ticks = element_blank()
-    ) +
-    xlab("UMAP_1") +
-    ylab("UMAP_2") +
-    NoLegend() + 
-    ggtitle(title)
+    plot <-
+        DimPlot(
+            umap_figure,
+            reduction = "umap.scvi.full",
+            group.by = group,
+            raster = FALSE,
+            pt.size = .1,
+            alpha = .1,
+            cols = umap_figure@misc$sample_cols,
+            label = TRUE
+        ) +
+        theme(
+            axis.text = element_blank(),
+            axis.ticks = element_blank()
+        ) +
+        xlab("UMAP_1") +
+        ylab("UMAP_2") +
+        NoLegend() +
+        ggtitle(title)
     print(plot)
 }
 
@@ -854,12 +953,14 @@ DotPlotCustom <-
                 dot.scale = 10,
             ) +
             viridis::scale_color_viridis(option = "viridis") +
-            theme(axis.text.x = element_text(
-                angle = 90,
-                vjust = 0.5,
-                hjust = 1,
-                face = "italic",
-            )) +
+            theme(
+                axis.text.x = element_text(
+                    angle = 90,
+                    vjust = 0.5,
+                    hjust = 1,
+                    face = "italic",
+                )
+            ) +
             xlab("") +
             ylab("") +
             ggtitle(title)
@@ -892,20 +993,22 @@ DotPlotModified(
     scale.by = "size"
 ) +
     viridis::scale_color_viridis(option = "viridis") +
-    theme(axis.text.x = element_text(
-        angle = 90,
-        vjust = 0.5,
-        hjust = 1,
-        face = "italic",
-        size = 7
+    theme(
+        axis.text.x = element_text(
+            angle = 90,
+            vjust = 0.5,
+            hjust = 1,
+            face = "italic",
+            size = 7
         ),
         legend.position = "top",
         legend.text = element_text(size = 6),
         legend.title = element_text(size = 10)
-        ) +
+    ) +
     xlab("") +
     ylab("")
 ```
+
 **Dot plot IGH chain genes (Supplementary Figure 4B)**
 ```{r}
 #| fig-height: 4
@@ -978,15 +1081,12 @@ g_ratio |>
     ggplot(aes(x = sample, y = g_ratio)) +
     geom_boxplot() +
     geom_jitter(height = 0, width = 0.1, alpha = 0.3, size = 0.1) +
-    theme_bw() + 
+    theme_bw() +
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)) +
-    xlab("g-ratio") + 
+    xlab("g-ratio") +
     ylab("")
 ```
 
-```{r}
-
-```
 **Boxplots of g-ratio per PNP subtye (Figure S5C)**
 
 ```{r}
@@ -1043,7 +1143,7 @@ plotBoxplotCustom(data = axon_count, y_var = "axon_count")
 ```{r}
 #| fig-height: 3
 #| fig-width: 3
-g_ratio_grouped <- 
+g_ratio_grouped <-
     g_ratio |>
     group_by(sample) |>
     mutate(
@@ -1081,7 +1181,7 @@ plotCor(g_ratio_grouped, x = "ncv_tibial_motoric", y = "axon_diameter")
 ```{r}
 #| fig-height: 3
 #| fig-width: 3
-if(!file.exists("abundance_axon.qs")) {
+if (!file.exists("abundance_axon.qs")) {
     download.file(
         "https://zenodo.org/records/14551660/files/abundance_axon.qs?download=1",
         "abundance_axon.qs"
@@ -1103,7 +1203,7 @@ abundance_axon |>
 **Quantification of predicted cluster abundance in Xenium (Figure S5I+M)**
 ```{r}
 #| fig-height: 3
-if(!file.exists("xenium_sc_t_nk.qs")) {
+if (!file.exists("xenium_sc_t_nk.qs")) {
     download.file(
         "https://zenodo.org/records/14551660/files/xenium_sc_t_nk.qs?download=1",
         "xenium_sc_t_nk.qs"
@@ -1113,7 +1213,7 @@ xenium_sc_t_nk <- qread("xenium_sc_t_nk.qs")
 xenium_sc_t_nk |>
     ggplot(aes(x = condition, y = percent, fill = condition)) +
     geom_boxplot() +
-    geom_point() + 
+    geom_point() +
     theme_classic() +
     facet_wrap(vars(cluster), scales = "free_y", nrow = 1) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.3)) +
