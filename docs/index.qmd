@@ -697,6 +697,53 @@ cxcl14_data$data |>
 ```
 
 
+**Perineurium thickness CTRL vs CIDP (Figure 5E)**
+```{r}
+#| fig-width: 2
+#| fig-height: 3.5
+if (!file.exists("data_peri_diagnosis.qs")) {
+    download.file(
+        "https://zenodo.org/records/14551660/files/data_peri_diagnosis.qs?download=1",
+        "data_peri_diagnosis.qs"
+    )
+}
+data_peri_diagnosis <- qread("data_peri_diagnosis.qs")
+
+# function to plot perineurium area/perimeter ratios
+plot_peri <- function(data, x_axis, y_axis, diagnosis_p_value, y_lab, diagnosis_col) {
+    plot <- ggplot(
+        data,
+        aes(x = .data[[x_axis]], y = .data[[y_axis]], fill = .data[[x_axis]])
+    ) +
+        geom_boxplot() +
+        geom_jitter(width = 0.2, size = 1) +
+        theme_classic() +
+        ggsignif::geom_signif(
+            comparisons = list(c("CTRL", "CIDP")),
+            annotation = paste("p =", signif(diagnosis_p_value, 3))
+        ) +
+        scale_fill_manual(values = diagnosis_col) +
+        theme(legend.position = "none") +
+        xlab("") +
+        ylab(paste0("Adjusted perineurium outer-inner ratio (", y_lab, ")"))
+    return(plot)
+}
+
+lapply(
+    data_peri_diagnosis,
+    function(x) {
+        plot_peri(
+            data = x$data,
+            x_axis = "diagnosis",
+            y_axis = "adjusted_value",
+            diagnosis_p_value = x$p_value,
+            y_lab = x$y_lab,
+            diagnosis_col = x$diagnosis_col
+        )
+    }
+)
+```
+
 ## Supplementary Figure 1
 
 **Demographics plot (Figure S1A)**
