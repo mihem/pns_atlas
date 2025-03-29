@@ -148,8 +148,8 @@ dotplot_data_b_plasma <-
         object = b_plasma,
         features = b_plasma_genes,
         dot.min = 0.01,
+        scale = FALSE
     )
-
 
 qsave(dotplot_data_b_plasma, file.path("docs", "dotplot_data_b_plasma.qs"))
 
