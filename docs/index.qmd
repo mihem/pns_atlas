@@ -745,7 +745,7 @@ lapply(
 **Perineurium thickness variances CTRL vs CIDP (Figure 5F)**
 ```{r}
 #| fig-width: 2
-#| fig-height: 4
+#| fig-height: 4.5
 if (!file.exists("data_peri_var.qs")) {
     download.file(
         "https://zenodo.org/records/14551660/files/data_peri_var.qs?download=1",
