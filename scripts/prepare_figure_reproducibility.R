@@ -12,6 +12,7 @@ library(miloDE)
 library(SingleCellExperiment)
 
 source(file.path("scripts", "dotplot_functions.R"))
+source(file.path("scripts", "vlnplot_functions.R"))
 
 # Load data
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
@@ -38,7 +39,7 @@ umap_figure$RNA$scale.data <- Matrix::Matrix(
     ncol = ncol(umap_figure$RNA)
 )
 
-umap_figure@meta.data <- 
+umap_figure@meta.data <-
     umap_figure@meta.data |>
     tibble::rownames_to_column("barcode") |>
     dplyr::select(
@@ -138,7 +139,16 @@ b_plasma_figure@meta.data <-
     b_plasma_figure@meta.data |>
     dplyr::select(ic_cluster)
 
-b_plasma_genes <- c("IGHM", "IGHD", "IGHG1", "IGHG2", "IGHG3", "IGHG4", "IGHA1", "IGHA2")
+b_plasma_genes <- c(
+    "IGHM",
+    "IGHD",
+    "IGHG1",
+    "IGHG2",
+    "IGHG3",
+    "IGHG4",
+    "IGHA1",
+    "IGHA2"
+)
 
 dotplot_data_b_plasma <-
     DotPlotData(
@@ -151,7 +161,10 @@ dotplot_data_b_plasma <-
 qsave(dotplot_data_b_plasma, file.path("docs", "dotplot_data_b_plasma.qs"))
 
 # save enrichment results as qs object
-enrichr_macro18 <- readxl::read_excel(file.path("results", "enrichr", "enrichr_Macro18.xlsx"), sheet = "GO_Biological_Process_2023")
+enrichr_macro18 <- readxl::read_excel(
+    file.path("results", "enrichr", "enrichr_Macro18.xlsx"),
+    sheet = "GO_Biological_Process_2023"
+)
 qsave(enrichr_macro18, file.path("docs", "enrichr_macro18.qs"))
 
 # Figure 3 A ----
@@ -195,10 +208,10 @@ sc_merge$sex_numeric <- as.numeric(sc_merge$sex == "male")
 sc_merge$center_numeric <- as.numeric(factor(sc_merge$center))
 
 cna_pnp <- association.Seurat(
-    seurat_object = sc_merge, 
-    test_var = 'pnp', 
-    samplem_key = 'sample', 
-    graph_use = 'RNA_nn', 
+    seurat_object = sc_merge,
+    test_var = 'pnp',
+    samplem_key = 'sample',
+    graph_use = 'RNA_nn',
     verbose = TRUE,
     batches = NULL, ## no batch variables to include, only works with matched design https://github.com/immunogenomics/cna/issues/11
     covs = c("sex_numeric", "age")
@@ -207,13 +220,13 @@ cna_pnp$cna_ncorrs_pnp <- cna_pnp$cna_ncorrs
 
 # g ratio
 cna_gratio <- association.Seurat(
-    seurat_object = sc_merge, 
-    test_var = "g_ratio", 
-    samplem_key = 'sample', 
-    graph_use = 'RNA_nn', 
+    seurat_object = sc_merge,
+    test_var = "g_ratio",
+    samplem_key = 'sample',
+    graph_use = 'RNA_nn',
     verbose = TRUE,
     batches = NULL, ## no batch variables to include
-    covs = c("sex_numeric", "age") 
+    covs = c("sex_numeric", "age")
 )
 
 cna_pnp$cna_ncorrs_gratio <- cna_gratio$cna_ncorrs
@@ -246,12 +259,12 @@ sc_merge_pnp$incat_numeric <- as.numeric(sc_merge_pnp$incat)
 sc_merge$sex_numeric <- as.numeric(sc_merge$sex == "male")
 
 cna_incat <- association.Seurat(
-    seurat_object = sc_merge_pnp, 
-    test_var = 'incat_numeric', 
-    samplem_key = 'sample', 
-    graph_use = 'RNA_nn', 
+    seurat_object = sc_merge_pnp,
+    test_var = 'incat_numeric',
+    samplem_key = 'sample',
+    graph_use = 'RNA_nn',
     verbose = TRUE,
-    batches = NULL, 
+    batches = NULL,
     covs = c("sex_numeric", "age")
 )
 
@@ -278,20 +291,25 @@ cna_incat_figure@meta.data <-
 qsave(cna_incat_figure, file.path("docs", "cna_incat_figure.qs"))
 
 # Figure 3C ----
-sheets <- readxl::excel_sheets(path = file.path("results", "de", "pnp_ctrl_pseudobulk.xlsx"))
+sheets <- readxl::excel_sheets(
+    path = file.path("results", "de", "pnp_ctrl_pseudobulk.xlsx")
+)
 cl_sig <-
-        lapply(
-            sheets,
-            function(sheet) {
-                readxl::read_xlsx(path = file.path("results", "de", "pnp_ctrl_pseudobulk.xlsx"), sheet = sheet) |>
-                    dplyr::filter(p_val_adj < 0.05) |>
-                    nrow()
-            }
-        )
-result <- tibble(
-        cluster = sheets,
-        n = unlist(cl_sig),
+    lapply(
+        sheets,
+        function(sheet) {
+            readxl::read_xlsx(
+                path = file.path("results", "de", "pnp_ctrl_pseudobulk.xlsx"),
+                sheet = sheet
+            ) |>
+                dplyr::filter(p_val_adj < 0.05) |>
+                nrow()
+        }
     )
+result <- tibble(
+    cluster = sheets,
+    n = unlist(cl_sig),
+)
 
 qs::qsave(result, file.path("docs", "pnp_ctrl_pseudobulk_de.qs"))
 
@@ -300,20 +318,22 @@ milo_DE <- qs::qread(file.path("objects", "milo_DE.qs"), nthread = 4)
 
 # Print size of each slot in the Milo object
 slots <- slotNames(milo_DE)
-for(slot in slots) {
+for (slot in slots) {
     size <- object.size(slot(milo_DE, slot))
     print(sprintf("Slot %s: %s", slot, format(size, units = "auto")))
 }
 
 # Remove unnecessary data to reduce the object size
-empty_matrix <- Matrix::Matrix(0, 
-                             nrow = nrow(milo_DE), 
-                             ncol = ncol(milo_DE), 
-                             sparse = TRUE)
+empty_matrix <- Matrix::Matrix(
+    0,
+    nrow = nrow(milo_DE),
+    ncol = ncol(milo_DE),
+    sparse = TRUE
+)
 rownames(empty_matrix) <- rownames(milo_DE)
 colnames(empty_matrix) <- colnames(milo_DE)
 
-for(i in assayNames(milo_DE)) {
+for (i in assayNames(milo_DE)) {
     assay(milo_DE, i) <- empty_matrix
 }
 
@@ -328,11 +348,14 @@ de_stat <-
     lapply(
         c("pnp", "vn", "cidp", "ciap"),
         function(condition) {
-            qs::qread(file.path("objects", paste0("milo_de_stat_", condition, "_ctrl.qs")))
+            qs::qread(file.path(
+                "objects",
+                paste0("milo_de_stat_", condition, "_ctrl.qs")
+            ))
         }
     )
 
-stat_de_magnitude <- 
+stat_de_magnitude <-
     lapply(
         de_stat,
         rank_neighbourhoods_by_DE_magnitude
@@ -352,7 +375,8 @@ qsave(milo_figure, file.path("docs", "milo_figure.qs"))
 # Figure 3E ----
 # calculate DE PNP vs Ctrl for each cluster
 dePseudo <- function(seu_obj, cell_type_col, label_col) {
-    res <- Libra::run_de(seu_obj,
+    res <- Libra::run_de(
+        seu_obj,
         replicate_col = "sample",
         cell_type_col = cell_type_col,
         label_col = label_col,
@@ -369,22 +393,44 @@ dePseudo <- function(seu_obj, cell_type_col, label_col) {
     return(res_split)
 }
 
-de_pseudo_pnp_ctrl <- dePseudo(sc_merge, cell_type_col = "cluster", label_col = "level0")
+de_pseudo_pnp_ctrl <- dePseudo(
+    sc_merge,
+    cell_type_col = "cluster",
+    label_col = "level0"
+)
 qsave(de_pseudo_pnp_ctrl, file.path("docs", "de_pseudo_pnp_ctrl.qs"))
 
 qsave(de_pseudo_pnp_ctrl, file.path("docs", "de_pseudo_pnp_ctrl.qs"))
 
 # Figure 4A ----
 
-preStackedPlot <-  function(object, x_axis, y_axis, x_order, y_order) {
-    result_wide <- mutate(rownames_to_column(as.data.frame.matrix(table(object@meta.data[[y_axis]], 
-        object@meta.data[[x_axis]])), "cell"), across(where(is.numeric), 
-        function(x) x/sum(x) * 100))
-    result_long <- dplyr::filter(mutate(mutate(pivot_longer(result_wide, 
-        !cell, names_to = "type", values_to = "count"), cell = factor(cell, 
-        levels = y_order)), type = factor(type, levels = x_order)), 
-        count != 0)
-        return(result_long)
+preStackedPlot <- function(object, x_axis, y_axis, x_order, y_order) {
+    result_wide <- mutate(
+        rownames_to_column(
+            as.data.frame.matrix(table(
+                object@meta.data[[y_axis]],
+                object@meta.data[[x_axis]]
+            )),
+            "cell"
+        ),
+        across(where(is.numeric), function(x) x / sum(x) * 100)
+    )
+    result_long <- dplyr::filter(
+        mutate(
+            mutate(
+                pivot_longer(
+                    result_wide,
+                    !cell,
+                    names_to = "type",
+                    values_to = "count"
+                ),
+                cell = factor(cell, levels = y_order)
+            ),
+            type = factor(type, levels = x_order)
+        ),
+        count != 0
+    )
+    return(result_long)
 }
 
 abundance_main_clusters <-
@@ -401,54 +447,60 @@ qsave(abundance_main_clusters, file.path("docs", "abundance_main_clusters.qs"))
 # Figure 4B ----
 
 ## PNP subtype main clusters
-propeller_PNP_subtypes_main <- 
+propeller_PNP_subtypes_main <-
     lapply(
-    c("CIDP", "CIAP", "VN"),
-    function(condition) {
-        scMisc::propellerCalc(
-            seu_obj1 = sc_merge,
-            condition1 = condition,
-            condition2 = "CTRL",
-            cluster_col = "cluster",
-            meta_col = "level2",
-            lookup = sample_lookup,
-            sample_col = "sample",
-            formula = "~0 + level2",
-            min_cells = 30
-        ) |>
-            dplyr::filter(abs(log2ratio) > 0.5)
-    }
-)
+        c("CIDP", "CIAP", "VN"),
+        function(condition) {
+            scMisc::propellerCalc(
+                seu_obj1 = sc_merge,
+                condition1 = condition,
+                condition2 = "CTRL",
+                cluster_col = "cluster",
+                meta_col = "level2",
+                lookup = sample_lookup,
+                sample_col = "sample",
+                formula = "~0 + level2",
+                min_cells = 30
+            ) |>
+                dplyr::filter(abs(log2ratio) > 0.5)
+        }
+    )
 
 names(propeller_PNP_subtypes_main) <- c("CIDP", "CIAP", "VN")
-qsave(propeller_PNP_subtypes_main, file.path("docs", "propeller_PNP_subtypes_main.qs"))
+qsave(
+    propeller_PNP_subtypes_main,
+    file.path("docs", "propeller_PNP_subtypes_main.qs")
+)
 
 ## PNP subtype immune cell clusters
-propeller_PNP_subtypes_ic <- 
+propeller_PNP_subtypes_ic <-
     lapply(
-    c("CIDP", "CIAP", "VN"),
-    function(condition) {
-        scMisc::propellerCalc(
-            seu_obj1 = ic,
-            condition1 = condition,
-            condition2 = "CTRL",
-            cluster_col = "cluster",
-            meta_col = "level2",
-            lookup = sample_lookup,
-            sample_col = "sample",
-            formula = "~0 + level2",
-            min_cells = 30
-        ) |>
-            dplyr::filter(abs(log2ratio) > 0.5)
-    }
-)
+        c("CIDP", "CIAP", "VN"),
+        function(condition) {
+            scMisc::propellerCalc(
+                seu_obj1 = ic,
+                condition1 = condition,
+                condition2 = "CTRL",
+                cluster_col = "cluster",
+                meta_col = "level2",
+                lookup = sample_lookup,
+                sample_col = "sample",
+                formula = "~0 + level2",
+                min_cells = 30
+            ) |>
+                dplyr::filter(abs(log2ratio) > 0.5)
+        }
+    )
 
 names(propeller_PNP_subtypes_main) <- c("CIDP", "CIAP", "VN")
-qsave(propeller_PNP_subtypes_main, file.path("docs", "propeller_PNP_subtypes_main.qs"))
+qsave(
+    propeller_PNP_subtypes_main,
+    file.path("docs", "propeller_PNP_subtypes_main.qs")
+)
 
 # Figure 4F ----
 quanti <-
-    read_csv(file.path("lookup", "xenium_manual_quantification.csv"))|>
+    read_csv(file.path("lookup", "xenium_manual_quantification.csv")) |>
     pivot_longer(!sample, names_to = "name", values_to = "value") |>
     separate_wider_delim(name, delim = "_", names = c("variable", "area"))
 
@@ -467,7 +519,7 @@ quanti_result <-
     quanti |>
     dplyr::filter(area == "all") |>
     select(sample, variable, value) |>
-    bind_rows(quanti_stats)  |>
+    bind_rows(quanti_stats) |>
     arrange(sample) |>
     pivot_wider(names_from = variable, values_from = value) |>
     left_join(select(sample_lookup, sample, level2), join_by(sample)) |>
@@ -485,6 +537,46 @@ quanti_result <-
 
 qsave(quanti_result, file.path("docs", "manual_xenium_quantification.qs"))
 
+# Figure 5
+perineurial <- subset(
+    sc_merge,
+    cluster %in%
+        c("periC1", "periC2", "periC3") &
+        level2 %in% c("CTRL", "CIDP", "VN", "CIAP")
+)
+perineurial$level2 <- factor(
+    perineurial$level2,
+    levels = c("CTRL", "CIDP", "VN", "CIAP")
+)
+
+# Remove unnecessary data to further reduce the object size
+perineurial_figure <- DietSeurat(
+    perineurial,
+    counts = FALSE,
+    data = TRUE,
+    scale.data = FALSE,
+    assays = "RNA",
+    dimreducs = NULL
+)
+
+
+# Remove unnecessary data to further reduce the object size
+perineurial_figure$RNA$counts <- NULL
+perineurial_figure$RNA$scale.data <- NULL
+
+perineurial_figure@meta.data <- NULL
+perineurial_figure@commands <- list()
+perineurial_figure@tools <- list()
+
+slots <- slotNames(perineurial_figure)
+for (slot in slots) {
+    size <- object.size(slot(perineurial_figure, slot))
+    print(paste0("Slot ", slot, ": ", format(size, units = "auto")))
+}
+
+qsave(perineurial_figure, file.path("docs", "perineurial_figure.qs"))
+
+
 # Supplementary Figure 1 ----
 ## Supplementary Figure 1A ---
 sample_lookup <-
@@ -501,7 +593,12 @@ sample_lookup <-
         snap_sural = snap_sural_in_m_v,
         ncv_sural = ncv_sural_in_m_s
     ) |>
-    mutate(age_calc = lubridate::time_length(difftime(nerve_date, birth_date), "years")) |>
+    mutate(
+        age_calc = lubridate::time_length(
+            difftime(nerve_date, birth_date),
+            "years"
+        )
+    ) |>
     mutate(age_calc = floor(age_calc)) |>
     mutate(age = coalesce(age_calc, age)) |>
     dplyr::select(-age_calc) |>
@@ -527,13 +624,19 @@ abundance_main_clusters_sample <-
     )
 
 
-qsave(abundance_main_clusters_sample, file.path("docs", "abundance_main_clusters_sample.qs"))
+qsave(
+    abundance_main_clusters_sample,
+    file.path("docs", "abundance_main_clusters_sample.qs")
+)
 
 # Supplementary Figure 2 ----
 ## Supplementary Figure 2A ----
 # load modified Seurat data
 
-Idents(sc_merge) <- factor(sc_merge$cluster, levels = rev(sc_merge@misc$cluster_order))
+Idents(sc_merge) <- factor(
+    sc_merge$cluster,
+    levels = rev(sc_merge@misc$cluster_order)
+)
 
 dotplot_data <-
     DotPlotData(
@@ -548,11 +651,18 @@ qsave(dotplot_data, file.path("docs", "dotplot_data.qs"))
 enrichr_clusters <- c("periC1", "periC2", "periC3")
 names(enrichr_clusters) <- c("periC1", "periC2", "periC3")
 
-enrichr_periC <- 
+enrichr_periC <-
     lapply(
         enrichr_clusters,
         function(condition) {
-            readxl::read_excel(file.path("results", "enrichr", paste0("enrichr_", condition, ".xlsx")), sheet = "GO_Biological_Process_2023")
+            readxl::read_excel(
+                file.path(
+                    "results",
+                    "enrichr",
+                    paste0("enrichr_", condition, ".xlsx")
+                ),
+                sheet = "GO_Biological_Process_2023"
+            )
         }
     )
 
@@ -560,7 +670,10 @@ qsave(enrichr_periC, file.path("docs", "enrichr_periC.qs"))
 
 ## Supplementary Figure 2C
 ec <- subset(sc_merge, subset = RNA_snn_res.0.7 %in% c("7", "10", "11", "19"))
-ec_rosmap <- subset(ec, subset = rosmap_label %in% c("aEndo", "capEndo", "vEndo"))
+ec_rosmap <- subset(
+    ec,
+    subset = rosmap_label %in% c("aEndo", "capEndo", "vEndo")
+)
 
 ec_rosmap <- DietSeurat(
     ec_rosmap,
@@ -580,7 +693,7 @@ ec_rosmap$RNA$scale.data <- Matrix::Matrix(
     ncol = ncol(ec_rosmap$RNA)
 )
 
-ec_rosmap@meta.data <- 
+ec_rosmap@meta.data <-
     ec_rosmap@meta.data |>
     tibble::rownames_to_column("barcode") |>
     dplyr::select(
@@ -602,33 +715,47 @@ scMisc::lss()
 
 qsave(ec_rosmap, file.path("docs", "ec_rosmap.qs"))
 
-pns_sn_sciatic_milbrandt_subset <- subset(pns_sn_sciatic_milbrandt, subset = cluster %in% c("mySC", "nmSC", "PnC"))
-Idents(pns_sn_sciatic_milbrandt_subset) <- factor(pns_sn_sciatic_milbrandt_subset$cluster, levels = c("mySC", "nmSC", "PnC"))
+pns_sn_sciatic_milbrandt_subset <- subset(
+    pns_sn_sciatic_milbrandt,
+    subset = cluster %in% c("mySC", "nmSC", "PnC")
+)
+Idents(pns_sn_sciatic_milbrandt_subset) <- factor(
+    pns_sn_sciatic_milbrandt_subset$cluster,
+    levels = c("mySC", "nmSC", "PnC")
+)
 
 dotPlot(
-  path = file.path("lookup", "markers.csv"),
-  object = pns_sn_sciatic_milbrandt_subset,
-  par = "novel",
-  dot_min = 0.07,
-  height = 2,
-  width = 4,
-  ortho = "human2mouse"
+    path = file.path("lookup", "markers.csv"),
+    object = pns_sn_sciatic_milbrandt_subset,
+    par = "novel",
+    dot_min = 0.07,
+    height = 2,
+    width = 4,
+    ortho = "human2mouse"
 )
 
 ## Supplementary Figure 2D ----
-pns_sn_sciatic_milbrandt <- qs::qread("/home/mischko/Documents/beruf/forschung/scRNA_reference/pns_atlas_milbrandt/pns_sn_sciatic_GSE182098.qs")
-pns_sn_sciatic_milbrandt_subset <- subset(pns_sn_sciatic_milbrandt, subset = cluster %in% c("mySC", "nmSC", "PnC"))
+pns_sn_sciatic_milbrandt <- qs::qread(
+    "/home/mischko/Documents/beruf/forschung/scRNA_reference/pns_atlas_milbrandt/pns_sn_sciatic_GSE182098.qs"
+)
+pns_sn_sciatic_milbrandt_subset <- subset(
+    pns_sn_sciatic_milbrandt,
+    subset = cluster %in% c("mySC", "nmSC", "PnC")
+)
 
-Idents(pns_sn_sciatic_milbrandt_subset) <- factor(pns_sn_sciatic_milbrandt_subset$cluster, levels = c("mySC", "nmSC", "PnC"))
+Idents(pns_sn_sciatic_milbrandt_subset) <- factor(
+    pns_sn_sciatic_milbrandt_subset$cluster,
+    levels = c("mySC", "nmSC", "PnC")
+)
 
 scMisc::dotPlot(
-  path = file.path("lookup", "markers.csv"),
-  object = pns_sn_sciatic_milbrandt_subset,
-  par = "novel",
-  dot_min = 0.07,
-  height = 2,
-  width = 4,
-  ortho = "human2mouse"
+    path = file.path("lookup", "markers.csv"),
+    object = pns_sn_sciatic_milbrandt_subset,
+    par = "novel",
+    dot_min = 0.07,
+    height = 2,
+    width = 4,
+    ortho = "human2mouse"
 )
 
 dotplot_data_milbrandt <-
@@ -651,26 +778,37 @@ DotPlotModified(
     dot.scale = 10,
 ) +
     viridis::scale_color_viridis(option = "viridis") +
-    theme(axis.text.x = element_text(
-        angle = 90,
-        vjust = 0.5,
-        hjust = 1,
-        face = "italic",
-        size = 7
+    theme(
+        axis.text.x = element_text(
+            angle = 90,
+            vjust = 0.5,
+            hjust = 1,
+            face = "italic",
+            size = 7
         ),
         legend.position = "top",
         legend.text = element_text(size = 6),
         legend.title = element_text(size = 10)
-        ) +
+    ) +
     xlab("") +
     ylab("")
 
 # subset sc_merge
-sc_merge_subset <- subset(sc_merge, subset = cluster %in% c("mySC", "nmSC", "periC1", "periC2", "periC3"))
+sc_merge_subset <- subset(
+    sc_merge,
+    subset = cluster %in% c("mySC", "nmSC", "periC1", "periC2", "periC3")
+)
 
 # rename periC1, periC2, periC3 to periC
-sc_merge_subset$cluster <- gsub(pattern = "periC\\d", replacement = "periC", x = sc_merge_subset$cluster)
-sc_merge_subset$cluster <- factor(sc_merge_subset$cluster, levels = c("mySC", "nmSC", "periC"))
+sc_merge_subset$cluster <- gsub(
+    pattern = "periC\\d",
+    replacement = "periC",
+    x = sc_merge_subset$cluster
+)
+sc_merge_subset$cluster <- factor(
+    sc_merge_subset$cluster,
+    levels = c("mySC", "nmSC", "periC")
+)
 Idents(sc_merge_subset) <- sc_merge_subset$cluster
 
 dotplot_data_heming <-
@@ -703,23 +841,37 @@ qsave(dotplot_data_ic, file.path("docs", "dotplot_data_ic.qs"))
 enrichr_de_clusters <- c("mySC", "nmSC", "PC2")
 names(enrichr_de_clusters) <- c("mySC", "nmSC", "PC2")
 
-enrichr_de_pos <- 
+enrichr_de_pos <-
     lapply(
         enrichr_de_clusters,
         function(condition) {
-            readxl::read_excel(file.path("results", "enrichr", paste0("enrichr_pos_", condition, ".xlsx")), sheet = "GO_Biological_Process_2023")
+            readxl::read_excel(
+                file.path(
+                    "results",
+                    "enrichr",
+                    paste0("enrichr_pos_", condition, ".xlsx")
+                ),
+                sheet = "GO_Biological_Process_2023"
+            )
         }
     )
 
-enrichr_de_neg <- 
+enrichr_de_neg <-
     lapply(
         enrichr_de_clusters,
         function(condition) {
-            readxl::read_excel(file.path("results", "enrichr", paste0("enrichr_neg_", condition, ".xlsx")), sheet = "GO_Biological_Process_2023")
+            readxl::read_excel(
+                file.path(
+                    "results",
+                    "enrichr",
+                    paste0("enrichr_neg_", condition, ".xlsx")
+                ),
+                sheet = "GO_Biological_Process_2023"
+            )
         }
     )
 glimpse(enrichr_de)
-enrichr_de <- 
+enrichr_de <-
     list(
         pos = enrichr_de_pos,
         neg = enrichr_de_neg
@@ -742,13 +894,19 @@ axon_count_table <-
     readxl::read_xlsx(file.path("lookup", "axon_count_v2.xlsx")) |>
     dplyr::filter(is.na(remove)) |>
     dplyr::filter(sample != "NA") |>
-    mutate(across(c(fascicle, normal_myelin:total_myelinated_axons, area_micrometer), parse_number)) |>
-    mutate(fascicle = str_extract(fascicle, "[0-9]+")) 
+    mutate(across(
+        c(fascicle, normal_myelin:total_myelinated_axons, area_micrometer),
+        parse_number
+    )) |>
+    mutate(fascicle = str_extract(fascicle, "[0-9]+"))
 
-axon_count_fascicle <- 
+axon_count_fascicle <-
     axon_count_table |>
     group_by(sample, fascicle) |>
-    summarize(across(c(normal_myelin:total_myelinated_axons, area_micrometer), sum), .groups = "drop") |>
+    summarize(
+        across(c(normal_myelin:total_myelinated_axons, area_micrometer), sum),
+        .groups = "drop"
+    ) |>
     left_join(sample_lookup, by = "sample") |>
     mutate(level2 = factor(level2, levels = umap_figure@misc$level2_order)) |>
     group_by(sample) |>
@@ -764,12 +922,12 @@ qsave(axon_count_fascicle, file.path("docs", "axon_count.qs"))
 
 ## Supplementary Figure 5G ----
 abundance_axon <-
-  table(sc_merge$cluster, sc_merge$sample) |>
-  as.data.frame.matrix() |>
-  rownames_to_column("cell") |>
-  mutate(across(where(is.numeric), function(x) x / sum(x) * 100)) |>
-  pivot_longer(!cell, names_to = "sample", values_to = "count") |>
-  left_join(axon_count_fascicle, join_by(sample)) 
+    table(sc_merge$cluster, sc_merge$sample) |>
+    as.data.frame.matrix() |>
+    rownames_to_column("cell") |>
+    mutate(across(where(is.numeric), function(x) x / sum(x) * 100)) |>
+    pivot_longer(!cell, names_to = "sample", values_to = "count") |>
+    left_join(axon_count_fascicle, join_by(sample))
 
 qsave(abundance_axon, file.path("docs", "abundance_axon.qs"))
 
@@ -781,9 +939,9 @@ cells_list <-
     unlist()
 
 cells_predicted <-
-    tibble(cluster =  unname(cells_list), sample = names(cells_list)) |>
+    tibble(cluster = unname(cells_list), sample = names(cells_list)) |>
     mutate(condition = str_replace(sample, "(S\\d+)_(\\w+).*", "\\2")) |>
-    mutate(sample = str_replace(sample, "(S\\d+)_.*", "\\1"))  |>
+    mutate(sample = str_replace(sample, "(S\\d+)_.*", "\\1")) |>
     dplyr::filter(!is.na(cluster))
 
 
@@ -792,12 +950,15 @@ xenium_sc_t_nk <-
     cells_predicted |>
     dplyr::count(cluster, sample) |>
     pivot_wider(names_from = sample, values_from = n) |>
-    mutate(across(where(is.numeric), function(x) x / sum(x, na.rm = TRUE) * 100)) |>
+    mutate(across(
+        where(is.numeric),
+        function(x) x / sum(x, na.rm = TRUE) * 100
+    )) |>
     pivot_longer(!cluster, names_to = "sample", values_to = "percent") |>
     left_join(select(sample_lookup, sample, level2)) |>
     dplyr::rename(condition = level2) |>
-    dplyr::filter(cluster %in% c("mySC", "nmSC", "repairSC", "T_NK"))  |>
-    mutate(percent  = replace_na(percent, 0)) |>
-    mutate(condition = factor(condition, levels = sc_merge@misc$level2_order)) 
+    dplyr::filter(cluster %in% c("mySC", "nmSC", "repairSC", "T_NK")) |>
+    mutate(percent = replace_na(percent, 0)) |>
+    mutate(condition = factor(condition, levels = sc_merge@misc$level2_order))
 
 qsave(xenium_sc_t_nk, file.path("docs", "xenium_sc_t_nk.qs"))
