@@ -670,6 +670,33 @@ VlnPlot(
     theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
+**Quantification of CXCL14 histololgy in the perineurium (Figure 5B)**
+
+```{r}
+#| fig-width: 3.5
+#| fig-height: 3.5
+if (!file.exists("cxcl14_data.qs")) {
+    download.file(
+        "https://zenodo.org/records/14551660/files/cxcl14_data.qs?download=1",
+        "cxcl14_data.qs"
+    )
+}
+cxcl14_data <- qread("cxcl14_data.qs")
+cxcl14_data$data |>
+    ggplot(aes(
+        x = sample,
+        y = pct_positive,
+        fill = diagnosis
+    )) +
+    geom_boxplot() +
+    geom_jitter(width = 0.2, height = 0, size = 1) +
+    theme_classic() +
+    ylab("% positive CXCL14 in the perineurium") +
+    scale_fill_manual(values = cxcl14_data$diagnosis_col)
+
+```
+
+
 ## Supplementary Figure 1
 
 **Demographics plot (Figure S1A)**
