@@ -742,6 +742,56 @@ lapply(
 )
 ```
 
+**Perineurium thickness variances CTRL vs CIDP (Figure 5F)**
+```{r}
+#| fig-width: 2
+#| fig-height: 4
+if (!file.exists("data_peri_var.qs")) {
+    download.file(
+        "https://zenodo.org/records/14551660/files/data_peri_var.qs?download=1",
+        "data_peri_var.qs"
+    )
+}
+data_peri_var <- qread("data_peri_var.qs")
+
+# function to plot variance of perineurium area/perimeter ratios
+plot_peri_var <- function(data, diagnosis_col, y_lab, var_text) {
+    plot <- ggplot(
+        data,
+        aes(x = diagnosis, y = sd_adjusted, fill = diagnosis)
+    ) +
+        geom_boxplot() +
+        geom_jitter(width = 0.2, size = .5) +
+        theme_classic() +
+        scale_fill_manual(values = diagnosis_col) +
+        theme(legend.position = "none") +
+        xlab("") +
+        ylab(paste0(
+            "Standard deviation of adjusted perineurium outer-inner ratio (",
+            y_lab,
+            ")"
+        )) +
+        ggsignif::geom_signif(
+            comparisons = list(c("CTRL", "CIDP")),
+            annotation = var_text
+        )
+    return(plot)
+}
+
+
+lapply(
+    data_peri_var,
+    function(x) {
+        plot_peri_var(
+            data = x$data,
+            var_text = x$var_text,
+            y_lab = x$y_lab,
+            diagnosis_col = x$diagnosis_col
+        )
+    }
+)
+```
+
 ## Supplementary Figure 1
 
 **Demographics plot (Figure S1A)**
