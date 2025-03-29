@@ -90,14 +90,11 @@ ic_figure <- DietSeurat(
     dimreducs = c("umap.rpca")
 )
 
-ic_figure$RNA$counts <- NULL
-ic_figure$RNA$scale.data <- NULL
-
 # Remove unnecessary data to further reduce the object size
 ic_figure$RNA$counts <- NULL
 ic_figure$RNA$scale.data <- NULL
 
-ic_figure@meta.data <- data.frame()
+ic_figure@meta.data <- ic_figure@meta.data["stroke_label"]
 ic_figure@commands <- list()
 ic_figure@tools <- list()
 
