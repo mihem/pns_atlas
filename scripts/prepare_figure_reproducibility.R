@@ -604,17 +604,77 @@ cxcl14_data <- list(
     diagnosis_col = diagnosis_col
 )
 
-cxcl14_data$data |>
-    ggplot(aes(
-        x = sample,
-        y = pct_positive,
-        fill = diagnosis
-    )) +
-    geom_boxplot() +
-    geom_jitter(width = 0.2, height = 0, size = 1) +
-    theme_classic() +
-    ylab("% positive CXCL14 in the perineurium") +
-    scale_fill_manual(values = cxcl14_data$diagnosis_col)
+qsave(cxcl14_data, file.path("docs", "cxcl14_data.qs"))
+
+## Figure 5E ---
+# read perineurium lookup and measurement data ----
+perineurium_lookup <- read_csv(file.path("lookup", "perineurium_lookup.csv"))
+
+perineurium <-
+    read_csv(file.path("lookup", "perineurium_measurement.csv")) |>
+    dplyr::filter(is.na(remove) | !remove == "yes") |>
+    left_join(perineurium_lookup) |>
+    mutate(diagnosis = factor(diagnosis, levels = diagnosis_order)) |>
+    mutate(sample_ordered = reorder(sample, as.numeric(diagnosis))) |>
+    dplyr::mutate(
+        outer_inner_perimeter_ratio = outer_perimeter / inner_perimeter
+    ) |>
+    dplyr::mutate(outer_inner_area_ratio = outer_area / inner_area) |>
+    dplyr::mutate(
+        center_combined = paste(center_sample, center_stain, sep = "_")
+    )
+
+calc_data_peri_diagnosis <- function(param, y_lab, diagnosis_col) {
+    # Fit a linear mixed model
+    formula <- as.formula(paste0(
+        param,
+        " ~ diagnosis + sex + age + (1|center_combined) + (1|sample)"
+    ))
+
+    mixed_model <- lmerTest::lmer(formula, data = perineurium)
+
+    # Get model summary and p-value for diagnosis effect
+    model_summary <- summary(mixed_model)
+    diagnosis_p_value <- coef(model_summary)[2, "Pr(>|t|)"]
+
+    # Get fixed effects to calculate adjusted values
+    fixed_effects <- lme4::fixef(mixed_model)
+
+    # First adjust all individual measurements
+    adjusted_perineurium <- perineurium |>
+        mutate(
+            # Remove effects of all covariates except diagnosis
+            covariate_effect = (sex == "male") *
+                fixed_effects["sexmale"] +
+                age * fixed_effects["age"],
+
+            # Calculate adjusted value (raw value minus covariate effects)
+            adjusted_value = .data[[param]] - covariate_effect
+        )
+
+    # Then calculate median of adjusted values per sample
+    sample_data <- adjusted_perineurium |>
+        group_by(sample, diagnosis) |>
+        summarize(
+            adjusted_value = median(adjusted_value),
+            .groups = "drop"
+        )
+    return(list(data = sample_data, p_value = diagnosis_p_value, diagnosis_col = diagnosis_col, y_lab = y_lab))
+}
+
+params <- c("outer_inner_perimeter_ratio", "outer_inner_area_ratio")
+labels <- c("perimeter", "area")
+diagnosis_col <- setNames(
+    pals::cols25(length(diagnosis_order)),
+    diagnosis_order
+)
+data_peri_diagnosis <- map2(params, labels, calc_data_peri_diagnosis, diagnosis_col)
+
+qsave(
+    data_peri_diagnosis,
+    file.path("docs", "data_peri_diagnosis.qs")
+)
+
 
 
 # Supplementary Figure 1 ----
