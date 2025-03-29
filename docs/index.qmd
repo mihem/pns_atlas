@@ -710,10 +710,10 @@ if (!file.exists("data_peri_diagnosis.qs")) {
 data_peri_diagnosis <- qread("data_peri_diagnosis.qs")
 
 # function to plot perineurium area/perimeter ratios
-plot_peri <- function(data, x_axis, y_axis, diagnosis_p_value, y_lab, diagnosis_col) {
+plot_peri <- function(data, diagnosis_p_value, y_lab, diagnosis_col) {
     plot <- ggplot(
         data,
-        aes(x = .data[[x_axis]], y = .data[[y_axis]], fill = .data[[x_axis]])
+        aes(x = diagnosis, y = adjusted_value, fill = diagnosis)
     ) +
         geom_boxplot() +
         geom_jitter(width = 0.2, size = 1) +
@@ -734,8 +734,6 @@ lapply(
     function(x) {
         plot_peri(
             data = x$data,
-            x_axis = "diagnosis",
-            y_axis = "adjusted_value",
             diagnosis_p_value = x$p_value,
             y_lab = x$y_lab,
             diagnosis_col = x$diagnosis_col
