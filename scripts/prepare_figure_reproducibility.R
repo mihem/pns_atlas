@@ -1035,6 +1035,21 @@ dotplot_data_ic <-
 
 qsave(dotplot_data_ic, file.path("docs", "dotplot_data_ic.qs"))
 
+## Supplementary Figure 4B ----
+liana_results <- qs::qread(file.path("objects", "liana_results.qs"))
+
+library(liana)
+# Results processing and visualization ----
+liana_results$natmi |>
+  dplyr::filter(ligand == "CXCL14") |>
+  print(width = Inf)
+
+liana_results_aggregate <-
+  liana_results |>
+  liana_aggregate()
+
+qsave(liana_results_aggregate, file.path("docs", "liana_results_aggregate.qs"))
+
 # Supplementary Figure 4B ----
 enrichr_de_clusters <- c("mySC", "nmSC", "PC2")
 names(enrichr_de_clusters) <- c("mySC", "nmSC", "PC2")
