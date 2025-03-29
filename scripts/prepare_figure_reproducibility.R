@@ -659,23 +659,138 @@ calc_data_peri_diagnosis <- function(param, y_lab, diagnosis_col) {
             adjusted_value = median(adjusted_value),
             .groups = "drop"
         )
-    return(list(data = sample_data, p_value = diagnosis_p_value, diagnosis_col = diagnosis_col, y_lab = y_lab))
+    return(list(
+        data = sample_data,
+        p_value = diagnosis_p_value,
+        diagnosis_col = diagnosis_col,
+        y_lab = y_lab
+    ))
 }
 
 params <- c("outer_inner_perimeter_ratio", "outer_inner_area_ratio")
-labels <- c("perimeter", "area")
+y_labs <- c("perimeter", "area")
 diagnosis_col <- setNames(
     pals::cols25(length(diagnosis_order)),
     diagnosis_order
 )
-data_peri_diagnosis <- map2(params, labels, calc_data_peri_diagnosis, diagnosis_col)
+data_peri_diagnosis <- map2(
+    params,
+    y_labs,
+    calc_data_peri_diagnosis,
+    diagnosis_col
+)
 
 qsave(
     data_peri_diagnosis,
     file.path("docs", "data_peri_diagnosis.qs")
 )
 
+## Figure 5F ---
+# function to calc variance per diagnosis ----
+calc_data_peri_var <- function(param, y_lab, diagnosis_col) {
+    # Fit a linear mixed model
+    formula <- as.formula(paste0(
+        param,
+        " ~ diagnosis + sex + age + (1|center_combined) + (1|sample)"
+    ))
 
+    mixed_model <- lmerTest::lmer(formula, data = perineurium)
+
+    # Get fixed effects to calculate adjusted values
+    fixed_effects <- lme4::fixef(mixed_model)
+
+    # Adjust all measurements to remove covariate effects
+    adjusted_perineurium <- perineurium |>
+        mutate(
+            # Remove effects of all covariates except diagnosis
+            covariate_effect = (sex == "male") *
+                fixed_effects["sexmale"] +
+                age * fixed_effects["age"],
+
+            # Calculate adjusted value (raw value minus covariate effects)
+            adjusted_value = .data[[param]] - covariate_effect
+        )
+
+    # Calculate standard deviation of adjusted values per sample
+    sd_perineurium <- adjusted_perineurium |>
+        group_by(sample, diagnosis, center_combined, sex, age) |>
+        summarize(
+            sd_adjusted = sd(adjusted_value, na.rm = TRUE),
+            .groups = "drop"
+        )
+
+    # Test using a mixed model on the standard deviations
+    var_test_model <- lmerTest::lmer(
+        sd_adjusted ~ diagnosis + sex + age + (1 | center_combined),
+        data = sd_perineurium
+    )
+    var_test_summary <- summary(var_test_model)
+    p_val <- coef(var_test_summary)[2, "Pr(>|t|)"]
+
+    # Format p-value text
+    p_text <- as.character(signif(p_val, 3))
+    var_text <- paste0("p = ", p_text)
+    return(list(
+        data = sd_perineurium,
+        var_text = var_text,
+        diagnosis_col = diagnosis_col,
+        y_lab = y_lab
+    ))
+}
+
+params <- c("outer_inner_perimeter_ratio", "outer_inner_area_ratio")
+y_labs <- c("perimeter", "area")
+diagnosis_col <- setNames(
+    pals::cols25(length(diagnosis_order)),
+    diagnosis_order
+)
+data_peri_var <- map2(
+    params,
+    y_labs,
+    calc_data_peri_var,
+    diagnosis_col
+)
+
+qsave(
+    data_peri_var,
+    file.path("docs", "data_peri_diagnosis.qs")
+)
+
+plot_peri_sd <- function(data, diagnosis_col, y_lab, var_text) {
+    # Plot
+    plot <- ggplot(
+        data,
+        aes(x = diagnosis, y = sd_adjusted, fill = diagnosis)
+    ) +
+        geom_boxplot() +
+        geom_jitter(width = 0.2, size = .5) +
+        theme_classic() +
+        scale_fill_manual(values = diagnosis_col) +
+        theme(legend.position = "none") +
+        xlab("") +
+        ylab(paste0(
+            "Standard deviation of adjusted perineurium outer-inner ratio (",
+            y_lab,
+            ")"
+        )) +
+        ggsignif::geom_signif(
+            comparisons = list(c("CTRL", "CIDP")),
+            annotation = var_text
+        )
+    return(plot)
+}
+
+lapply(
+    data_peri_var,
+    function(x) {
+        plot_peri_sd(
+            data = x$data,
+            var_text = x$var_text,
+            y_lab = x$y_lab,
+            diagnosis_col = x$diagnosis_col
+        )
+    }
+)
 
 # Supplementary Figure 1 ----
 ## Supplementary Figure 1A ---
