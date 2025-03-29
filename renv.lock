@@ -6490,14 +6490,19 @@
     "stringfish": {
       "Package": "stringfish",
       "Version": "0.16.0",
-      "Source": "Repository",
-      "Repository": "RSPM",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteUsername": "traversc",
+      "RemoteRepo": "stringfish",
+      "RemoteRef": "master",
+      "RemoteSha": "b943b1c74b1350e6ec85a92dddfbad50eb8cca8f",
       "Requirements": [
         "R",
         "Rcpp",
         "RcppParallel"
       ],
-      "Hash": "b7eb79470319ae71d4b5ed9cd7bf7294"
+      "Hash": "a1ab2eccaaa756aecfc8067e1257147e"
     },
     "stringi": {
       "Package": "stringi",
