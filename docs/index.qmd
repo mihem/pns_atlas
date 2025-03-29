@@ -586,7 +586,7 @@ purrr::walk(
 )
 ```
 
-**Manual PTPRC quantification in Xenium (Figure 4F)**
+**Manual PTPRC quantification in Xenium (Figure 4E)**
 
 ```{r}
 #| fig-width: 3.5
