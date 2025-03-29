@@ -12,7 +12,6 @@ library(miloDE)
 library(SingleCellExperiment)
 
 source(file.path("scripts", "dotplot_functions.R"))
-source(file.path("scripts", "vlnplot_functions.R"))
 
 # Load data
 sc_merge <- qs::qread(file.path("objects", "sc_merge.qs"), nthread = 4)
@@ -1012,6 +1011,18 @@ dotplot_human_rodent <-
     )
 
 qsave(dotplot_human_rodent, file.path("docs", "dotplot_human_rodent.qs"))
+
+# Supplementary Figure 3 ----
+## Supplementary Figure 3A ----
+dotplot_data_cxcr4 <-
+    DotPlotData(
+        object = sc_merge,
+        features = c("CXCR4"),
+        dot.min = 0.01
+    )
+
+qsave(dotplot_data_cxcr4, file.path("docs", "dotplot_data_cxcr4.qs"))
+
 
 # Supplementary Figure 4 ----
 ## Supplementary Figure 4A ----
