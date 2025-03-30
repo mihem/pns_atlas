@@ -1453,6 +1453,38 @@ purrr::walk2(
 )
 ```
 
+**Manual TREM2 quantification in Xenium (Figure S5N)**
+
+```{r}
+#| fig-width: 3
+#| fig-height: 3
+
+if (!file.exists("xenium_trem2.qs")) {
+    download.file(
+        "https://zenodo.org/records/14551660/files/xenium_trem2.qs?download=1",
+        "xenium_trem2.qs"
+    )
+}
+
+xenium_trem2 <- qread("xenium_trem2.qs")
+xenium_trem2 |>
+    ggplot(aes(x = level2, y = density_trem2_mm, fill = level2)) +
+    geom_boxplot() +
+    geom_jitter(height = 0, width = 0.1) +
+    scale_fill_manual(values = umap_figure@misc$level2_cols) +
+    theme_classic() +
+    ylab("TREM2 density (µm²)") +
+    xlab("") +
+    theme(
+        legend.position = "none",
+        axis.text.x = element_text(
+            angle = 90,
+            hjust = 1,
+            vjust = 0.3,
+        )
+    )
+```
+
 
 ## Session info
 ```{r}
