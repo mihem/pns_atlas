@@ -1041,12 +1041,12 @@ liana_results <- qs::qread(file.path("objects", "liana_results.qs"))
 library(liana)
 # Results processing and visualization ----
 liana_results$natmi |>
-  dplyr::filter(ligand == "CXCL14") |>
-  print(width = Inf)
+    dplyr::filter(ligand == "CXCL14") |>
+    print(width = Inf)
 
 liana_results_aggregate <-
-  liana_results |>
-  liana_aggregate()
+    liana_results |>
+    liana_aggregate()
 
 qsave(liana_results_aggregate, file.path("docs", "liana_results_aggregate.qs"))
 
@@ -1175,3 +1175,29 @@ xenium_sc_t_nk <-
     mutate(condition = factor(condition, levels = sc_merge@misc$level2_order))
 
 qsave(xenium_sc_t_nk, file.path("docs", "xenium_sc_t_nk.qs"))
+
+## Supplementary Figure 5M ----
+# quantificaiton of TREM2 in Xenium
+trem2_data <- read_csv(file.path("lookup", "Xenium_Trem2.csv")) |>
+    janitor::clean_names() |>
+    mutate(level2 = factor(cohort, levels = sc_merge@misc$level2_order)) |>
+    select(-cohort)
+
+qsave(trem2_data, file.path("docs", "xenium_trem2.qs"))
+
+xenium_trem2 |>
+    ggplot(aes(x = level2, y = density_trem2_mm, fill = level2)) +
+    geom_boxplot() +
+    geom_jitter(height = 0, width = 0.1) +
+    scale_fill_manual(values = sc_merge@misc$level2_cols) +
+    theme_classic() +
+    ylab("TREM2 density (µm²)") +
+    xlab("") +
+    theme(
+        legend.position = "none",
+        axis.text.x = element_text(
+            angle = 90,
+            hjust = 1,
+            vjust = 0.3,
+        )
+    )
