@@ -1184,20 +1184,3 @@ trem2_data <- read_csv(file.path("lookup", "Xenium_Trem2.csv")) |>
     select(-cohort)
 
 qsave(trem2_data, file.path("docs", "xenium_trem2.qs"))
-
-xenium_trem2 |>
-    ggplot(aes(x = level2, y = density_trem2_mm, fill = level2)) +
-    geom_boxplot() +
-    geom_jitter(height = 0, width = 0.1) +
-    scale_fill_manual(values = sc_merge@misc$level2_cols) +
-    theme_classic() +
-    ylab("TREM2 density (µm²)") +
-    xlab("") +
-    theme(
-        legend.position = "none",
-        axis.text.x = element_text(
-            angle = 90,
-            hjust = 1,
-            vjust = 0.3,
-        )
-    )
