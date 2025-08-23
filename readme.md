@@ -1,5 +1,5 @@
-# Sural snRNAseq and Xenium analysis
-This is the code of the sural snRNAseq and Xenium analysis of the corresponding manuscript. Link:
+# Humasn PNS atlas
+This is the code of the h of the corresponding manuscript [Multi-omic identification of perineurial hyperplasia and lipid-associated nerve macrophages in human polyneuropathies](https://doi.org/10.1038/s41467-025-62964-8)
 All scripts can be found in the scripts folder.
 
 ## Reproducibility
