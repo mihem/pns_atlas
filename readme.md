@@ -1,5 +1,6 @@
-# Humasn PNS atlas
-This is the code of the h of the corresponding manuscript [Multi-omic identification of perineurial hyperplasia and lipid-associated nerve macrophages in human polyneuropathies](https://doi.org/10.1038/s41467-025-62964-8)
+# Human PNS atlas
+This is the code of the corresponding manuscript [Multi-omic identification of perineurial hyperplasia and lipid-associated nerve macrophages in human polyneuropathies.](https://doi.org/10.1038/s41467-025-62964-8)
+by Heming et al, *Nature Communications*, August 2025.
 All scripts can be found in the scripts folder.
 
 ## Reproducibility
@@ -34,6 +35,9 @@ quarto render index.qmd
 
 ## Website
 To interactively explore the data, we created a website: [pns-atlas.mzhlab.com](https://pns-atlas.mzhlab.com/).
+
+## Zenodo
+The code (release v1.0.0) has been archived on [Zenodo](https://zenodo.org/records/15750105).
 
 ## Questions?
 f you have any questions, please contact us at [mheming.de](https://www.mheming.de/).
