@@ -40,4 +40,4 @@ To interactively explore the data, we created a website: [pns-atlas.mzhlab.com](
 The code (release v1.0.0) has been archived on [Zenodo](https://zenodo.org/records/15750105).
 
 ## Questions?
-f you have any questions, please contact us at [mheming.com](https://www.mheming.com/).
+f you have any questions, please contact us at [mheming.com](https://mheming.com/).
