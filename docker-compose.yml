@@ -1,0 +1,12 @@
+services:
+  shiny:
+    image: mihem/pns_atlas:v3.0
+    volumes:
+      - ./docs:/pns_atlas/docs
+      - ./objects:/pns_atlas/objects
+      - ./lookup:/pns_atlas/lookup
+      - ./raw:/pns_atlas/raw
+      - ./scripts:/pns_atlas/scripts
+      - ./results:/pns_atlas/results
+    command: tail -f /dev/null
+    restart: unless-stopped
